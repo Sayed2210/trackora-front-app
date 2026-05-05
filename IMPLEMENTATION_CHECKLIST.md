@@ -68,20 +68,20 @@
 | 3.2 | Shipments feature — List page with filters, pagination, status badges | [x] | `feature/phase-3-core-features` | Table with status colors |
 | 3.3 | Shipments feature — Create shipment form with validations | [x] | `feature/phase-3-core-features` | Reactive form, phone regex |
 | 3.4 | Shipments feature — Detail page | [x] | `feature/phase-3-core-features` | Grid layout with shipment info |
-| 3.5 | Shipments feature — Bulk upload page | [ ] | | Drag-drop, progress polling |
+| 3.5 | Shipments feature — Bulk upload page | [x] | `feature/phase-3-core-features` | Drag-drop, progress polling, CSV template |
 | 3.6 | Shipments feature — Child routes (list, create, detail) | [x] | `feature/phase-3-core-features` | Lazy loaded |
 | 3.7 | Wallet feature — Facade with Signals | [x] | `feature/phase-3-core-features` | Wallet + transactions |
 | 3.8 | Wallet feature — Balance cards (available, pending) | [x] | `feature/phase-3-core-features` | Color-coded |
 | 3.9 | Wallet feature — Transaction list table | [x] | `feature/phase-3-core-features` | Credit/debit colors |
 | 3.10 | Wallet feature — Child routes | [x] | `feature/phase-3-core-features` | Lazy loaded |
-| 3.11 | Tracking feature — Public tracking page (`/tracking/:trackingNumber`) | [ ] | | No auth required, timeline visualization |
-| 3.12 | Tracking feature — Route configuration | [ ] | | Lazy loaded, minimal bundle |
-| 3.13 | Merchant app dashboard — KPI cards | [ ] | | Total shipments, delivery rate, avg COD |
-| 3.14 | Merchant app dashboard — Recent activity feed | [ ] | | `p-timeline` |
-| 3.15 | Merchant app — Integrate shipments and wallet pages | [ ] | | Routes already configured |
-| 3.16 | Admin app — Integrate shipments page | [ ] | | Routes already configured |
+| 3.11 | Tracking feature — Public tracking page (`/tracking/:trackingNumber`) | [x] | `feature/phase-3-core-features` | No auth required, timeline visualization |
+| 3.12 | Tracking feature — Route configuration | [x] | `feature/phase-3-core-features` | Lazy loaded, minimal bundle |
+| 3.13 | Merchant app dashboard — KPI cards | [x] | `feature/phase-3-core-features` | Total shipments, delivery rate, avg COD |
+| 3.14 | Merchant app dashboard — Recent activity feed | [x] | `feature/phase-3-core-features` | Activity list with status badges |
+| 3.15 | Merchant app — Integrate shipments and wallet pages | [x] | `feature/phase-3-core-features` | Routes already configured |
+| 3.16 | Admin app — Integrate shipments page | [x] | `feature/phase-3-core-features` | Routes already configured |
 
-**Phase 3 Merge:** ⏳ Pending (in progress on `feature/phase-3-core-features`)
+**Phase 3 Merge:** ✅ Merged into `dev`
 
 ---
 
@@ -162,7 +162,7 @@
 |-------|-----------|-------|----------|
 | Phase 1: Foundation | 15/15 | 15 | 100% |
 | Phase 2: Shared Infrastructure | 13/13 | 13 | 100% |
-| Phase 3: Core Features | 8/16 | 16 | 50% |
+| Phase 3: Core Features | 16/16 | 16 | 100% |
 | Phase 4: Courier PWA | 0/16 | 16 | 0% |
 | Phase 5: Admin & Operations | 0/13 | 13 | 0% |
 | Phase 6: Polish & Scale | 0/15 | 15 | 0% |
@@ -178,23 +178,25 @@
 | `dev` | Integration | `main` |
 | `feature/phase-1-foundation` | ✅ Merged to `dev` | `dev` |
 | `feature/phase-2-shared-infrastructure` | ✅ Merged to `dev` | `dev` |
-| `feature/phase-3-core-features` | ⏳ In Progress | `dev` |
+| `feature/phase-3-core-features` | ✅ Merged to `dev` | `dev` |
+| `feature/phase-4-courier-pwa` | ⏳ In Progress | `dev` |
+| `feature/phase-5-admin-operations` | ⏳ In Progress | `dev` |
+| `feature/phase-6-polish-scale` | ⏳ In Progress | `dev` |
 
 ---
 
 ## Next Steps
 
-1. **Complete Phase 3** on `feature/phase-3-core-features`:
-   - Tracking feature (public page)
-   - Merchant dashboard
-   - Bulk upload
-   - Update admin/merchant route children for lazy loading
+1. ✅ **Complete Phase 3** — merged into `dev`
 
-2. **Merge Phase 3** into `dev`
+2. **Implement Phase 4** — Courier PWA on `feature/phase-4-courier-pwa`
+   - Offline Dexie store, task list/detail, status updates, PWA manifest
 
-3. **Start Phase 4** — Courier PWA (create `feature/phase-4-courier-pwa` from `dev`)
+3. **Implement Phase 5** — Admin & Operations on `feature/phase-5-admin-operations`
+   - Admin dashboard, dispatch board, courier/merchant management
 
-4. **Continue** with Phase 5 → Phase 6
+4. **Implement Phase 6** — Polish & Scale on `feature/phase-6-polish-scale`
+   - RTL polish, maps, analytics charts, E2E tests, performance audit
 
 ---
 
