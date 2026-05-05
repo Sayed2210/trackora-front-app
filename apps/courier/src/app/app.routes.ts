@@ -17,6 +17,16 @@ export const appRoutes: Routes = [
         loadComponent: () =>
           import('./pages/courier-task-detail-page.component').then((m) => m.CourierTaskDetailPageComponent),
       },
+      {
+        path: 'cash-deposit',
+        loadComponent: () =>
+          import('./pages/cash-deposit-page.component').then((m) => m.CashDepositPageComponent),
+      },
+      {
+        path: 'performance',
+        loadComponent: () =>
+          import('./pages/performance-metrics-page.component').then((m) => m.PerformanceMetricsPageComponent),
+      },
     ],
   },
   {

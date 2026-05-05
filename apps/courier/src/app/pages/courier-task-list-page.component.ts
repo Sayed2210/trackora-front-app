@@ -18,11 +18,36 @@ import { OfflineSyncService } from '../../services/offline-sync.service';
         </div>
       </div>
 
-      <div class="sync-bar" *ngIf="pendingCount() > 0">
-        <span>{{ pendingCount() }} pending updates</span>
-        <button class="sync-btn" (click)="syncNow()" [disabled]="syncing()">
-          {{ syncing() ? 'Syncing...' : 'Sync Now' }}
-        </button>
+      <div class="sync-bar" *ngIf="pendingCount() > 0 || lastSyncResult()">
+        <div class="sync-info">
+          <span *ngIf="pendingCount() > 0">{{ pendingCount() }} pending updates</span>
+          <span *ngIf="lastSyncResult() as result" class="sync-result">
+            Last sync: {{ result.success }} success, {{ result.failed }} failed
+          </span>
+        </div>
+        <div class="sync-actions">
+          <button class="conflict-btn" *ngIf="conflictItems().length > 0" (click)="toggleConflicts()">
+            {{ conflictItems().length }} conflicts
+          </button>
+          <button class="sync-btn" (click)="syncNow()" [disabled]="syncing()">
+            {{ syncing() ? 'Syncing...' : 'Sync Now' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="conflict-panel" *ngIf="showConflicts()">
+        <h4>Sync Conflicts</h4>
+        <div class="conflict-item" *ngFor="let item of conflictItems()">
+          <div class="conflict-header">
+            <span class="conflict-type">{{ item.type }}</span>
+            <span class="conflict-retry">Retry {{ item.retryCount }}/3</span>
+          </div>
+          <div class="conflict-error" *ngIf="item.lastError">{{ item.lastError }}</div>
+          <div class="conflict-actions">
+            <button class="retry-btn" (click)="retryItem(item.id)">Retry</button>
+            <button class="discard-btn" (click)="discardItem(item.id)">Discard</button>
+          </div>
+        </div>
       </div>
 
       <div class="task-filters">
@@ -73,8 +98,21 @@ import { OfflineSyncService } from '../../services/offline-sync.service';
     .connection-status { font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 12px; background: #D1FAE5; color: #065F46; font-weight: 600; }
     .connection-status.offline { background: #FEE2E2; color: #991B1B; }
     .sync-bar { display: flex; justify-content: space-between; align-items: center; background: #FEF3C7; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
+    .sync-info { display: flex; flex-direction: column; gap: 0.25rem; }
+    .sync-result { font-size: 0.75rem; color: var(--trackora-text-secondary); }
+    .sync-actions { display: flex; gap: 0.5rem; align-items: center; }
     .sync-btn { padding: 0.375rem 0.75rem; background: var(--trackora-primary); color: white; border: none; border-radius: 4px; font-size: 0.875rem; cursor: pointer; }
     .sync-btn:disabled { opacity: 0.6; }
+    .conflict-btn { padding: 0.375rem 0.75rem; background: #EF4444; color: white; border: none; border-radius: 4px; font-size: 0.875rem; cursor: pointer; }
+    .conflict-panel { background: #FFF; border: 1px solid #FCA5A5; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    .conflict-panel h4 { margin: 0 0 0.75rem; font-size: 0.875rem; color: #991B1B; }
+    .conflict-item { border: 1px solid var(--trackora-border); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; }
+    .conflict-header { display: flex; justify-content: space-between; font-size: 0.875rem; font-weight: 600; }
+    .conflict-retry { font-size: 0.75rem; color: var(--trackora-text-secondary); }
+    .conflict-error { font-size: 0.75rem; color: #EF4444; margin: 0.25rem 0; }
+    .conflict-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .retry-btn { padding: 0.25rem 0.5rem; background: var(--trackora-primary); color: white; border: none; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
+    .discard-btn { padding: 0.25rem 0.5rem; background: white; color: var(--trackora-text-secondary); border: 1px solid var(--trackora-border); border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
     .task-filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; }
     .task-filters button { padding: 0.5rem 1rem; border: 1px solid var(--trackora-border); background: white; border-radius: 20px; font-size: 0.875rem; cursor: pointer; white-space: nowrap; }
     .task-filters button.active { background: var(--trackora-primary); color: white; border-color: var(--trackora-primary); }
@@ -105,6 +143,9 @@ export class CourierTaskListPageComponent implements OnInit {
   readonly isOnline = signal(navigator.onLine);
   readonly pendingCount = signal(0);
   readonly syncing = signal(false);
+  readonly lastSyncResult = signal<{ success: number; failed: number } | null>(null);
+  readonly showConflicts = signal(false);
+  readonly conflictItems = signal<Array<{ id: string; taskId: string; type: string; lastError?: string; retryCount: number }>>([]);
 
   filters = [
     { label: 'All', value: 'ALL', count: 0 },
@@ -123,6 +164,7 @@ export class CourierTaskListPageComponent implements OnInit {
   ngOnInit(): void {
     this.loadTasks();
     this.loadPendingCount();
+    this.loadConflicts();
 
     window.addEventListener('online', () => this.isOnline.set(true));
     window.addEventListener('offline', () => this.isOnline.set(false));
@@ -198,8 +240,40 @@ export class CourierTaskListPageComponent implements OnInit {
 
   async syncNow(): Promise<void> {
     this.syncing.set(true);
-    await this.syncService.syncPendingUpdates();
+    const result = await this.syncService.syncPendingUpdates();
+    this.lastSyncResult.set(result);
     await this.loadPendingCount();
+    await this.loadConflicts();
     this.syncing.set(false);
+  }
+
+  toggleConflicts(): void {
+    this.showConflicts.update((v) => !v);
+  }
+
+  private async loadConflicts(): Promise<void> {
+    const pending = await courierDb.pendingUpdates.toArray();
+    const conflicts = pending
+      .filter((p) => (p.retryCount || 0) > 0)
+      .map((p) => ({
+        id: p.id,
+        taskId: p.taskId,
+        type: p.type,
+        lastError: p.lastError,
+        retryCount: p.retryCount || 0,
+      }));
+    this.conflictItems.set(conflicts);
+  }
+
+  async retryItem(id: string): Promise<void> {
+    await courierDb.pendingUpdates.update(id, { retryCount: 0, lastError: undefined });
+    await this.loadConflicts();
+    await this.loadPendingCount();
+  }
+
+  async discardItem(id: string): Promise<void> {
+    await courierDb.pendingUpdates.delete(id);
+    await this.loadConflicts();
+    await this.loadPendingCount();
   }
 }
