@@ -50,6 +50,27 @@ export const appRoutes: Routes = [
             (m) => m.PayoutApprovalPageComponent
           ),
       },
+      {
+        path: 'wallets',
+        loadComponent: () =>
+          import('./pages/wallet-management/wallet-management-page.component').then(
+            (m) => m.WalletManagementPageComponent
+          ),
+      },
+      {
+        path: 'audit-logs',
+        loadComponent: () =>
+          import('./pages/audit-logs/audit-logs-page.component').then(
+            (m) => m.AuditLogsPageComponent
+          ),
+      },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./pages/reports/reports-page.component').then(
+            (m) => m.ReportsPageComponent
+          ),
+      },
     ],
   },
   {
