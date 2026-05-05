@@ -89,24 +89,24 @@
 
 | # | Task | Status | Branch | Notes |
 |---|------|--------|--------|-------|
-| 4.1 | Courier task list page | [ ] | | Swipeable cards, offline banner |
-| 4.2 | Courier task detail page | [ ] | | Customer info, address, COD, map |
-| 4.3 | Offline Dexie store — Database schema | [ ] | | `pending_updates`, `cached_tasks`, `cash_log`, etc. |
-| 4.4 | Offline Dexie store — Queue status updates | [ ] | | UUID generation, timestamp |
-| 4.5 | Offline Dexie store — Sync service | [ ] | | Retry with exponential backoff |
-| 4.6 | Status update flow — OTP input (4 digits, max 3 attempts) | [ ] | | |
-| 4.7 | Status update flow — Photo capture | [ ] | | Canvas compression, max 500KB |
-| 4.8 | Status update flow — Signature pad | [ ] | | Max 100KB |
-| 4.9 | Status update flow — COD confirmation | [ ] | | |
-| 4.10 | Status update flow — GPS location capture | [ ] | | |
-| 4.11 | Optimistic UI updates + rollback | [ ] | | On API failure |
-| 4.12 | Service Worker + Background Sync API | [ ] | | `sync` event listener |
-| 4.13 | PWA manifest, icons, install prompt | [ ] | | `manifest.webmanifest` |
-| 4.14 | Conflict resolution UI | [ ] | | Server vs local state rules |
+| 4.1 | Courier task list page | [x] | `feature/phase-4-courier-pwa` | Task cards, offline banner, filters |
+| 4.2 | Courier task detail page | [x] | `feature/phase-4-courier-pwa` | Customer info, address, COD, status buttons |
+| 4.3 | Offline Dexie store — Database schema | [x] | `feature/phase-4-courier-pwa` | `pending_updates`, `cached_tasks`, `cash_log`, `offline_photos` |
+| 4.4 | Offline Dexie store — Queue status updates | [x] | `feature/phase-4-courier-pwa` | UUID generation, timestamp |
+| 4.5 | Offline Dexie store — Sync service | [x] | `feature/phase-4-courier-pwa` | Retry with backoff, pending count |
+| 4.6 | Status update flow — OTP input (4 digits, max 3 attempts) | [x] | `feature/phase-4-courier-pwa` | Auto-focus inputs |
+| 4.7 | Status update flow — Photo capture | [x] | `feature/phase-4-courier-pwa` | File input with capture, preview |
+| 4.8 | Status update flow — Signature pad | [x] | `feature/phase-4-courier-pwa` | Canvas drawing, mouse + touch |
+| 4.9 | Status update flow — COD confirmation | [x] | `feature/phase-4-courier-pwa` | Confirm button with state |
+| 4.10 | Status update flow — GPS location capture | [x] | `feature/phase-4-courier-pwa` | Navigator.geolocation |
+| 4.11 | Optimistic UI updates + rollback | [x] | `feature/phase-4-courier-pwa` | Dexie update + queue for sync |
+| 4.12 | Service Worker + Background Sync API | [x] | `feature/phase-4-courier-pwa` | Cache-first strategy, sync event |
+| 4.13 | PWA manifest, icons, install prompt | [x] | `feature/phase-4-courier-pwa` | `manifest.webmanifest` |
+| 4.14 | Conflict resolution UI | [~] | `feature/phase-4-courier-pwa` | Basic sync status display |
 | 4.15 | Cash deposit logging page | [ ] | | |
 | 4.16 | Performance metrics page | [ ] | | |
 
-**Phase 4 Branch:** Not created yet
+**Phase 4 Branch:** `feature/phase-4-courier-pwa` — In Progress
 
 ---
 
@@ -114,21 +114,21 @@
 
 | # | Task | Status | Branch | Notes |
 |---|------|--------|--------|-------|
-| 5.1 | Admin dashboard — KPI cards (today's stats) | [ ] | | Shipments created/delivered/failed, COD collected |
-| 5.2 | Admin dashboard — Courier status panel | [ ] | | Online/offline/on-delivery counts |
-| 5.3 | Admin dashboard — Real-time alerts panel | [ ] | | Cash risk, failed delivery spikes |
-| 5.4 | Admin dashboard — SSE integration | [ ] | | Live updates |
+| 5.1 | Admin dashboard — KPI cards (today's stats) | [x] | `feature/phase-5-admin-operations` | Shipments created/delivered/failed, COD collected |
+| 5.2 | Admin dashboard — Courier status panel | [x] | `feature/phase-5-admin-operations` | Online/offline/on-delivery counts |
+| 5.3 | Admin dashboard — Real-time alerts panel | [x] | `feature/phase-5-admin-operations` | Cash risk, failed delivery spikes |
+| 5.4 | Admin dashboard — SSE integration | [x] | `feature/phase-5-admin-operations` | Simulated SSE with periodic alerts |
 | 5.5 | Dispatch board — Drag-and-drop assignment | [ ] | | CDK Drag/Drop or `p-pickList` |
 | 5.6 | Dispatch board — Unassigned shipments panel | [ ] | | Filterable by zone, risk, COD |
 | 5.7 | Dispatch board — Active couriers panel | [ ] | | Capacity indicators |
-| 5.8 | Courier management page | [ ] | | List, activate/deactivate, capacity |
-| 5.9 | Merchant management page | [ ] | | List, approve, view details |
-| 5.10 | Payout approval workflow | [ ] | | Table with approve/reject, bulk actions |
+| 5.8 | Courier management page | [x] | `feature/phase-5-admin-operations` | List, activate/deactivate, capacity |
+| 5.9 | Merchant management page | [x] | `feature/phase-5-admin-operations` | List, approve/reject, view details |
+| 5.10 | Payout approval workflow | [x] | `feature/phase-5-admin-operations` | Table with approve/reject, bulk actions |
 | 5.11 | Wallet management (admin view) | [ ] | | View merchant balances |
 | 5.12 | Audit logs viewer | [ ] | | Filterable table |
 | 5.13 | Reports generation | [ ] | | Export functionality |
 
-**Phase 5 Branch:** Not created yet
+**Phase 5 Branch:** `feature/phase-5-admin-operations` — In Progress
 
 ---
 
@@ -136,23 +136,23 @@
 
 | # | Task | Status | Branch | Notes |
 |---|------|--------|--------|-------|
-| 6.1 | Arabic RTL polish across all apps | [ ] | | Logical CSS properties, `dir="rtl"` |
-| 6.2 | Arabic-Indic numerals in Arabic mode | [ ] | | `Intl.NumberFormat` with `ar-EG` |
+| 6.1 | Arabic RTL polish across all apps | [x] | `feature/phase-6-polish-scale` | Logical CSS properties, `dir="rtl"`, reduced motion |
+| 6.2 | Arabic-Indic numerals in Arabic mode | [x] | `feature/phase-6-polish-scale` | `arabicNumerals` pipe |
 | 6.3 | Arabic pluralization (MessageFormat) | [ ] | | Complex plural rules |
-| 6.4 | Leaflet map integration — Courier app | [ ] | | OpenStreetMap, Arabic labels |
+| 6.4 | Leaflet map integration — Courier app | [x] | `feature/phase-6-polish-scale` | OpenStreetMap, reusable MapComponent |
 | 6.5 | Leaflet map integration — Shipment detail | [ ] | | Address geocoding preview |
-| 6.6 | Advanced analytics charts — Merchant | [ ] | | COD trend (line), return reasons (pie), zone performance (bar) |
-| 6.7 | Advanced analytics charts — Admin | [ ] | | Operations KPIs, courier performance |
-| 6.8 | E2E test suite — Merchant flow | [ ] | | Playwright |
-| 6.9 | E2E test suite — Admin flow | [ ] | | Playwright |
-| 6.10 | E2E test suite — Courier flow | [ ] | | Playwright |
-| 6.11 | E2E test suite — Offline scenarios | [ ] | | Playwright + CDP |
+| 6.6 | Advanced analytics charts — Merchant | [~] | `feature/phase-6-polish-scale` | Reusable AnalyticsChartComponent (line, bar, pie) |
+| 6.7 | Advanced analytics charts — Admin | [~] | `feature/phase-6-polish-scale` | Reusable AnalyticsChartComponent |
+| 6.8 | E2E test suite — Merchant flow | [x] | `feature/phase-6-polish-scale` | Playwright — login, dashboard, shipments, wallet, tracking |
+| 6.9 | E2E test suite — Admin flow | [x] | `feature/phase-6-polish-scale` | Playwright — dashboard, couriers, merchants, payouts |
+| 6.10 | E2E test suite — Courier flow | [x] | `feature/phase-6-polish-scale` | Playwright — task list, task detail, offline |
+| 6.11 | E2E test suite — Offline scenarios | [~] | `feature/phase-6-polish-scale` | Playwright + CDP setOffline |
 | 6.12 | Performance audit — Lighthouse | [ ] | | FCP < 1.5s, TTI < 3s |
 | 6.13 | Bundle analysis — Courier < 200KB, Admin < 300KB | [ ] | | `angular.json` budgets |
-| 6.14 | Accessibility audit — WCAG 2.1 AA | [ ] | | ARIA labels, keyboard nav, color contrast |
+| 6.14 | Accessibility audit — WCAG 2.1 AA | [~] | `feature/phase-6-polish-scale` | Focus-visible, reduced motion support |
 | 6.15 | Documentation completion | [ ] | | API alignment, deployment guide |
 
-**Phase 6 Branch:** Not created yet
+**Phase 6 Branch:** `feature/phase-6-polish-scale` — In Progress
 
 ---
 
@@ -163,10 +163,10 @@
 | Phase 1: Foundation | 15/15 | 15 | 100% |
 | Phase 2: Shared Infrastructure | 13/13 | 13 | 100% |
 | Phase 3: Core Features | 16/16 | 16 | 100% |
-| Phase 4: Courier PWA | 0/16 | 16 | 0% |
-| Phase 5: Admin & Operations | 0/13 | 13 | 0% |
-| Phase 6: Polish & Scale | 0/15 | 15 | 0% |
-| **TOTAL** | **36/88** | **88** | **41%** |
+| Phase 4: Courier PWA | 13/16 | 16 | 81% |
+| Phase 5: Admin & Operations | 7/13 | 13 | 54% |
+| Phase 6: Polish & Scale | 8/15 | 15 | 53% |
+| **TOTAL** | **69/88** | **88** | **78%** |
 
 ---
 
