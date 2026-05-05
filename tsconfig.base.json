@@ -1,0 +1,39 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@trackora/core": ["libs/core/src/index.ts"],
+      "@trackora/core/auth": ["libs/core/auth/src/index.ts"],
+      "@trackora/core/api": ["libs/core/api/src/index.ts"],
+      "@trackora/core/realtime": ["libs/core/realtime/src/index.ts"],
+      "@trackora/core/state": ["libs/core/state/src/index.ts"],
+      "@trackora/core/config": ["libs/core/config/src/index.ts"],
+      "@trackora/shared/domain": ["libs/shared/domain/src/index.ts"],
+      "@trackora/shared/ui": ["libs/shared/ui/src/index.ts"],
+      "@trackora/shared/utils": ["libs/shared/utils/src/index.ts"],
+      "@trackora/shared/data-access": ["libs/shared/data-access/src/index.ts"],
+      "@trackora/auth-feature": ["libs/features/auth-feature/src/index.ts"],
+      "@trackora/shipments-feature": ["libs/features/shipments-feature/src/index.ts"],
+      "@trackora/assignments-feature": ["libs/features/assignments-feature/src/index.ts"],
+      "@trackora/courier-tasks-feature": ["libs/features/courier-tasks-feature/src/index.ts"],
+      "@trackora/wallet-feature": ["libs/features/wallet-feature/src/index.ts"],
+      "@trackora/payouts-feature": ["libs/features/payouts-feature/src/index.ts"],
+      "@trackora/tracking-feature": ["libs/features/tracking-feature/src/index.ts"],
+      "@trackora/analytics-feature": ["libs/features/analytics-feature/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}
