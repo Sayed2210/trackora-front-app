@@ -12,6 +12,11 @@ export const shipmentsRoutes: Routes = [
       import('./pages/create-shipment-page.component').then((m) => m.CreateShipmentPageComponent),
   },
   {
+    path: 'bulk-upload',
+    loadComponent: () =>
+      import('./pages/bulk-upload-page.component').then((m) => m.BulkUploadPageComponent),
+  },
+  {
     path: ':id',
     loadComponent: () =>
       import('./pages/shipment-detail-page.component').then((m) => m.ShipmentDetailPageComponent),

@@ -39,6 +39,25 @@
     "requestPayout": "طلب سحب",
     "status": "الحالة"
   },
+  "dashboard": {
+    "title": "لوحة تحكم التاجر",
+    "totalShipments": "إجمالي الشحنات",
+    "deliveryRate": "معدل التسليم",
+    "avgCod": "متوسط الدفع عند الاستلام",
+    "availableBalance": "الرصيد المتاح",
+    "pending": "معلق",
+    "failed": "فاشل",
+    "recentActivity": "النشاط الأخير",
+    "quickActions": "إجراءات سريعة",
+    "viewAll": "عرض كل الشحنات"
+  },
+  "tracking": {
+    "title": "تتبع شحنتك",
+    "subtitle": "أدخل رقم التتبع للحصول على تحديثات فورية",
+    "trackButton": "تتبع",
+    "shipmentTimeline": "الجدول الزمني للشحنة",
+    "trackingPlaceholder": "أدخل رقم التتبع (مثال: TRK-123456)"
+  },
   "courier": {
     "tasks": "المهام",
     "offline": "غير متصل",

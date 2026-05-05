@@ -15,7 +15,10 @@ import { ShipmentStatus } from '@trackora/shared/domain';
     <div class="shipment-list">
       <div class="header">
         <h1>{{ 'shipments.listTitle' | translate }}</h1>
-        <a routerLink="create" class="p-button p-button-primary">{{ 'shipments.createTitle' | translate }}</a>
+        <div class="actions">
+          <a routerLink="bulk-upload" class="p-button p-button-secondary">{{ 'shipments.bulkUpload' | translate }}</a>
+          <a routerLink="create" class="p-button p-button-primary">{{ 'shipments.createTitle' | translate }}</a>
+        </div>
       </div>
       <app-loading-spinner *ngIf="facade.loading()" />
       <div class="filters">
@@ -56,6 +59,7 @@ import { ShipmentStatus } from '@trackora/shared/domain';
   styles: [`
     .shipment-list { padding: 1rem; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .actions { display: flex; gap: 0.5rem; }
     .filters { margin-bottom: 1rem; }
     .shipment-table { width: 100%; border-collapse: collapse; background: white; }
     .shipment-table th, .shipment-table td { padding: 0.75rem; border-bottom: 1px solid var(--trackora-border); text-align: start; }

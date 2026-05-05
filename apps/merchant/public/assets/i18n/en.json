@@ -39,6 +39,25 @@
     "requestPayout": "Request Payout",
     "status": "Status"
   },
+  "dashboard": {
+    "title": "Merchant Dashboard",
+    "totalShipments": "Total Shipments",
+    "deliveryRate": "Delivery Rate",
+    "avgCod": "Avg COD",
+    "availableBalance": "Available Balance",
+    "pending": "Pending",
+    "failed": "Failed",
+    "recentActivity": "Recent Activity",
+    "quickActions": "Quick Actions",
+    "viewAll": "View All Shipments"
+  },
+  "tracking": {
+    "title": "Track Your Shipment",
+    "subtitle": "Enter your tracking number to get real-time updates",
+    "trackButton": "Track",
+    "shipmentTimeline": "Shipment Timeline",
+    "trackingPlaceholder": "Enter tracking number (e.g., TRK-123456)"
+  },
   "courier": {
     "tasks": "Tasks",
     "offline": "Offline",
