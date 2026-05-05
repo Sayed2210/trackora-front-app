@@ -34,6 +34,6 @@ export const appRoutes: Routes = [
   {
     path: 'login',
     loadComponent: () =>
-      import('@trackora/auth-feature').then((m) => m.AuthFeatureComponent),
+      import('@trackora/auth-feature').then((m) => m.LoginPageComponent),
   },
 ];
