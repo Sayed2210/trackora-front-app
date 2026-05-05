@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ShipmentFacade } from '../facade/shipment.facade';
-import { LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe } from '@trackora/shared/ui';
+import { LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe, MapComponent } from '@trackora/shared/ui';
 
 @Component({
   selector: 'app-shipment-detail-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe],
+  imports: [CommonModule, TranslateModule, LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe, MapComponent],
   providers: [ShipmentFacade],
   template: `
     <div class="shipment-detail" *ngIf="!facade.loading() && facade.selectedShipment() as s">
@@ -39,6 +39,24 @@ import { LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe } from '@tracko
           <span class="value">{{ s.createdAt | localDate }}</span>
         </div>
       </div>
+
+      <div class="map-section" *ngIf="s.address.lat && s.address.lng">
+        <h3>Delivery Location</h3>
+        <app-map
+          [lat]="s.address.lat"
+          [lng]="s.address.lng"
+          [zoom]="15"
+          [markers]="[{ lat: s.address.lat, lng: s.address.lng, title: s.customerName }]"
+        />
+      </div>
+
+      <div class="map-section" *ngIf="!s.address.lat || !s.address.lng">
+        <h3>Delivery Location</h3>
+        <div class="no-location">
+          <p>No geolocation data available for this address.</p>
+          <p class="address-preview">{{ s.address.street }}, {{ s.address.building }}, {{ s.address.city }}, {{ s.address.governorate }}</p>
+        </div>
+      </div>
     </div>
     <app-loading-spinner *ngIf="facade.loading()" />
   `,
@@ -52,6 +70,11 @@ import { LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe } from '@tracko
     .PENDING { background: #FEF3C7; color: #92400E; }
     .DELIVERED { background: #D1FAE5; color: #065F46; }
     .FAILED { background: #FEE2E2; color: #991B1B; }
+    .map-section { margin-top: 1.5rem; background: white; border: 1px solid var(--trackora-border); border-radius: 12px; padding: 1rem; }
+    .map-section h3 { margin: 0 0 0.75rem; font-size: 1rem; }
+    .map-section app-map { height: 300px; }
+    .no-location { padding: 2rem; text-align: center; color: var(--trackora-text-secondary); }
+    .address-preview { font-weight: 600; color: var(--trackora-text); margin-top: 0.5rem; }
   `],
 })
 export class ShipmentDetailPageComponent implements OnInit {

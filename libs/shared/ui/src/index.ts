@@ -5,4 +5,5 @@ export * from './lib/components/analytics-chart.component';
 export * from './lib/pipes/egp-currency.pipe';
 export * from './lib/pipes/local-date.pipe';
 export * from './lib/pipes/arabic-numerals.pipe';
+export * from './lib/pipes/arabic-plural.pipe';
 export * from './lib/styles/trackora-theme.scss';

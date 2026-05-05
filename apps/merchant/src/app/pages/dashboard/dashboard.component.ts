@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ShipmentRepository } from '@trackora/shared/data-access';
 import { WalletRepository } from '@trackora/shared/data-access';
-import { EgpCurrencyPipe, LocalDatePipe } from '@trackora/shared/ui';
+import { EgpCurrencyPipe, LocalDatePipe, AnalyticsChartComponent } from '@trackora/shared/ui';
 import { ShipmentStatus } from '@trackora/shared/domain';
 import { firstValueFrom } from 'rxjs';
 
@@ -28,7 +28,7 @@ interface ActivityEvent {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, EgpCurrencyPipe, LocalDatePipe],
+  imports: [CommonModule, RouterLink, TranslateModule, EgpCurrencyPipe, LocalDatePipe, AnalyticsChartComponent],
   template: `
     <div class="dashboard">
       <h1>Merchant Dashboard</h1>
@@ -44,6 +44,25 @@ interface ActivityEvent {
             <span class="kpi-label">{{ kpi.label }}</span>
             <span class="kpi-trend" *ngIf="kpi.trend">{{ kpi.trend }}</span>
           </div>
+        </div>
+      </div>
+
+      <div class="analytics-section">
+        <div class="chart-card">
+          <h3>Shipment Trends</h3>
+          <app-analytics-chart
+            type="line"
+            [labels]="chartLabels()"
+            [datasets]="shipmentTrendDatasets()"
+          />
+        </div>
+        <div class="chart-card">
+          <h3>Status Breakdown</h3>
+          <app-analytics-chart
+            type="doughnut"
+            [labels]="statusLabels()"
+            [datasets]="statusDatasets()"
+          />
         </div>
       </div>
 
@@ -131,6 +150,11 @@ interface ActivityEvent {
     .action-btn.primary { background: var(--trackora-primary); color: white; }
     .action-btn.secondary { background: var(--trackora-surface); color: var(--trackora-text); border: 1px solid var(--trackora-border); }
     .action-btn .icon { font-size: 1.25rem; }
+    .analytics-section { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    @media (max-width: 768px) { .analytics-section { grid-template-columns: 1fr; } }
+    .chart-card { background: white; border: 1px solid var(--trackora-border); border-radius: 12px; padding: 1.25rem; }
+    .chart-card h3 { margin: 0 0 0.75rem; font-size: 1rem; }
+    .chart-card app-analytics-chart { height: 260px; }
   `],
 })
 export class DashboardComponent implements OnInit {
@@ -139,6 +163,10 @@ export class DashboardComponent implements OnInit {
 
   readonly kpis = signal<DashboardKpi[]>([]);
   readonly activities = signal<ActivityEvent[]>([]);
+  readonly chartLabels = signal<string[]>([]);
+  readonly shipmentTrendDatasets = signal<Array<{ label: string; data: number[]; borderColor: string; backgroundColor: string }>>([]);
+  readonly statusLabels = signal<string[]>([]);
+  readonly statusDatasets = signal<Array<{ label: string; data: number[]; backgroundColor: string[] }>>([]);
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -178,6 +206,22 @@ export class DashboardComponent implements OnInit {
           status: s.status,
         }))
       );
+
+      // Analytics charts data
+      this.chartLabels.set(['Week 1', 'Week 2', 'Week 3', 'Week 4']);
+      this.shipmentTrendDatasets.set([
+        { label: 'Delivered', data: [25, 32, 28, 40], borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.2)' },
+        { label: 'Failed', data: [3, 5, 2, 4], borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.2)' },
+        { label: 'Pending', data: [12, 8, 15, 10], borderColor: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.2)' },
+      ]);
+      this.statusLabels.set(['Delivered', 'Pending', 'Failed', 'Returned']);
+      this.statusDatasets.set([
+        {
+          label: 'Shipments',
+          data: [delivered, pending, failed, shipments.filter((s) => s.status === ShipmentStatus.RETURNED).length],
+          backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#9CA3AF'],
+        },
+      ]);
     } catch (err) {
       // Fallback mock data if API fails
       this.kpis.set([
@@ -213,6 +257,21 @@ export class DashboardComponent implements OnInit {
           description: 'Omar Hassan — Alexandria',
           timestamp: new Date(Date.now() - 86400000).toISOString(),
           status: 'RETURNED',
+        },
+      ]);
+
+      this.chartLabels.set(['Week 1', 'Week 2', 'Week 3', 'Week 4']);
+      this.shipmentTrendDatasets.set([
+        { label: 'Delivered', data: [25, 32, 28, 40], borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.2)' },
+        { label: 'Failed', data: [3, 5, 2, 4], borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.2)' },
+        { label: 'Pending', data: [12, 8, 15, 10], borderColor: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.2)' },
+      ]);
+      this.statusLabels.set(['Delivered', 'Pending', 'Failed', 'Returned']);
+      this.statusDatasets.set([
+        {
+          label: 'Shipments',
+          data: [108, 8, 3, 5],
+          backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#9CA3AF'],
         },
       ]);
     }
