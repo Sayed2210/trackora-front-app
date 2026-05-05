@@ -1,0 +1,47 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية",
+    "close": "إغلاق"
+  },
+  "auth": {
+    "loginTitle": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "loginButton": "دخول",
+    "forgotPassword": "نسيت كلمة المرور؟"
+  },
+  "shipments": {
+    "createTitle": "إنشاء شحنة جديدة",
+    "listTitle": "الشحنات",
+    "trackingNumber": "رقم التتبع",
+    "customerName": "اسم العميل",
+    "customerPhone": "رقم الهاتف",
+    "status": "الحالة",
+    "codAmount": "مبلغ الدفع عند الاستلام",
+    "address": "العنوان",
+    "bulkUpload": "رفع مجموعة"
+  },
+  "wallet": {
+    "title": "المحفظة",
+    "availableBalance": "الرصيد المتاح",
+    "pendingBalance": "الرصيد المعلق",
+    "transactions": "المعاملات"
+  },
+  "payouts": {
+    "title": "المدفوعات",
+    "requestPayout": "طلب سحب",
+    "status": "الحالة"
+  },
+  "courier": {
+    "tasks": "المهام",
+    "offline": "غير متصل",
+    "syncNow": "مزامنة الآن"
+  }
+}

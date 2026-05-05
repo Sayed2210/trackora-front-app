@@ -1,0 +1,72 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* RTL Support Utilities */
+html[dir="rtl"] {
+  .shipment-table th,
+  .shipment-table td,
+  .transaction-table th,
+  .transaction-table td,
+  .data-table th,
+  .data-table td {
+    text-align: right;
+  }
+
+  .header,
+  .page-header,
+  .detail-header,
+  .task-header,
+  .section-header,
+  .panel-header,
+  .upload-info,
+  .info-row,
+  .detail-row,
+  .activity-meta,
+  .status-item,
+  .alert-item,
+  .courier-name,
+  .merchant-info {
+    flex-direction: row-reverse;
+  }
+
+  .kpi-card,
+  .kpi-content,
+  .task-card-header,
+  .shipment-overview,
+  .actions,
+  .filters-bar,
+  .link-grid,
+  .action-buttons,
+  .status-buttons,
+  .quick-link,
+  .otp-inputs,
+  .signature-actions,
+  .bulk-actions,
+  .status-grid {
+    direction: rtl;
+  }
+
+  .sidebar {
+    order: 1;
+  }
+
+  .main-content {
+    order: 0;
+  }
+}
+
+/* Accessibility improvements */
+*:focus-visible {
+  outline: 2px solid var(--trackora-primary);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

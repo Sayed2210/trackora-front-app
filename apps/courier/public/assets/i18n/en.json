@@ -1,0 +1,47 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "close": "Close"
+  },
+  "auth": {
+    "loginTitle": "Login",
+    "email": "Email",
+    "password": "Password",
+    "loginButton": "Sign In",
+    "forgotPassword": "Forgot password?"
+  },
+  "shipments": {
+    "createTitle": "Create New Shipment",
+    "listTitle": "Shipments",
+    "trackingNumber": "Tracking Number",
+    "customerName": "Customer Name",
+    "customerPhone": "Phone Number",
+    "status": "Status",
+    "codAmount": "COD Amount",
+    "address": "Address",
+    "bulkUpload": "Bulk Upload"
+  },
+  "wallet": {
+    "title": "Wallet",
+    "availableBalance": "Available Balance",
+    "pendingBalance": "Pending Balance",
+    "transactions": "Transactions"
+  },
+  "payouts": {
+    "title": "Payouts",
+    "requestPayout": "Request Payout",
+    "status": "Status"
+  },
+  "courier": {
+    "tasks": "Tasks",
+    "offline": "Offline",
+    "syncNow": "Sync Now"
+  }
+}

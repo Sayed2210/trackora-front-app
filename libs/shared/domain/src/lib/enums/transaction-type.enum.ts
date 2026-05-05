@@ -1,0 +1,23 @@
+/**
+ * Transaction type enum for wallet operations
+ */
+export enum TransactionType {
+  COD_CREDIT = 'COD_CREDIT',
+  COMMISSION_DEBIT = 'COMMISSION_DEBIT',
+  DELIVERY_FEE_DEBIT = 'DELIVERY_FEE_DEBIT',
+  RETURN_FEE_DEBIT = 'RETURN_FEE_DEBIT',
+  PAYOUT_DEBIT = 'PAYOUT_DEBIT',
+  ADJUSTMENT_CREDIT = 'ADJUSTMENT_CREDIT',
+  ADJUSTMENT_DEBIT = 'ADJUSTMENT_DEBIT',
+}
+
+/**
+ * Payout status enum
+ */
+export enum PayoutStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  REJECTED = 'REJECTED',
+}

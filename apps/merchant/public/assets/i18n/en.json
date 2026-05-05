@@ -1,0 +1,66 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "close": "Close"
+  },
+  "auth": {
+    "loginTitle": "Login",
+    "email": "Email",
+    "password": "Password",
+    "loginButton": "Sign In",
+    "forgotPassword": "Forgot password?"
+  },
+  "shipments": {
+    "createTitle": "Create New Shipment",
+    "listTitle": "Shipments",
+    "trackingNumber": "Tracking Number",
+    "customerName": "Customer Name",
+    "customerPhone": "Phone Number",
+    "status": "Status",
+    "codAmount": "COD Amount",
+    "address": "Address",
+    "bulkUpload": "Bulk Upload"
+  },
+  "wallet": {
+    "title": "Wallet",
+    "availableBalance": "Available Balance",
+    "pendingBalance": "Pending Balance",
+    "transactions": "Transactions"
+  },
+  "payouts": {
+    "title": "Payouts",
+    "requestPayout": "Request Payout",
+    "status": "Status"
+  },
+  "dashboard": {
+    "title": "Merchant Dashboard",
+    "totalShipments": "Total Shipments",
+    "deliveryRate": "Delivery Rate",
+    "avgCod": "Avg COD",
+    "availableBalance": "Available Balance",
+    "pending": "Pending",
+    "failed": "Failed",
+    "recentActivity": "Recent Activity",
+    "quickActions": "Quick Actions",
+    "viewAll": "View All Shipments"
+  },
+  "tracking": {
+    "title": "Track Your Shipment",
+    "subtitle": "Enter your tracking number to get real-time updates",
+    "trackButton": "Track",
+    "shipmentTimeline": "Shipment Timeline",
+    "trackingPlaceholder": "Enter tracking number (e.g., TRK-123456)"
+  },
+  "courier": {
+    "tasks": "Tasks",
+    "offline": "Offline",
+    "syncNow": "Sync Now"
+  }
+}
