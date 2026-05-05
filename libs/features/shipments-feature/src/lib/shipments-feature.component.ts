@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-shipments-feature',
   standalone: true,
-  template: `<div class="shipments-feature"><h2>Shipments</h2><p>Shipments feature placeholder</p></div>`,
-  styles: [`:host { display: block; padding: 2rem; }`],
+  imports: [RouterOutlet],
+  template: `<router-outlet />`,
 })
 export class ShipmentsFeatureComponent {}
