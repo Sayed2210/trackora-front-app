@@ -10,7 +10,12 @@ export const appRoutes: Routes = [
       {
         path: 'tasks',
         loadComponent: () =>
-          import('@trackora/courier-tasks-feature').then((m) => m.CourierTasksFeatureComponent),
+          import('./pages/courier-task-list-page.component').then((m) => m.CourierTaskListPageComponent),
+      },
+      {
+        path: 'tasks/:id',
+        loadComponent: () =>
+          import('./pages/courier-task-detail-page.component').then((m) => m.CourierTaskDetailPageComponent),
       },
     ],
   },
