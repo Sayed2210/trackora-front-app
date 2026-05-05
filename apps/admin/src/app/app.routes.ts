@@ -29,6 +29,27 @@ export const appRoutes: Routes = [
         loadComponent: () =>
           import('@trackora/analytics-feature').then((m) => m.AnalyticsFeatureComponent),
       },
+      {
+        path: 'couriers',
+        loadComponent: () =>
+          import('./pages/courier-management/courier-management-page.component').then(
+            (m) => m.CourierManagementPageComponent
+          ),
+      },
+      {
+        path: 'merchants',
+        loadComponent: () =>
+          import('./pages/merchant-management/merchant-management-page.component').then(
+            (m) => m.MerchantManagementPageComponent
+          ),
+      },
+      {
+        path: 'payouts',
+        loadComponent: () =>
+          import('./pages/payout-approval/payout-approval-page.component').then(
+            (m) => m.PayoutApprovalPageComponent
+          ),
+      },
     ],
   },
   {
