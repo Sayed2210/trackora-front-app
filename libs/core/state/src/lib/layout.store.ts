@@ -1,4 +1,4 @@
-import { createFeature, createReducer, on } from '@ngrx/store';
+import { createFeature, createReducer, createAction, props, on } from '@ngrx/store';
 
 export interface LayoutState {
   sidebarOpen: boolean;
@@ -14,22 +14,19 @@ const initialState: LayoutState = {
   direction: 'rtl',
 };
 
+export const toggleSidebar = createAction('[Layout] Toggle Sidebar');
+export const setLanguage = createAction('[Layout] Set Language', props<{ language: 'en' | 'ar' }>());
+
 export const layoutFeature = createFeature({
   name: 'layout',
   reducer: createReducer(
     initialState,
-    on(
-      { type: '[Layout] Toggle Sidebar' },
-      (state) => ({ ...state, sidebarOpen: !state.sidebarOpen })
-    ),
-    on(
-      { type: '[Layout] Set Language', language: 'ar' as 'en' | 'ar' },
-      (state, { language }) => ({
-        ...state,
-        language,
-        direction: language === 'ar' ? 'rtl' : 'ltr',
-      })
-    )
+    on(toggleSidebar, (state) => ({ ...state, sidebarOpen: !state.sidebarOpen })),
+    on(setLanguage, (state, { language }) => ({
+      ...state,
+      language,
+      direction: language === 'ar' ? 'rtl' : 'ltr',
+    }))
   ),
 });
 

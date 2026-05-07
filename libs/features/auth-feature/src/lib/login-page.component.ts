@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -17,8 +17,8 @@ import { LanguageService } from '@trackora/core/config';
         <h1>{{ 'auth.loginTitle' | translate }}</h1>
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           <div class="field">
-            <label>{{ 'auth.email' | translate }}</label>
-            <input type="email" formControlName="email" class="p-inputtext" />
+            <label>{{ 'auth.phone' | translate }}</label>
+            <input type="tel" formControlName="phone" class="p-inputtext" placeholder="01xxxxxxxxx" />
           </div>
           <div class="field">
             <label>{{ 'auth.password' | translate }}</label>
@@ -70,27 +70,27 @@ export class LoginPageComponent {
   private readonly router = inject(Router);
   readonly languageService = inject(LanguageService);
 
-  loading = false;
-  error = '';
+  readonly loading = signal(false);
+  readonly error = signal('');
 
   loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    phone: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   onSubmit(): void {
     if (this.loginForm.invalid) return;
-    this.loading = true;
-    this.error = '';
-    const { email, password } = this.loginForm.value;
-    this.authRepo.login({ email: email!, password: password! }).subscribe({
+    this.loading.set(true);
+    this.error.set('');
+    const { phone, password } = this.loginForm.value;
+    this.authRepo.login({ phone: phone!, password: password! }).subscribe({
       next: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.loading = false;
-        this.error = err.message || 'Login failed';
+        this.loading.set(false);
+        this.error.set(err.message || 'Login failed');
       },
     });
   }

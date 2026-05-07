@@ -38,6 +38,18 @@ export interface Shipment {
   estimatedDelivery?: string;
 }
 
+export interface ShipmentFilters {
+  page?: number;
+  limit?: number;
+  status?: ShipmentStatus;
+  type?: ShipmentType;
+  search?: string;
+  fromDate?: string;
+  toDate?: string;
+  merchantId?: string;
+  courierId?: string;
+}
+
 export interface TimelineEvent {
   id: string;
   shipmentId: string;

@@ -2,8 +2,8 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { courierDb, CashLogEntry } from '../../services/offline-store.service';
-import { OfflineSyncService } from '../../services/offline-sync.service';
+import { courierDb, CashLogEntry } from '../services/offline-store.service';
+import { OfflineSyncService } from '../services/offline-sync.service';
 
 @Component({
   selector: 'app-cash-deposit-page',
@@ -26,7 +26,7 @@ import { OfflineSyncService } from '../../services/offline-sync.service';
           <input
             type="number"
             [value]="depositAmount()"
-            (input)="depositAmount.set(+($any($event.target).value)"
+            (input)="depositAmount.set(+($any($event.target).value))"
             placeholder="Enter amount"
           />
         </div>
@@ -34,7 +34,7 @@ import { OfflineSyncService } from '../../services/offline-sync.service';
           <label>Notes</label>
           <textarea
             [value]="depositNotes()"
-            (input)="depositNotes.set(($any($event.target).value)"
+            (input)="depositNotes.set(($any($event.target).value))"
             placeholder="Optional notes..."
             rows="2"
           ></textarea>

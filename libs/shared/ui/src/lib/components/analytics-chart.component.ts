@@ -1,7 +1,6 @@
 import { Component, AfterViewInit, Input, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Chart, ChartConfiguration } from 'chart.js';
-import { auto } from 'chart.js/auto';
+import { Chart, ChartConfiguration } from 'chart.js/auto';
 
 @Component({
   selector: 'app-analytics-chart',

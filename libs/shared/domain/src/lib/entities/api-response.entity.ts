@@ -9,6 +9,8 @@ export interface FieldError {
   message: string;
 }
 
+import { PaginationMeta, CursorMeta } from './pagination.entity';
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;

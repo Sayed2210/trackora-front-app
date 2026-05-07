@@ -31,9 +31,9 @@ interface AuditLogEntry {
           type="text"
           placeholder="Search actor, action, or entity..."
           [value]="searchQuery()"
-          (input)="searchQuery.set(($any($event.target).value)"
+          (input)="searchQuery.set(($any($event.target).value))"
         />
-        <select [value]="actionFilter()" (change)="actionFilter.set(($any($event.target).value)">
+        <select [value]="actionFilter()" (change)="actionFilter.set(($any($event.target).value))">
           <option value="">All Actions</option>
           <option value="CREATE">Create</option>
           <option value="UPDATE">Update</option>
@@ -42,7 +42,7 @@ interface AuditLogEntry {
           <option value="REJECT">Reject</option>
           <option value="LOGIN">Login</option>
         </select>
-        <select [value]="entityFilter()" (change)="entityFilter.set(($any($event.target).value)">
+        <select [value]="entityFilter()" (change)="entityFilter.set(($any($event.target).value))">
           <option value="">All Entities</option>
           <option value="SHIPMENT">Shipment</option>
           <option value="USER">User</option>

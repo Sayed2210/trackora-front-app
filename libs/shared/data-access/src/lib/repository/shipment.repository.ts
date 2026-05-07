@@ -22,6 +22,15 @@ export class ShipmentRepository {
       .pipe(map(ShipmentMapper.toDomain));
   }
 
+  findByTrackingNumber(trackingNumber: string): Observable<Shipment> {
+    return this.api.get<ShipmentResponseDto>(`/shipments/tracking/${trackingNumber}`)
+      .pipe(map(ShipmentMapper.toDomain));
+  }
+
+  getTimeline(id: string): Observable<any> {
+    return this.api.get<any>(`/shipments/${id}/timeline`);
+  }
+
   create(dto: CreateShipmentDto): Observable<Shipment> {
     return this.api.post<ShipmentResponseDto>('/shipments', dto)
       .pipe(map(ShipmentMapper.toDomain));
@@ -39,8 +48,12 @@ export class ShipmentRepository {
     if (query.status) params['status'] = query.status;
     if (query.type) params['type'] = query.type;
     if (query.search) params['search'] = query.search;
-    if (query.fromDate) params['fromDate'] = query.fromDate;
-    if (query.toDate) params['toDate'] = query.toDate;
+    if (query.trackingNumber) params['trackingNumber'] = query.trackingNumber;
+    if (query.merchantId) params['merchantId'] = query.merchantId;
+    if (query.courierId) params['courierId'] = query.courierId;
+    if (query.zoneId) params['zoneId'] = query.zoneId;
+    if (query.from) params['from'] = query.from;
+    if (query.to) params['to'] = query.to;
     return params;
   }
 }

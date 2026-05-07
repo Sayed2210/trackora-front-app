@@ -2,10 +2,8 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { ShipmentRepository } from '@trackora/shared/data-access';
-import { WalletRepository } from '@trackora/shared/data-access';
+import { MerchantDashboardRepository } from '@trackora/shared/data-access';
 import { EgpCurrencyPipe, LocalDatePipe, AnalyticsChartComponent } from '@trackora/shared/ui';
-import { ShipmentStatus } from '@trackora/shared/domain';
 import { firstValueFrom } from 'rxjs';
 
 interface DashboardKpi {
@@ -158,8 +156,7 @@ interface ActivityEvent {
   `],
 })
 export class DashboardComponent implements OnInit {
-  private readonly shipmentRepo = inject(ShipmentRepository);
-  private readonly walletRepo = inject(WalletRepository);
+  private readonly dashboardRepo = inject(MerchantDashboardRepository);
 
   readonly kpis = signal<DashboardKpi[]>([]);
   readonly activities = signal<ActivityEvent[]>([]);
@@ -173,107 +170,119 @@ export class DashboardComponent implements OnInit {
   }
 
   private async loadDashboardData(): Promise<void> {
+    // TODO: replace with real merchant id from auth context
+    const merchantId = 'current';
+
     try {
-      const [shipmentsResult, wallet] = await Promise.all([
-        firstValueFrom(this.shipmentRepo.findAll({ page: 1, limit: 5 })),
-        firstValueFrom(this.walletRepo.getWallet()),
+      const [dashboard, analytics] = await Promise.all([
+        firstValueFrom(this.dashboardRepo.getDashboard(merchantId)),
+        firstValueFrom(this.dashboardRepo.getAnalytics(merchantId, 30)),
       ]);
 
-      const shipments = shipmentsResult.data;
-      const totalShipments = shipmentsResult.meta?.totalItems || shipments.length;
-      const delivered = shipments.filter((s) => s.status === ShipmentStatus.DELIVERED).length;
-      const failed = shipments.filter((s) => s.status === ShipmentStatus.FAILED).length;
-      const pending = shipments.filter((s) => s.status === ShipmentStatus.PENDING).length;
-      const avgCod = shipments.filter((s) => s.codAmount).reduce((sum, s) => sum + (s.codAmount || 0), 0) / Math.max(shipments.filter((s) => s.codAmount).length, 1);
-      const deliveryRate = totalShipments > 0 ? Math.round((delivered / totalShipments) * 100) : 0;
-
-      this.kpis.set([
-        { label: 'Total Shipments', value: totalShipments, icon: '📦', color: '#3B82F6', trend: '+12% this week' },
-        { label: 'Delivery Rate', value: deliveryRate + '%', icon: '✅', color: '#10B981', trend: `${delivered} delivered` },
-        { label: 'Avg COD', value: avgCod.toFixed(0) + ' EGP', icon: '💰', color: '#F59E0B' },
-        { label: 'Available Balance', value: wallet.availableBalance.toFixed(0) + ' EGP', icon: '👛', color: '#8B5CF6' },
-        { label: 'Pending', value: pending, icon: '⏳', color: '#EF4444' },
-        { label: 'Failed', value: failed, icon: '⚠️', color: '#6B7280' },
-      ]);
-
-      this.activities.set(
-        shipments.slice(0, 5).map((s) => ({
-          id: s.id,
-          type: s.status === ShipmentStatus.RETURNED ? 'return' : s.status === ShipmentStatus.DELIVERED ? 'delivery' : 'shipment',
-          title: `${s.trackingNumber}`,
-          description: `${s.customerName} — ${s.address.city}, ${s.address.governorate}`,
-          timestamp: s.updatedAt,
-          status: s.status,
-        }))
-      );
-
-      // Analytics charts data
-      this.chartLabels.set(['Week 1', 'Week 2', 'Week 3', 'Week 4']);
-      this.shipmentTrendDatasets.set([
-        { label: 'Delivered', data: [25, 32, 28, 40], borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.2)' },
-        { label: 'Failed', data: [3, 5, 2, 4], borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.2)' },
-        { label: 'Pending', data: [12, 8, 15, 10], borderColor: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.2)' },
-      ]);
-      this.statusLabels.set(['Delivered', 'Pending', 'Failed', 'Returned']);
-      this.statusDatasets.set([
-        {
-          label: 'Shipments',
-          data: [delivered, pending, failed, shipments.filter((s) => s.status === ShipmentStatus.RETURNED).length],
-          backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#9CA3AF'],
-        },
-      ]);
-    } catch (err) {
-      // Fallback mock data if API fails
-      this.kpis.set([
-        { label: 'Total Shipments', value: 124, icon: '📦', color: '#3B82F6', trend: '+12% this week' },
-        { label: 'Delivery Rate', value: '87%', icon: '✅', color: '#10B981', trend: '108 delivered' },
-        { label: 'Avg COD', value: '156 EGP', icon: '💰', color: '#F59E0B' },
-        { label: 'Available Balance', value: '12,450 EGP', icon: '👛', color: '#8B5CF6' },
-        { label: 'Pending', value: 8, icon: '⏳', color: '#EF4444' },
-        { label: 'Failed', value: 3, icon: '⚠️', color: '#6B7280' },
-      ]);
-
-      this.activities.set([
-        {
-          id: '1',
-          type: 'delivery',
-          title: 'TRK-001234',
-          description: 'Ahmed Mohamed — Nasr City, Cairo',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          status: 'DELIVERED',
-        },
-        {
-          id: '2',
-          type: 'shipment',
-          title: 'TRK-001235',
-          description: 'Sara Ali — Maadi, Cairo',
-          timestamp: new Date(Date.now() - 7200000).toISOString(),
-          status: 'OUT_FOR_DELIVERY',
-        },
-        {
-          id: '3',
-          type: 'return',
-          title: 'TRK-001230',
-          description: 'Omar Hassan — Alexandria',
-          timestamp: new Date(Date.now() - 86400000).toISOString(),
-          status: 'RETURNED',
-        },
-      ]);
-
-      this.chartLabels.set(['Week 1', 'Week 2', 'Week 3', 'Week 4']);
-      this.shipmentTrendDatasets.set([
-        { label: 'Delivered', data: [25, 32, 28, 40], borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.2)' },
-        { label: 'Failed', data: [3, 5, 2, 4], borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.2)' },
-        { label: 'Pending', data: [12, 8, 15, 10], borderColor: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.2)' },
-      ]);
-      this.statusLabels.set(['Delivered', 'Pending', 'Failed', 'Returned']);
-      this.statusDatasets.set([
-        {
-          label: 'Shipments',
-          data: [108, 8, 3, 5],
-          backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#9CA3AF'],
-        },
-      ]);
+      this.setKpis(dashboard);
+      this.setActivities(dashboard);
+      this.setCharts(dashboard, analytics);
+    } catch {
+      this.clearDashboard();
     }
+  }
+
+  private setKpis(data: any): void {
+    const kpiConfig: Record<string, { icon: string; color: string }> = {
+      totalShipments: { icon: '📦', color: '#3B82F6' },
+      deliveryRate: { icon: '✅', color: '#10B981' },
+      avgCod: { icon: '💰', color: '#F59E0B' },
+      availableBalance: { icon: '👛', color: '#8B5CF6' },
+      pending: { icon: '⏳', color: '#EF4444' },
+      failed: { icon: '⚠️', color: '#6B7280' },
+    };
+
+    const labelMap: Record<string, string> = {
+      totalShipments: 'Total Shipments',
+      deliveryRate: 'Delivery Rate',
+      avgCod: 'Avg COD',
+      availableBalance: 'Available Balance',
+      pending: 'Pending',
+      failed: 'Failed',
+    };
+
+    const builtKpis: DashboardKpi[] = [];
+
+    for (const [key, config] of Object.entries(kpiConfig)) {
+      const raw = data?.[key];
+      if (raw === undefined || raw === null) continue;
+
+      const value = key === 'deliveryRate' || key === 'avgCod'
+        ? `${raw}${key === 'deliveryRate' ? '%' : ' EGP'}`
+        : raw;
+
+      builtKpis.push({
+        label: labelMap[key],
+        value,
+        icon: config.icon,
+        color: config.color,
+        trend: data?.trends?.[key],
+      });
+    }
+
+    this.kpis.set(builtKpis);
+  }
+
+  private setActivities(data: any): void {
+    const rawActivities = data?.recentActivity ?? data?.activities ?? [];
+    if (!Array.isArray(rawActivities)) {
+      this.activities.set([]);
+      return;
+    }
+
+    this.activities.set(
+      rawActivities.map((a: any) => ({
+        id: a.id ?? crypto.randomUUID(),
+        type: a.type ?? 'shipment',
+        title: a.title ?? a.trackingNumber ?? 'Activity',
+        description: a.description ?? a.message ?? '',
+        timestamp: a.timestamp ?? a.createdAt ?? new Date().toISOString(),
+        status: a.status,
+      }))
+    );
+  }
+
+  private setCharts(dashboard: any, analytics: any): void {
+    const trends = analytics?.trends ?? dashboard?.trends;
+    if (Array.isArray(trends) && trends.length > 0) {
+      this.chartLabels.set(trends.map((t: any) => t.label ?? t.period ?? ''));
+      const datasets = [
+        { label: 'Delivered', data: trends.map((t: any) => t.delivered ?? 0), borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.2)' },
+        { label: 'Failed', data: trends.map((t: any) => t.failed ?? 0), borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.2)' },
+        { label: 'Pending', data: trends.map((t: any) => t.pending ?? 0), borderColor: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.2)' },
+      ];
+      this.shipmentTrendDatasets.set(datasets);
+    }
+
+    const statusBreakdown = dashboard?.statusBreakdown ?? analytics?.statusBreakdown;
+    if (statusBreakdown) {
+      const labels = ['Delivered', 'Pending', 'Failed', 'Returned'];
+      const data = [
+        statusBreakdown.delivered ?? 0,
+        statusBreakdown.pending ?? 0,
+        statusBreakdown.failed ?? 0,
+        statusBreakdown.returned ?? 0,
+      ];
+      this.statusLabels.set(labels);
+      this.statusDatasets.set([{
+        label: 'Shipments',
+        data,
+        backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#9CA3AF'],
+      }]);
+    }
+  }
+
+  private clearDashboard(): void {
+    this.kpis.set([]);
+    this.activities.set([]);
+    this.chartLabels.set([]);
+    this.shipmentTrendDatasets.set([]);
+    this.statusLabels.set([]);
+    this.statusDatasets.set([]);
   }
 }

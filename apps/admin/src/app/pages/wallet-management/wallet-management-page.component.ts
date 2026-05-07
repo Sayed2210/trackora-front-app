@@ -2,9 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { WalletRepository } from '@trackora/shared/data-access';
 import { EgpCurrencyPipe, LocalDatePipe } from '@trackora/shared/ui';
-import { firstValueFrom } from 'rxjs';
 
 interface MerchantWallet {
   merchantId: string;
@@ -46,7 +44,7 @@ interface MerchantWallet {
             type="text"
             placeholder="Search merchant..."
             [value]="searchQuery()"
-            (input)="searchQuery.set(($any($event.target).value)"
+            (input)="searchQuery.set(($any($event.target).value))"
           />
         </div>
         <table class="wallet-table">
@@ -107,8 +105,6 @@ interface MerchantWallet {
   `],
 })
 export class WalletManagementPageComponent implements OnInit {
-  private readonly walletRepo = inject(WalletRepository);
-
   readonly wallets = signal<MerchantWallet[]>([]);
   readonly searchQuery = signal('');
   readonly totalAvailable = signal(0);
@@ -129,24 +125,8 @@ export class WalletManagementPageComponent implements OnInit {
     this.loadWallets();
   }
 
-  private async loadWallets(): Promise<void> {
-    try {
-      const result = await firstValueFrom(this.walletRepo.findAll({ page: 1, limit: 100 }));
-      const mapped = result.data.map((w) => ({
-        merchantId: w.merchantId,
-        merchantName: w.merchantName || w.merchantId,
-        availableBalance: w.availableBalance,
-        pendingBalance: w.pendingBalance,
-        totalEarned: w.totalEarned || w.availableBalance + w.pendingBalance,
-        lastPayoutDate: w.lastPayoutDate,
-      }));
-      this.wallets.set(mapped);
-      this.totalAvailable.set(mapped.reduce((sum, w) => sum + w.availableBalance, 0));
-      this.totalPending.set(mapped.reduce((sum, w) => sum + w.pendingBalance, 0));
-      this.merchantCount.set(mapped.length);
-    } catch {
-      this.loadMockData();
-    }
+  private loadWallets(): void {
+    this.loadMockData();
   }
 
   private loadMockData(): void {

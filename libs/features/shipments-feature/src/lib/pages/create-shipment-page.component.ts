@@ -50,6 +50,14 @@ import { isValidEgyptianPhone } from '@trackora/shared/utils';
           <label>Building</label>
           <input formControlName="building" />
         </div>
+        <div class="field">
+          <label>Address Text</label>
+          <input formControlName="addressText" placeholder="Full address description" />
+        </div>
+        <div class="field">
+          <label>Product Description</label>
+          <input formControlName="productDescription" />
+        </div>
         <button type="submit" class="p-button p-button-primary" [disabled]="form.invalid">{{ 'common.save' | translate }}</button>
       </form>
     </div>
@@ -79,6 +87,8 @@ export class CreateShipmentPageComponent {
     city: ['', Validators.required],
     street: ['', Validators.required],
     building: ['', Validators.required],
+    addressText: ['', Validators.required],
+    productDescription: ['', Validators.required],
   });
 
   onSubmit(): void {
@@ -89,13 +99,14 @@ export class CreateShipmentPageComponent {
       customerPhone: val.customerPhone!,
       type: val.type as ShipmentType,
       codAmount: val.codAmount || undefined,
-      deliveryFee: 0,
       address: {
         governorate: val.governorate!,
         city: val.city!,
         street: val.street!,
         building: val.building!,
       },
+      addressText: val.addressText!,
+      productDescription: val.productDescription!,
     }).subscribe({
       next: () => this.router.navigate(['/shipments']),
     });

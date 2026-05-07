@@ -16,36 +16,36 @@ export class ApiClientError extends Error {
 
 @Injectable({ providedIn: 'root' })
 export class ApiClient {
-  private readonly baseUrl = '/api/v1';
+  private readonly baseUrl = 'http://localhost:3000/v1';
   private readonly pendingRequests = new Map<string, AbortController>();
 
   constructor(private readonly http: HttpClient) {}
 
-  get<T>(path: string, params?: HttpParams): Observable<T> {
+  get<T>(path: string, params?: any): Observable<T> {
     return this.request<T>('GET', path, undefined, params);
   }
 
-  post<T>(path: string, body: unknown): Observable<T> {
-    return this.request<T>('POST', path, body);
+  post<T>(path: string, body: unknown, params?: any): Observable<T> {
+    return this.request<T>('POST', path, body, params);
   }
 
-  patch<T>(path: string, body: unknown): Observable<T> {
-    return this.request<T>('PATCH', path, body);
+  patch<T>(path: string, body: unknown, params?: any): Observable<T> {
+    return this.request<T>('PATCH', path, body, params);
   }
 
-  put<T>(path: string, body: unknown): Observable<T> {
-    return this.request<T>('PUT', path, body);
+  put<T>(path: string, body: unknown, params?: any): Observable<T> {
+    return this.request<T>('PUT', path, body, params);
   }
 
-  delete<T>(path: string): Observable<T> {
-    return this.request<T>('DELETE', path);
+  delete<T>(path: string, params?: any): Observable<T> {
+    return this.request<T>('DELETE', path, undefined, params);
   }
 
   private request<T>(
     method: string,
     path: string,
     body?: unknown,
-    params?: HttpParams
+    params?: any
   ): Observable<T> {
     const url = `${this.baseUrl}${path}`;
     const requestKey = `${method}:${url}:${JSON.stringify(body)}`;
@@ -71,7 +71,7 @@ export class ApiClient {
 
   private unwrap<T>(res: ApiResponse<T>): T {
     if (!res.success) {
-      throw ApiClientError.fromResponse(res.error!);
+      throw new ApiClientError(res.error!, 0);
     }
     return res.data;
   }

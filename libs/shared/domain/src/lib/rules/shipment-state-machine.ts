@@ -9,10 +9,14 @@ export class ShipmentStateMachine {
     ShipmentStatus[]
   > = {
     [ShipmentStatus.PENDING]: [
-      ShipmentStatus.CONFIRMED,
+      ShipmentStatus.PICKED_UP,
       ShipmentStatus.CANCELLED,
     ],
-    [ShipmentStatus.CONFIRMED]: [
+    [ShipmentStatus.PICKED_UP]: [
+      ShipmentStatus.IN_WAREHOUSE,
+      ShipmentStatus.CANCELLED,
+    ],
+    [ShipmentStatus.IN_WAREHOUSE]: [
       ShipmentStatus.OUT_FOR_DELIVERY,
       ShipmentStatus.CANCELLED,
     ],

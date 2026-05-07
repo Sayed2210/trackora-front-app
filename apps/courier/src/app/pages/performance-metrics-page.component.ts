@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { courierDb, CachedTask } from '../../services/offline-store.service';
+import { courierDb, CachedTask } from '../services/offline-store.service';
 
 interface DailyMetric {
   date: string;
