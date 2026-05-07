@@ -21,8 +21,6 @@
           }
         ],
         "styles": [
-          "node_modules/primeng/resources/themes/lara-light-blue/theme.css",
-          "node_modules/primeng/resources/primeng.css",
           "node_modules/primeicons/primeicons.css",
           "node_modules/primeflex/primeflex.css",
           "libs/shared/ui/src/lib/styles/trackora-theme.scss",
@@ -61,7 +59,8 @@
           "buildTarget": "merchant:build:production"
         },
         "development": {
-          "buildTarget": "merchant:build:development"
+          "buildTarget": "merchant:build:development",
+          "proxyConfig": "apps/merchant/proxy.conf.json"
         }
       },
       "defaultConfiguration": "development"

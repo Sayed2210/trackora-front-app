@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ShipmentRepository } from '@trackora/shared/data-access';
-import { Shipment, ShipmentStatus } from '@trackora/shared/domain';
+import { Shipment, ShipmentStatus, ShipmentType } from '@trackora/shared/domain';
 import { firstValueFrom } from 'rxjs';
 
 interface Courier {
@@ -34,11 +34,11 @@ interface Courier {
           <div class="panel-header">
             <h3>Unassigned Shipments</h3>
             <div class="panel-filters">
-              <select [value]="zoneFilter()" (change)="zoneFilter.set(($any($event.target).value)">
+              <select [value]="zoneFilter()" (change)="zoneFilter.set(($any($event.target).value))">
                 <option value="">All Zones</option>
                 <option *ngFor="let z of zones()" [value]="z">{{ z }}</option>
               </select>
-              <select [value]="riskFilter()" (change)="riskFilter.set(($any($event.target).value)">
+              <select [value]="riskFilter()" (change)="riskFilter.set(($any($event.target).value))">
                 <option value="">All Risk</option>
                 <option value="high">High COD</option>
                 <option value="medium">Medium COD</option>
@@ -246,28 +246,28 @@ export class AssignmentsFeatureComponent implements OnInit {
         id: 's1', trackingNumber: 'TRK-3001', merchantId: 'm1', merchantName: 'Shop A',
         customerName: 'Fatima Zahra', customerPhone: '01001112222',
         address: { id: 'a1', street: '10th St', building: '5', governorate: 'Cairo', city: 'Nasr City', zone: 'Nasr City' },
-        status: ShipmentStatus.PENDING, type: 'STANDARD', codAmount: 750, deliveryFee: 25,
+        status: ShipmentStatus.PENDING, type: ShipmentType.COD, codAmount: 750, deliveryFee: 25,
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       },
       {
         id: 's2', trackingNumber: 'TRK-3002', merchantId: 'm2', merchantName: 'Shop B',
         customerName: 'Hassan Moustafa', customerPhone: '01002223333',
         address: { id: 'a2', street: 'Road 9', building: '12', governorate: 'Cairo', city: 'Maadi', zone: 'Maadi' },
-        status: ShipmentStatus.PENDING, type: 'STANDARD', codAmount: 120, deliveryFee: 25,
+        status: ShipmentStatus.PENDING, type: ShipmentType.COD, codAmount: 120, deliveryFee: 25,
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       },
       {
         id: 's3', trackingNumber: 'TRK-3003', merchantId: 'm1', merchantName: 'Shop A',
         customerName: 'Nourhan Samy', customerPhone: '01003334444',
         address: { id: 'a3', street: 'Sphinx Square', building: '3', governorate: 'Cairo', city: 'Heliopolis', zone: 'Heliopolis' },
-        status: ShipmentStatus.PENDING, type: 'EXPRESS', codAmount: 0, deliveryFee: 35,
+        status: ShipmentStatus.PENDING, type: ShipmentType.PREPAID, codAmount: 0, deliveryFee: 35,
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       },
       {
         id: 's4', trackingNumber: 'TRK-3004', merchantId: 'm3', merchantName: 'Shop C',
         customerName: 'Tarek El-Sayed', customerPhone: '01004445555',
         address: { id: 'a4', street: 'Tahrir St', building: '1', governorate: 'Cairo', city: 'Downtown', zone: 'Downtown' },
-        status: ShipmentStatus.PENDING, type: 'STANDARD', codAmount: 320, deliveryFee: 25,
+        status: ShipmentStatus.PENDING, type: ShipmentType.COD, codAmount: 320, deliveryFee: 25,
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       },
     ]);

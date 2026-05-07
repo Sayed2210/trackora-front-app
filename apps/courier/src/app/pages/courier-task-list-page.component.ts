@@ -2,8 +2,8 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { courierDb, CachedTask } from '../../services/offline-store.service';
-import { OfflineSyncService } from '../../services/offline-sync.service';
+import { courierDb, CachedTask } from '../services/offline-store.service';
+import { OfflineSyncService } from '../services/offline-sync.service';
 
 @Component({
   selector: 'app-courier-task-list-page',

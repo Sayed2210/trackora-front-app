@@ -1,4 +1,4 @@
-import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
+import { createFeature, createReducer, createSelector, createAction, props, on } from '@ngrx/store';
 import { Permission } from '@trackora/shared/domain';
 
 export interface PermissionsState {
@@ -9,14 +9,13 @@ const initialState: PermissionsState = {
   permissions: [],
 };
 
+export const setPermissions = createAction('[Permissions] Set', props<{ permissions: Permission[] }>());
+
 export const permissionsFeature = createFeature({
   name: 'permissions',
   reducer: createReducer(
     initialState,
-    on(
-      { type: '[Permissions] Set', permissions: [] as Permission[] },
-      (state, { permissions }) => ({ ...state, permissions })
-    )
+    on(setPermissions, (state, { permissions }) => ({ ...state, permissions }))
   ),
 });
 

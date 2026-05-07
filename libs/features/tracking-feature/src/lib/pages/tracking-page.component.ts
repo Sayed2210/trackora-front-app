@@ -234,12 +234,12 @@ export class TrackingPageComponent implements OnInit {
       {
         id: 'evt-002',
         shipmentId: 'ship-001',
-        status: ShipmentStatus.CONFIRMED,
+        status: ShipmentStatus.IN_WAREHOUSE,
         timestamp: new Date(now - 86400000 * 1.5).toISOString(),
         actorId: 'admin-001',
         actorName: 'System',
         actorRole: 'ADMIN',
-        notes: 'Shipment confirmed and ready for pickup',
+        notes: 'Shipment received at warehouse',
       },
       {
         id: 'evt-003',

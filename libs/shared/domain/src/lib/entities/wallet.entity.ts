@@ -3,10 +3,13 @@ import { TransactionType } from '../enums/transaction-type.enum';
 export interface Wallet {
   id: string;
   merchantId: string;
+  merchantName?: string;
   availableBalance: number;
   pendingBalance: number;
   totalCredited: number;
   totalDebited: number;
+  totalEarned?: number;
+  lastPayoutDate?: string;
   currency: string;
   updatedAt: string;
 }

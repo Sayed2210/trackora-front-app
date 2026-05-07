@@ -5,9 +5,8 @@ import {
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideStore } from '@ngrx/store';
-import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
-import { HttpClient } from '@angular/common/http';
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { appRoutes } from './app.routes';
 import {
   authInterceptor,
@@ -15,14 +14,7 @@ import {
   errorInterceptor,
   retryInterceptor,
 } from '@trackora/core/api';
-import { authFeature } from '@trackora/core/state';
-import { layoutFeature } from '@trackora/core/state';
-import { notificationsFeature } from '@trackora/core/state';
-import { permissionsFeature } from '@trackora/core/state';
-
-export function HttpLoaderFactory(http: HttpClient) {
-  return new TranslateHttpLoader(http, '/assets/i18n/', '.json');
-}
+import { authFeature, layoutFeature, notificationsFeature, permissionsFeature } from '@trackora/core/state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -42,12 +34,7 @@ export const appConfig: ApplicationConfig = {
       notifications: notificationsFeature.reducer,
       permissions: permissionsFeature.reducer,
     }),
-    provideTranslateService({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: HttpLoaderFactory,
-        deps: [HttpClient],
-      },
-    }),
+    provideTranslateService(),
+    ...provideTranslateHttpLoader({ prefix: '/assets/i18n/', suffix: '.json' }),
   ],
 };

@@ -24,9 +24,9 @@ interface ReportTemplate {
 
       <div class="date-range">
         <label>From</label>
-        <input type="date" [value]="fromDate()" (change)="fromDate.set(($any($event.target).value)" />
+        <input type="date" [value]="fromDate()" (change)="fromDate.set(($any($event.target).value))" />
         <label>To</label>
-        <input type="date" [value]="toDate()" (change)="toDate.set(($any($event.target).value)" />
+        <input type="date" [value]="toDate()" (change)="toDate.set(($any($event.target).value))" />
       </div>
 
       <div class="reports-grid">

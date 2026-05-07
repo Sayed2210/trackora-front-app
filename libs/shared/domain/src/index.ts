@@ -1,7 +1,6 @@
 export * from './lib/enums/shipment-status.enum';
 export * from './lib/enums/transaction-type.enum';
 export * from './lib/enums/user-role.enum';
-export * from './lib/entities/address.entity';
 export * from './lib/entities/shipment.entity';
 export * from './lib/entities/user.entity';
 export * from './lib/entities/wallet.entity';

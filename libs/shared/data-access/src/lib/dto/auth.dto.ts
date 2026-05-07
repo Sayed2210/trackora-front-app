@@ -1,8 +1,15 @@
 import { UserRole, Permission } from '@trackora/shared/domain';
 
 export interface LoginRequestDto {
-  email: string;
+  phone: string;
   password: string;
+}
+
+export interface RegisterRequestDto {
+  phone: string;
+  password: string;
+  name: string;
+  role: string;
 }
 
 export interface LoginResponseDto {
@@ -10,7 +17,7 @@ export interface LoginResponseDto {
   refreshToken: string;
   user: {
     id: string;
-    email: string;
+    email?: string;
     name: string;
     phone: string;
     roles: UserRole[];

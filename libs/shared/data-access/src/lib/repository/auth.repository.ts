@@ -43,4 +43,16 @@ export class AuthRepository {
       map((res) => res.accessToken)
     );
   }
+
+  register(dto: any): Observable<any> {
+    return this.api.post('/auth/register', dto);
+  }
+
+  sendOtp(): Observable<any> {
+    return this.api.post('/auth/otp/send', {});
+  }
+
+  verifyOtp(): Observable<any> {
+    return this.api.post('/auth/otp/verify', {});
+  }
 }

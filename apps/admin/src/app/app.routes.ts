@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '@trackora/core/auth';
 
 export const appRoutes: Routes = [
   {
     path: '',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/admin-layout.component').then((m) => m.AdminLayoutComponent),
     children: [
@@ -16,8 +18,8 @@ export const appRoutes: Routes = [
       },
       {
         path: 'shipments',
-        loadComponent: () =>
-          import('@trackora/shipments-feature').then((m) => m.ShipmentsFeatureComponent),
+        loadChildren: () =>
+          import('@trackora/shipments-feature').then((m) => m.shipmentsRoutes),
       },
       {
         path: 'assignments',

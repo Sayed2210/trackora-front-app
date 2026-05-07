@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { courierDb, CachedTask } from '../../services/offline-store.service';
-import { OfflineSyncService } from '../../services/offline-sync.service';
+import { courierDb, CachedTask } from '../services/offline-store.service';
+import { OfflineSyncService } from '../services/offline-sync.service';
 
 @Component({
   selector: 'app-courier-task-detail-page',
@@ -280,7 +280,7 @@ export class CourierTaskDetailPageComponent implements OnInit {
   captureGps(): void {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        this.gpsCoords.set(`${position.coords.lat}, ${position.coords.lng}`);
+        this.gpsCoords.set(`${position.coords.latitude}, ${position.coords.longitude}`);
         this.gpsCaptured.set(true);
       },
       () => {
