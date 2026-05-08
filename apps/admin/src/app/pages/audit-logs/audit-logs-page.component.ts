@@ -1,6 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LocalDatePipe } from '@trackora/shared/ui';
 
@@ -19,7 +18,7 @@ interface AuditLogEntry {
 @Component({
   selector: 'app-audit-logs-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, LocalDatePipe],
+  imports: [CommonModule, TranslateModule, LocalDatePipe],
   template: `
     <div class="audit-logs-page">
       <div class="page-header">

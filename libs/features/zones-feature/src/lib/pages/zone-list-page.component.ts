@@ -1,6 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ZoneFacade } from '../facade/zone.facade';
 import { LoadingSpinnerComponent } from '@trackora/shared/ui';
@@ -9,7 +8,7 @@ import { ZoneLevelLabels } from '@trackora/shared/domain';
 @Component({
   selector: 'app-zone-list-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, LoadingSpinnerComponent],
+  imports: [CommonModule, TranslateModule, LoadingSpinnerComponent],
   providers: [ZoneFacade],
   template: `
     <div class="zone-list">

@@ -1,6 +1,5 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 interface Courier {
@@ -19,7 +18,7 @@ interface Courier {
 @Component({
   selector: 'app-courier-management-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="courier-management">
       <div class="page-header">

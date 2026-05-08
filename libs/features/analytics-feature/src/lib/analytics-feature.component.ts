@@ -1,6 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ShipmentRepository, WalletRepository } from '@trackora/shared/data-access';
 import { AnalyticsChartComponent, EgpCurrencyPipe } from '@trackora/shared/ui';
@@ -9,7 +8,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-analytics-feature',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, AnalyticsChartComponent, EgpCurrencyPipe],
+  imports: [CommonModule, TranslateModule, AnalyticsChartComponent, EgpCurrencyPipe],
   template: `
     <div class="analytics-page">
       <div class="page-header">

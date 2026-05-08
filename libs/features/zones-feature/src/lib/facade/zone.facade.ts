@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Zone, ZoneQueryDto } from '@trackora/shared/domain';
-import { ZoneRepository } from '@trackora/shared/data-access';
+import { Zone } from '@trackora/shared/domain';
+import { ZoneRepository, ZoneQueryDto, UpdateZoneDto } from '@trackora/shared/data-access';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -71,7 +71,7 @@ export class ZoneFacade {
     }
   }
 
-  async updateZone(id: string, dto: Partial<Zone>): Promise<void> {
+  async updateZone(id: string, dto: UpdateZoneDto): Promise<void> {
     this._loading.set(true);
     this._error.set(null);
     try {

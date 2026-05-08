@@ -1,6 +1,5 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 interface ReportTemplate {
@@ -14,7 +13,7 @@ interface ReportTemplate {
 @Component({
   selector: 'app-reports-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="reports-page">
       <div class="page-header">

@@ -1,6 +1,5 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 interface PayoutRequest {
@@ -17,7 +16,7 @@ interface PayoutRequest {
 @Component({
   selector: 'app-payout-approval-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="payout-approval">
       <div class="page-header">
