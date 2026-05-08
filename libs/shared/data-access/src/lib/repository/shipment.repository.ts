@@ -3,6 +3,7 @@ import { Observable, map } from 'rxjs';
 import { ApiClient } from '@trackora/core/api';
 import { Shipment, PaginatedResult, PaginationMeta } from '@trackora/shared/domain';
 import { ShipmentResponseDto, ShipmentQueryDto, CreateShipmentDto, UpdateShipmentStatusDto } from '../dto/shipment.dto';
+import { BulkUploadResultDto } from '../dto/bulk-upload.dto';
 import { ShipmentMapper } from '../mapper/shipment.mapper';
 
 @Injectable({ providedIn: 'root' })
@@ -39,6 +40,12 @@ export class ShipmentRepository {
   updateStatus(id: string, dto: UpdateShipmentStatusDto): Observable<Shipment> {
     return this.api.patch<ShipmentResponseDto>(`/shipments/${id}/status`, dto)
       .pipe(map(ShipmentMapper.toDomain));
+  }
+
+  bulkUpload(file: File): Observable<BulkUploadResultDto> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.api.post<BulkUploadResultDto>('/shipments/bulk-upload', formData);
   }
 
   private toParams(query: ShipmentQueryDto): any {

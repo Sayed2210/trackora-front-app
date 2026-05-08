@@ -32,6 +32,11 @@ export const appRoutes: Routes = [
           import('@trackora/analytics-feature').then((m) => m.AnalyticsFeatureComponent),
       },
       {
+        path: 'zones',
+        loadChildren: () =>
+          import('@trackora/zones-feature').then((m) => m.zonesRoutes),
+      },
+      {
         path: 'couriers',
         loadComponent: () =>
           import('./pages/courier-management/courier-management-page.component').then(

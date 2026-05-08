@@ -1,11 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { ShipmentRepository } from '@trackora/shared/data-access';
-import { ShipmentType } from '@trackora/shared/domain';
+import { ShipmentRepository, ZoneRepository } from '@trackora/shared/data-access';
+import { ShipmentType, Zone } from '@trackora/shared/domain';
 import { isValidEgyptianPhone } from '@trackora/shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-create-shipment-page',
@@ -23,6 +24,10 @@ import { isValidEgyptianPhone } from '@trackora/shared/utils';
           <label>{{ 'shipments.customerPhone' | translate }}</label>
           <input formControlName="customerPhone" />
           <small *ngIf="form.get('customerPhone')?.invalid && form.get('customerPhone')?.touched">Invalid phone</small>
+        </div>
+        <div class="field">
+          <label>Secondary Phone</label>
+          <input formControlName="customerPhone2" />
         </div>
         <div class="field">
           <label>Type</label>
@@ -52,13 +57,43 @@ import { isValidEgyptianPhone } from '@trackora/shared/utils';
         </div>
         <div class="field">
           <label>Address Text</label>
-          <input formControlName="addressText" placeholder="Full address description" />
+          <input formControlName="addressText" placeholder="Full address description with landmarks" />
+        </div>
+        <div class="field">
+          <label>Zone</label>
+          <select formControlName="zoneId">
+            <option value="">-- Select Zone --</option>
+            <option *ngFor="let zone of zones()" [value]="zone.id">{{ zone.nameAr }} ({{ zone.code }})</option>
+          </select>
+          <small *ngIf="zonesLoading()">Loading zones...</small>
         </div>
         <div class="field">
           <label>Product Description</label>
           <input formControlName="productDescription" />
         </div>
-        <button type="submit" class="p-button p-button-primary" [disabled]="form.invalid">{{ 'common.save' | translate }}</button>
+        <div class="field">
+          <label>Product Value</label>
+          <input type="number" formControlName="productValue" />
+        </div>
+        <div class="field">
+          <label>Weight (kg)</label>
+          <input type="number" formControlName="weight" />
+        </div>
+        <div class="field">
+          <label>Pieces</label>
+          <input type="number" formControlName="pieces" />
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <input formControlName="notes" />
+        </div>
+        <div class="field">
+          <label>Preferred Delivery Date</label>
+          <input type="date" formControlName="preferredDeliveryDate" />
+        </div>
+        <button type="submit" class="p-button p-button-primary" [disabled]="form.invalid || submitting()">
+          {{ submitting() ? 'Saving...' : ('common.save' | translate) }}
+        </button>
       </form>
     </div>
   `,
@@ -72,15 +107,20 @@ import { isValidEgyptianPhone } from '@trackora/shared/utils';
     small { color: var(--trackora-danger); }
   `],
 })
-export class CreateShipmentPageComponent {
+export class CreateShipmentPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly repo = inject(ShipmentRepository);
+  private readonly zoneRepo = inject(ZoneRepository);
   private readonly router = inject(Router);
   readonly types = Object.values(ShipmentType);
+  readonly zones = signal<Zone[]>([]);
+  readonly zonesLoading = signal(false);
+  readonly submitting = signal(false);
 
   form = this.fb.group({
     customerName: ['', Validators.required],
     customerPhone: ['', [Validators.required, Validators.pattern(/^01[0125]\d{8}$/)]],
+    customerPhone2: [''],
     type: [ShipmentType.COD, Validators.required],
     codAmount: [0],
     governorate: ['', Validators.required],
@@ -88,15 +128,33 @@ export class CreateShipmentPageComponent {
     street: ['', Validators.required],
     building: ['', Validators.required],
     addressText: ['', Validators.required],
+    zoneId: [''],
     productDescription: ['', Validators.required],
+    productValue: [0],
+    weight: [1],
+    pieces: [1],
+    notes: [''],
+    preferredDeliveryDate: [''],
   });
+
+  async ngOnInit(): Promise<void> {
+    this.zonesLoading.set(true);
+    try {
+      const zones = await firstValueFrom(this.zoneRepo.findAll({ isActive: true }));
+      this.zones.set(zones);
+    } finally {
+      this.zonesLoading.set(false);
+    }
+  }
 
   onSubmit(): void {
     if (this.form.invalid) return;
+    this.submitting.set(true);
     const val = this.form.value;
     this.repo.create({
       customerName: val.customerName!,
       customerPhone: val.customerPhone!,
+      customerPhone2: val.customerPhone2 || undefined,
       type: val.type as ShipmentType,
       codAmount: val.codAmount || undefined,
       address: {
@@ -106,9 +164,21 @@ export class CreateShipmentPageComponent {
         building: val.building!,
       },
       addressText: val.addressText!,
+      zoneId: val.zoneId || undefined,
       productDescription: val.productDescription!,
+      productValue: val.productValue || undefined,
+      weight: val.weight || undefined,
+      pieces: val.pieces || undefined,
+      notes: val.notes || undefined,
+      preferredDeliveryDate: val.preferredDeliveryDate || undefined,
     }).subscribe({
-      next: () => this.router.navigate(['/shipments']),
+      next: () => {
+        this.submitting.set(false);
+        this.router.navigate(['/shipments']);
+      },
+      error: () => {
+        this.submitting.set(false);
+      },
     });
   }
 }

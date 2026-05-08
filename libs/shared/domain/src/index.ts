@@ -6,6 +6,7 @@ export * from './lib/entities/user.entity';
 export * from './lib/entities/wallet.entity';
 export * from './lib/entities/pagination.entity';
 export * from './lib/entities/api-response.entity';
+export * from './lib/entities/zone.entity';
 export * from './lib/value-objects/money.vo';
 export * from './lib/value-objects/phone-number.vo';
 export * from './lib/rules/shipment-state-machine';

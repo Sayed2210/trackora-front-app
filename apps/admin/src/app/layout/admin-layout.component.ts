@@ -23,6 +23,9 @@ import { AuthService } from '@trackora/core/auth';
           <a routerLink="/assignments" routerLinkActive="active">
             <span class="icon">🚚</span> Dispatch Board
           </a>
+          <a routerLink="/zones" routerLinkActive="active">
+            <span class="icon">🗺️</span> Zones
+          </a>
           <a routerLink="/couriers" routerLinkActive="active">
             <span class="icon">👤</span> Couriers
           </a>

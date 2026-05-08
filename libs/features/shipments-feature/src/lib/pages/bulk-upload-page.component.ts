@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { TranslateModule } from '@ngx-translate/core';
+import { ShipmentRepository, BulkUploadResultDto } from '@trackora/shared/data-access';
 import { LoadingSpinnerComponent } from '@trackora/shared/ui';
 
 interface UploadProgress {
@@ -9,6 +9,7 @@ interface UploadProgress {
   status: 'pending' | 'uploading' | 'processing' | 'completed' | 'error';
   progress: number;
   message?: string;
+  result?: BulkUploadResultDto;
 }
 
 @Component({
@@ -37,7 +38,7 @@ interface UploadProgress {
         <div class="drop-zone-content">
           <span class="icon">📁</span>
           <p>Drag & drop CSV or Excel files here, or click to browse</p>
-          <small>Supported formats: .csv, .xlsx, .xls (max 5MB)</small>
+          <small>Supported formats: .csv, .xlsx, .xls (max 5MB, max 5,000 rows)</small>
         </div>
       </div>
 
@@ -52,12 +53,31 @@ interface UploadProgress {
             <div class="progress-fill" [style.width.%]="upload.progress"></div>
           </div>
           <span class="message" *ngIf="upload.message">{{ upload.message }}</span>
+
+          <!-- Results -->
+          <div class="result" *ngIf="upload.result">
+            <div class="result-summary">
+              <span class="success">✅ {{ upload.result.successCount }} created</span>
+              <span class="fail" *ngIf="upload.result.failedCount > 0">❌ {{ upload.result.failedCount }} failed</span>
+            </div>
+            <div class="errors" *ngIf="upload.result.errors.length">
+              <details>
+                <summary>View errors ({{ upload.result.errors.length }})</summary>
+                <table class="error-table">
+                  <tr *ngFor="let err of upload.result.errors">
+                    <td>Row {{ err.rowIndex }}</td>
+                    <td>{{ err.message }}</td>
+                  </tr>
+                </table>
+              </details>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="template-section">
         <h3>Template</h3>
-        <p>Download the template file to ensure correct formatting:</p>
+        <p>Download the template file to ensure correct formatting. Include a <code>zone</code> column with an existing zone code or Arabic name:</p>
         <button class="p-button p-button-secondary" (click)="downloadTemplate()">
           Download CSV Template
         </button>
@@ -102,13 +122,20 @@ interface UploadProgress {
     .progress-bar { height: 6px; background: var(--trackora-border); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--trackora-primary); transition: width 0.3s; }
     .message { font-size: 0.875rem; color: var(--trackora-text-secondary); margin-top: 0.25rem; display: block; }
+    .result { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--trackora-border); }
+    .result-summary { display: flex; gap: 1rem; margin-bottom: 0.5rem; }
+    .result-summary .success { color: #065F46; font-weight: 500; }
+    .result-summary .fail { color: #991B1B; font-weight: 500; }
+    .errors details { font-size: 0.875rem; }
+    .error-table { width: 100%; font-size: 0.75rem; margin-top: 0.5rem; }
+    .error-table td { padding: 0.25rem; border-bottom: 1px solid var(--trackora-border); }
     .template-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--trackora-border); }
     .template-section h3 { margin-bottom: 0.5rem; }
     .p-button-secondary { background: var(--trackora-surface); color: var(--trackora-primary); border: 1px solid var(--trackora-primary); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
   `],
 })
 export class BulkUploadPageComponent {
-  private readonly http = inject(HttpClient);
+  private readonly repo = inject(ShipmentRepository);
   readonly isDragOver = signal(false);
   readonly uploads = signal<UploadProgress[]>([]);
 
@@ -142,33 +169,37 @@ export class BulkUploadPageComponent {
         progress: 0,
       };
       this.uploads.update((list) => [...list, upload]);
-      this.simulateUpload(upload);
+      this.doUpload(upload, file);
     });
   }
 
-  private simulateUpload(upload: UploadProgress): void {
-    // Simulate upload progress - in production this would be a real HTTP upload
+  private doUpload(upload: UploadProgress, file: File): void {
     upload.status = 'uploading';
     upload.progress = 30;
     this.uploads.update((list) => [...list]);
 
-    setTimeout(() => {
-      upload.status = 'processing';
-      upload.progress = 60;
-      this.uploads.update((list) => [...list]);
-    }, 1000);
-
-    setTimeout(() => {
-      upload.status = 'completed';
-      upload.progress = 100;
-      upload.message = 'Shipments imported successfully';
-      this.uploads.update((list) => [...list]);
-    }, 2000);
+    this.repo.bulkUpload(file).subscribe({
+      next: (result) => {
+        upload.status = 'completed';
+        upload.progress = 100;
+        upload.result = result;
+        upload.message = `${result.successCount} created, ${result.failedCount} failed`;
+        this.uploads.update((list) => [...list]);
+      },
+      error: (err) => {
+        upload.status = 'error';
+        upload.progress = 100;
+        upload.message = err?.message || 'Upload failed';
+        this.uploads.update((list) => [...list]);
+      },
+    });
   }
 
   downloadTemplate(): void {
-    const csv = 'customerName,customerPhone,address.street,address.building,address.governorate,address.city,address.floor,address.apartment,type,codAmount,deliveryFee,notes\n' +
-      'Ahmed Mohamed,01001234567,123 Main St,Building A,Cairo,Nasr City,3,12,COD,150,25,Leave at reception\n';
+    const csv =
+      'customerName,customerPhone,customerPhone2,addressText,address,type,codAmount,productDescription,productValue,weight,pieces,notes,zone,preferredDeliveryDate\n' +
+      'Ahmed Mohamed,01001234567,,Nasr City near Carrefour,,COD,150,Shoes,120,1,1,Leave at reception,Maadi,2026-05-15\n' +
+      'Sara Khaled,01009876543,,Maadi Street 9 behind metro,,COD,200,Bag,250,0.5,1,Call before delivery,Maadi,\n';
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
