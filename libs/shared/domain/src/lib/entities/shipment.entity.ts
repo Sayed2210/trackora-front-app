@@ -48,6 +48,7 @@ export interface ShipmentFilters {
   toDate?: string;
   merchantId?: string;
   courierId?: string;
+  zoneId?: string;
 }
 
 export interface TimelineEvent {

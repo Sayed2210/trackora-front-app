@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ShipmentRepository, BulkUploadResultDto } from '@trackora/shared/data-access';
-import { LoadingSpinnerComponent } from '@trackora/shared/ui';
 
 interface UploadProgress {
   filename: string;
@@ -15,7 +14,7 @@ interface UploadProgress {
 @Component({
   selector: 'app-bulk-upload-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LoadingSpinnerComponent],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="bulk-upload">
       <h1>{{ 'shipments.bulkUpload' | translate }}</h1>

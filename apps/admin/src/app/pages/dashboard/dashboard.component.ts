@@ -27,12 +27,13 @@ interface RealtimeAlert {
   message: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
   timestamp: string;
+  read?: boolean;
 }
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, EgpCurrencyPipe, LocalDatePipe],
+  imports: [CommonModule, RouterLink, TranslateModule, LocalDatePipe],
   template: `
     <div class="admin-dashboard">
       <h1>Admin Dashboard</h1>

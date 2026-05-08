@@ -1,6 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { EgpCurrencyPipe, LocalDatePipe } from '@trackora/shared/ui';
 
@@ -16,7 +15,7 @@ interface MerchantWallet {
 @Component({
   selector: 'app-wallet-management-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, EgpCurrencyPipe, LocalDatePipe],
+  imports: [CommonModule, TranslateModule, EgpCurrencyPipe, LocalDatePipe],
   template: `
     <div class="wallet-management-page">
       <div class="page-header">

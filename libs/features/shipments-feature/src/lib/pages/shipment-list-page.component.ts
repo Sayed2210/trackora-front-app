@@ -5,13 +5,13 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ShipmentFacade } from '../facade/shipment.facade';
 import { ZoneRepository } from '@trackora/shared/data-access';
 import { Zone, ShipmentStatus } from '@trackora/shared/domain';
-import { LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe } from '@trackora/shared/ui';
+import { LoadingSpinnerComponent, EgpCurrencyPipe } from '@trackora/shared/ui';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-shipment-list-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe],
+  imports: [CommonModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EgpCurrencyPipe],
   providers: [ShipmentFacade],
   template: `
     <div class="shipment-list">

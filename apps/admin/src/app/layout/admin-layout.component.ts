@@ -53,7 +53,7 @@ import { AuthService } from '@trackora/core/auth';
         <header class="top-bar">
           <div class="user-info">
             <span class="user-name">{{ authService.user()?.name || 'Admin' }}</span>
-            <span class="user-role">{{ authService.user()?.role || 'Admin' }}</span>
+            <span class="user-role">{{ authService.user()?.roles?.[0] || 'Admin' }}</span>
           </div>
           <button class="logout-btn" (click)="logout()">Logout</button>
         </header>

@@ -1,6 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ShipmentRepository } from '@trackora/shared/data-access';
 import { Shipment, ShipmentStatus, ShipmentType } from '@trackora/shared/domain';
@@ -18,7 +17,7 @@ interface Courier {
 @Component({
   selector: 'app-assignments-feature',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="dispatch-board">
       <div class="board-header">

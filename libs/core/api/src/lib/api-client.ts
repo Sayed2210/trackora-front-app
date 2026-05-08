@@ -6,10 +6,10 @@ import { ApiResponse, ApiError } from '@trackora/shared/domain';
 
 export class ApiClientError extends Error {
   constructor(
-    public readonly apiError: ApiError,
+    public readonly apiError: ApiError | undefined,
     public readonly status: number
   ) {
-    super(apiError.message);
+    super(apiError?.message ?? 'Unknown API error');
     this.name = 'ApiClientError';
   }
 }
@@ -73,7 +73,7 @@ export class ApiClient {
     // Backend returns raw data directly, not wrapped in { success, data }
     if (res && typeof res === 'object' && 'success' in res) {
       if (!res.success) {
-        throw new ApiClientError(res.error!, 0);
+        throw new ApiClientError(res.error, 0);
       }
       return res.data;
     }
