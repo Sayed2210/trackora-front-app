@@ -30,7 +30,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
  * Base URL Interceptor - prepends /api/v1 to relative paths
  */
 export const baseUrlInterceptor: HttpInterceptorFn = (req, next) => {
-  if (!req.url.startsWith('http') && !req.url.startsWith('/v1')) {
+  if (
+    !req.url.startsWith('http') &&
+    !req.url.startsWith('/v1') &&
+    !req.url.startsWith('/assets/')
+  ) {
     req = req.clone({ url: `/v1${req.url}` });
   }
   return next(req);
