@@ -1,10 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ShipmentFacade } from '../facade/shipment.facade';
+import { ZoneRepository } from '@trackora/shared/data-access';
+import { Zone, ShipmentStatus } from '@trackora/shared/domain';
 import { LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe } from '@trackora/shared/ui';
-import { ShipmentStatus } from '@trackora/shared/domain';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-shipment-list-page',
@@ -23,8 +25,12 @@ import { ShipmentStatus } from '@trackora/shared/domain';
       <app-loading-spinner *ngIf="facade.loading()" />
       <div class="filters">
         <select (change)="onStatusChange($event)">
-          <option value="">{{ 'common.filter' | translate }}</option>
+          <option value="">{{ 'common.filter' | translate }} Status</option>
           <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+        </select>
+        <select (change)="onZoneChange($event)">
+          <option value="">All Zones</option>
+          <option *ngFor="let zone of zones()" [value]="zone.id">{{ zone.nameAr }} ({{ zone.code }})</option>
         </select>
       </div>
       <table class="shipment-table" *ngIf="!facade.loading()">
@@ -33,6 +39,7 @@ import { ShipmentStatus } from '@trackora/shared/domain';
             <th>{{ 'shipments.trackingNumber' | translate }}</th>
             <th>{{ 'shipments.customerName' | translate }}</th>
             <th>{{ 'shipments.customerPhone' | translate }}</th>
+            <th>Zone</th>
             <th>{{ 'shipments.status' | translate }}</th>
             <th>{{ 'shipments.codAmount' | translate }}</th>
             <th>{{ 'shipments.address' | translate }}</th>
@@ -43,6 +50,7 @@ import { ShipmentStatus } from '@trackora/shared/domain';
             <td>{{ s.trackingNumber }}</td>
             <td>{{ s.customerName }}</td>
             <td>{{ s.customerPhoneMasked || s.customerPhone }}</td>
+            <td>{{ s.address.zone || '-' }}</td>
             <td><span class="status-badge" [class]="s.status">{{ s.status }}</span></td>
             <td>{{ s.codAmount | egpCurrency }}</td>
             <td>{{ s.address.governorate }}, {{ s.address.city }}</td>
@@ -60,7 +68,8 @@ import { ShipmentStatus } from '@trackora/shared/domain';
     .shipment-list { padding: 1rem; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
     .actions { display: flex; gap: 0.5rem; }
-    .filters { margin-bottom: 1rem; }
+    .filters { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+    .filters select { padding: 0.5rem; border: 1px solid var(--trackora-border); border-radius: 4px; min-width: 160px; }
     .shipment-table { width: 100%; border-collapse: collapse; background: white; }
     .shipment-table th, .shipment-table td { padding: 0.75rem; border-bottom: 1px solid var(--trackora-border); text-align: start; }
     .shipment-table tr { cursor: pointer; }
@@ -77,15 +86,35 @@ import { ShipmentStatus } from '@trackora/shared/domain';
 })
 export class ShipmentListPageComponent implements OnInit {
   readonly facade = inject(ShipmentFacade);
+  readonly zoneRepo = inject(ZoneRepository);
   readonly statuses = Object.values(ShipmentStatus);
+  readonly zones = signal<Zone[]>([]);
+  private currentStatus?: string;
+  private currentZoneId?: string;
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.facade.loadShipments({ page: 1, limit: 10 });
+    const zones = await firstValueFrom(this.zoneRepo.findAll({ isActive: true }));
+    this.zones.set(zones);
   }
 
   onStatusChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.facade.loadShipments({ page: 1, limit: 10, status: value as ShipmentStatus || undefined });
+    this.currentStatus = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  onZoneChange(event: Event): void {
+    this.currentZoneId = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    this.facade.loadShipments({
+      page: 1,
+      limit: 10,
+      status: this.currentStatus as ShipmentStatus || undefined,
+      zoneId: this.currentZoneId || undefined,
+    });
   }
 
   nextPage(): void {

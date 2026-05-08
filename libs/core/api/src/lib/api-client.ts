@@ -70,10 +70,14 @@ export class ApiClient {
   }
 
   private unwrap<T>(res: ApiResponse<T>): T {
-    if (!res.success) {
-      throw new ApiClientError(res.error!, 0);
+    // Backend returns raw data directly, not wrapped in { success, data }
+    if (res && typeof res === 'object' && 'success' in res) {
+      if (!res.success) {
+        throw new ApiClientError(res.error!, 0);
+      }
+      return res.data;
     }
-    return res.data;
+    return res as unknown as T;
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
