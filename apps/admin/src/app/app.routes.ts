@@ -1,10 +1,11 @@
 import { Routes } from '@angular/router';
-import { authGuard } from '@trackora/core/auth';
+import { authGuard, roleGuard } from '@trackora/core/auth';
+import { UserRole } from '@trackora/shared/domain';
 
 export const appRoutes: Routes = [
   {
     path: '',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard([UserRole.ADMIN])],
     loadComponent: () =>
       import('./layout/admin-layout.component').then((m) => m.AdminLayoutComponent),
     children: [

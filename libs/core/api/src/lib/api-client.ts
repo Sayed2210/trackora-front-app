@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, shareReplay } from 'rxjs/operators';
 import { ApiResponse, ApiError } from '@trackora/shared/domain';
 
 export class ApiClientError extends Error {
@@ -16,10 +16,11 @@ export class ApiClientError extends Error {
 
 @Injectable({ providedIn: 'root' })
 export class ApiClient {
-  private readonly baseUrl = 'http://localhost:3000/v1';
-  private readonly pendingRequests = new Map<string, AbortController>();
+  private readonly http = inject(HttpClient);
 
-  constructor(private readonly http: HttpClient) {}
+  // Base URL is handled by the baseUrlInterceptor which prepends /v1
+  // This avoids double-prefixing when interceptor is active
+  private readonly baseUrl = '';
 
   get<T>(path: string, params?: any): Observable<T> {
     return this.request<T>('GET', path, undefined, params);
@@ -48,12 +49,6 @@ export class ApiClient {
     params?: any
   ): Observable<T> {
     const url = `${this.baseUrl}${path}`;
-    const requestKey = `${method}:${url}:${JSON.stringify(body)}`;
-
-    // Cancel duplicate in-flight requests
-    this.pendingRequests.get(requestKey)?.abort();
-    const abortController = new AbortController();
-    this.pendingRequests.set(requestKey, abortController);
 
     return this.http
       .request<ApiResponse<T>>(method, url, {
@@ -62,10 +57,7 @@ export class ApiClient {
       })
       .pipe(
         map((res) => this.unwrap(res)),
-        catchError((err: HttpErrorResponse) => {
-          this.pendingRequests.delete(requestKey);
-          return this.handleError(err);
-        })
+        catchError((err: HttpErrorResponse) => this.handleError(err))
       );
   }
 

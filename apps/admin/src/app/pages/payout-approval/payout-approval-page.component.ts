@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { AdminRepository } from '@trackora/shared/data-access';
+import { firstValueFrom } from 'rxjs';
 
 interface PayoutRequest {
   id: string;
@@ -17,6 +19,7 @@ interface PayoutRequest {
   selector: 'app-payout-approval-page',
   standalone: true,
   imports: [CommonModule, TranslateModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="payout-approval">
       <div class="page-header">
@@ -45,7 +48,7 @@ interface PayoutRequest {
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let payout of payouts()">
+          <tr *ngFor="let payout of payouts(); trackBy: trackByPayoutId">
             <td>
               <input
                 type="checkbox"
@@ -95,41 +98,25 @@ interface PayoutRequest {
     .action-btn.reject { background: #FEE2E2; color: #991B1B; border-color: #991B1B; }
   `],
 })
-export class PayoutApprovalPageComponent {
-  readonly payouts = signal<PayoutRequest[]>([
-    {
-      id: 'p1',
-      merchantName: 'TechStore Egypt',
-      merchantId: 'm1',
-      amount: 15000,
-      method: 'bank_transfer',
-      accountInfo: '****1234',
-      status: 'pending',
-      requestedAt: new Date(Date.now() - 86400000).toISOString(),
-    },
-    {
-      id: 'p2',
-      merchantName: 'Green Grocery',
-      merchantId: 'm3',
-      amount: 8500,
-      method: 'vodafone_cash',
-      accountInfo: '0100****567',
-      status: 'pending',
-      requestedAt: new Date(Date.now() - 172800000).toISOString(),
-    },
-    {
-      id: 'p3',
-      merchantName: 'Fashion Hub',
-      merchantId: 'm2',
-      amount: 5000,
-      method: 'instapay',
-      accountInfo: 'fashion@instapay',
-      status: 'approved',
-      requestedAt: new Date(Date.now() - 259200000).toISOString(),
-    },
-  ]);
+export class PayoutApprovalPageComponent implements OnInit {
+  private readonly adminRepo = inject(AdminRepository);
 
+  readonly payouts = signal<PayoutRequest[]>([]);
   readonly selectedIds = signal<Set<string>>(new Set());
+
+  ngOnInit(): void {
+    this.loadPayouts();
+  }
+
+  private async loadPayouts(): Promise<void> {
+    try {
+      const summary = await firstValueFrom(this.adminRepo.getFinancialSummary());
+      const pendingPayouts = summary?.pendingPayouts ?? [];
+      this.payouts.set(pendingPayouts as PayoutRequest[]);
+    } catch {
+      this.payouts.set([]);
+    }
+  }
 
   toggleSelection(id: string): void {
     this.selectedIds.update((set) => {
@@ -175,5 +162,9 @@ export class PayoutApprovalPageComponent {
       list.map((p) => (ids.has(p.id) ? { ...p, status: 'rejected' as PayoutRequest['status'] } : p))
     );
     this.selectedIds.set(new Set());
+  }
+
+  trackByPayoutId(_index: number, payout: PayoutRequest): string {
+    return payout.id;
   }
 }

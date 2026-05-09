@@ -1,7 +1,9 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { AdminRepository } from '@trackora/shared/data-access';
 import { EgpCurrencyPipe, LocalDatePipe } from '@trackora/shared/ui';
+import { firstValueFrom } from 'rxjs';
 
 interface MerchantWallet {
   merchantId: string;
@@ -16,6 +18,7 @@ interface MerchantWallet {
   selector: 'app-wallet-management-page',
   standalone: true,
   imports: [CommonModule, TranslateModule, EgpCurrencyPipe, LocalDatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="wallet-management-page">
       <div class="page-header">
@@ -58,7 +61,7 @@ interface MerchantWallet {
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let w of filteredWallets()">
+            <tr *ngFor="let w of filteredWallets(); trackBy: trackByWalletId">
               <td>
                 <div class="merchant-name">{{ w.merchantName }}</div>
                 <div class="merchant-id">{{ w.merchantId }}</div>
@@ -104,6 +107,8 @@ interface MerchantWallet {
   `],
 })
 export class WalletManagementPageComponent implements OnInit {
+  private readonly adminRepo = inject(AdminRepository);
+
   readonly wallets = signal<MerchantWallet[]>([]);
   readonly searchQuery = signal('');
   readonly totalAvailable = signal(0);
@@ -124,26 +129,28 @@ export class WalletManagementPageComponent implements OnInit {
     this.loadWallets();
   }
 
-  private loadWallets(): void {
-    this.loadMockData();
-  }
-
-  private loadMockData(): void {
-    const mock = [
-      { merchantId: 'M-001', merchantName: 'ElectroStore', availableBalance: 12500, pendingBalance: 3200, totalEarned: 45000, lastPayoutDate: new Date(Date.now() - 86400000 * 3).toISOString() },
-      { merchantId: 'M-002', merchantName: 'FashionHub', availableBalance: 8700, pendingBalance: 1500, totalEarned: 32000, lastPayoutDate: new Date(Date.now() - 86400000 * 7).toISOString() },
-      { merchantId: 'M-003', merchantName: 'GroceryMart', availableBalance: 5400, pendingBalance: 8900, totalEarned: 28000, lastPayoutDate: new Date(Date.now() - 86400000 * 2).toISOString() },
-      { merchantId: 'M-004', merchantName: 'BookWorld', availableBalance: 2100, pendingBalance: 400, totalEarned: 12000, lastPayoutDate: undefined },
-      { merchantId: 'M-005', merchantName: 'ToyLand', availableBalance: 6800, pendingBalance: 1200, totalEarned: 21000, lastPayoutDate: new Date(Date.now() - 86400000 * 5).toISOString() },
-    ];
-    this.wallets.set(mock);
-    this.totalAvailable.set(mock.reduce((sum, w) => sum + w.availableBalance, 0));
-    this.totalPending.set(mock.reduce((sum, w) => sum + w.pendingBalance, 0));
-    this.merchantCount.set(mock.length);
+  private async loadWallets(): Promise<void> {
+    try {
+      const summary = await firstValueFrom(this.adminRepo.getFinancialSummary());
+      const merchantWallets = summary?.merchantWallets ?? [];
+      this.wallets.set(merchantWallets as MerchantWallet[]);
+      this.totalAvailable.set(merchantWallets.reduce((sum: number, w: MerchantWallet) => sum + (w.availableBalance || 0), 0));
+      this.totalPending.set(merchantWallets.reduce((sum: number, w: MerchantWallet) => sum + (w.pendingBalance || 0), 0));
+      this.merchantCount.set(merchantWallets.length);
+    } catch {
+      this.wallets.set([]);
+      this.totalAvailable.set(0);
+      this.totalPending.set(0);
+      this.merchantCount.set(0);
+    }
   }
 
   viewDetails(wallet: MerchantWallet): void {
     // In a real app, navigate to merchant wallet detail
     alert(`Wallet details for ${wallet.merchantName}`);
+  }
+
+  trackByWalletId(_index: number, wallet: MerchantWallet): string {
+    return wallet.merchantId;
   }
 }

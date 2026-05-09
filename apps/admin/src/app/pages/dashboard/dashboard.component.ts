@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -34,13 +34,14 @@ interface RealtimeAlert {
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, RouterLink, TranslateModule, LocalDatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="admin-dashboard">
       <h1>Admin Dashboard</h1>
       <p class="subtitle">Operations overview and real-time monitoring</p>
 
       <div class="kpi-grid">
-        <div class="kpi-card" *ngFor="let kpi of kpis()">
+        <div class="kpi-card" *ngFor="let kpi of kpis(); trackBy: trackByKpiLabel">
           <div class="kpi-icon" [style.background]="kpi.color + '20'" [style.color]="kpi.color">
             {{ kpi.icon }}
           </div>
@@ -84,7 +85,7 @@ interface RealtimeAlert {
             <span class="alert-badge" *ngIf="unreadAlerts() > 0">{{ unreadAlerts() }}</span>
           </div>
           <div class="alerts-list">
-            <div class="alert-item" *ngFor="let alert of alerts()" [class]="alert.severity">
+            <div class="alert-item" *ngFor="let alert of alerts(); trackBy: trackByAlertId" [class]="alert.severity">
               <div class="alert-icon">{{ getAlertIcon(alert.type) }}</div>
               <div class="alert-content">
                 <span class="alert-message">{{ alert.message }}</span>
@@ -276,5 +277,13 @@ export class DashboardComponent implements OnInit {
       system: '🔔',
     };
     return icons[type] || '🔔';
+  }
+
+  trackByKpiLabel(_index: number, kpi: AdminKpi): string {
+    return kpi.label;
+  }
+
+  trackByAlertId(_index: number, alert: RealtimeAlert): string {
+    return alert.id;
   }
 }
