@@ -2,6 +2,7 @@
  * User role enum
  */
 export enum UserRole {
+  SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
   MERCHANT = 'MERCHANT',
   COURIER = 'COURIER',
@@ -12,22 +13,17 @@ export enum UserRole {
  * Permission enum for fine-grained RBAC
  */
 export enum Permission {
-  SHIPMENTS_CREATE = 'shipments:create',
-  SHIPMENTS_READ = 'shipments:read',
-  SHIPMENTS_UPDATE = 'shipments:update',
-  SHIPMENTS_DELETE = 'shipments:delete',
-  SHIPMENTS_BULK_UPLOAD = 'shipments:bulk_upload',
-  ASSIGNMENTS_CREATE = 'assignments:create',
-  ASSIGNMENTS_READ = 'assignments:read',
-  ASSIGNMENTS_UPDATE = 'assignments:update',
-  COURIER_TASKS_READ = 'courier_tasks:read',
-  COURIER_TASKS_UPDATE = 'courier_tasks:update',
-  WALLET_READ = 'wallet:read',
-  PAYOUTS_CREATE = 'payouts:create',
-  PAYOUTS_READ = 'payouts:read',
+  SHIPMENTS_CREATE=  'shipments:create',
+  SHIPMENTS_READ_ALL =  'shipments:read:all',
+  SHIPMENTS_READ_OWN =  'shipments:read:own',
+  SHIPMENTS_UPDATE_STATUS =  'shipments:update:status',
+  SHIPMENTS_UPDATE_STATUS_OVERRIDE =  'shipments:update:status:override',
+  COURIERS_READ =  'couriers:read',
+  COURIERS_CREATE =  'couriers:create',
+  MERCHANTS_READ =  'merchants:read',
+  MERCHANTS_APPROVE = 'merchants:approve',
+  WALLETS_READ_ALL = 'wallets:read:all',
+  WALLETS_READ_OWN = 'wallets:read:own',
+  PAYOUTS_REQUEST = 'payouts:request',
   PAYOUTS_APPROVE = 'payouts:approve',
-  ANALYTICS_READ = 'analytics:read',
-  USERS_MANAGE = 'users:manage',
-  SETTINGS_READ = 'settings:read',
-  SETTINGS_UPDATE = 'settings:update',
 }
