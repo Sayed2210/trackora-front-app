@@ -136,7 +136,9 @@ export class CourierManagementPageComponent implements OnInit {
   private async loadCouriers(): Promise<void> {
     try {
       const tasks = await firstValueFrom(this.courierRepo.getTasks());
-      this.couriers.set(tasks as Courier[]);
+      // TODO: Replace with proper courier user list endpoint when available
+      // CourierTask shape differs from Courier admin view; mapping as-is for now
+      this.couriers.set((tasks as unknown) as Courier[]);
     } catch {
       // Keep empty list on error
       this.couriers.set([]);
