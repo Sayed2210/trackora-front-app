@@ -20,7 +20,10 @@ export interface LoginResponseDto {
     email?: string;
     name: string;
     phone: string;
-    roles: UserRole[];
+    /** Backend sends singular `role` (legacy) */
+    role?: string;
+    /** Preferred plural array */
+    roles?: UserRole[];
     permissions: Permission[];
     avatarUrl?: string;
     isActive: boolean;
