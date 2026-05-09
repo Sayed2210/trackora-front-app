@@ -1,13 +1,17 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
+import { Store } from '@ngrx/store';
 import { ApiClient } from '@trackora/core/api';
 import { AuthService, TokenStorageService } from '@trackora/core/auth';
+import { loginSuccess, logout } from '@trackora/core/state';
 import { User } from '@trackora/shared/domain';
 import { LoginRequestDto, LoginResponseDto } from '../dto/auth.dto';
 import { AuthMapper } from '../mapper/auth.mapper';
 
 @Injectable({ providedIn: 'root' })
 export class AuthRepository {
+  private readonly store = inject(Store);
+
   constructor(
     private readonly api: ApiClient,
     private readonly authService: AuthService,
@@ -23,6 +27,7 @@ export class AuthRepository {
       map((res) => {
         const user = AuthMapper.mapUser(res.user);
         this.authService.setUser(user);
+        this.store.dispatch(loginSuccess({ user }));
         return user;
       })
     );
@@ -32,6 +37,7 @@ export class AuthRepository {
     return this.api.post<void>('/auth/logout', {}).pipe(
       tap(() => {
         this.authService.logout();
+        this.store.dispatch(logout());
       })
     );
   }

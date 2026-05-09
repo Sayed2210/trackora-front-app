@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { AdminRepository } from '@trackora/shared/data-access';
+import { firstValueFrom } from 'rxjs';
 
 interface ReportTemplate {
   id: string;
@@ -14,6 +16,7 @@ interface ReportTemplate {
   selector: 'app-reports-page',
   standalone: true,
   imports: [CommonModule, TranslateModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="reports-page">
       <div class="page-header">
@@ -29,7 +32,7 @@ interface ReportTemplate {
       </div>
 
       <div class="reports-grid">
-        <div class="report-card" *ngFor="let report of reports()">
+        <div class="report-card" *ngFor="let report of reports(); trackBy: trackByReportId">
           <div class="report-icon">{{ report.icon }}</div>
           <h3>{{ report.name }}</h3>
           <p>{{ report.description }}</p>
@@ -43,7 +46,7 @@ interface ReportTemplate {
 
       <div class="recent-exports" *ngIf="recentExports().length > 0">
         <h3>Recent Exports</h3>
-        <div class="export-item" *ngFor="let ex of recentExports()">
+        <div class="export-item" *ngFor="let ex of recentExports(); trackBy: trackByExportUrl">
           <span class="export-name">{{ ex.name }}</span>
           <span class="export-format">{{ ex.format.toUpperCase() }}</span>
           <span class="export-date">{{ ex.generatedAt | date:'short' }}</span>
@@ -79,7 +82,9 @@ interface ReportTemplate {
     .download-link:hover { text-decoration: underline; }
   `],
 })
-export class ReportsPageComponent {
+export class ReportsPageComponent implements OnInit {
+  private readonly adminRepo = inject(AdminRepository);
+
   readonly fromDate = signal(new Date(Date.now() - 86400000 * 30).toISOString().split('T')[0]);
   readonly toDate = signal(new Date().toISOString().split('T')[0]);
 
@@ -94,23 +99,72 @@ export class ReportsPageComponent {
 
   readonly recentExports = signal<Array<{ name: string; format: string; generatedAt: Date; url: string; fileName: string }>>([]);
 
-  generateReport(report: ReportTemplate): void {
-    // Simulate report generation and create a downloadable blob
-    const csvContent = this.buildCsvContent(report.id);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const fileName = `${report.id}_${this.fromDate()}_${this.toDate()}.${report.format}`;
+  ngOnInit(): void {
+    this.loadRecentExports();
+  }
 
-    this.recentExports.update((list) => [
-      { name: report.name, format: report.format, generatedAt: new Date(), url, fileName },
-      ...list,
-    ].slice(0, 5));
+  private loadRecentExports(): void {
+    // Load recent exports from localStorage or API
+    const saved = localStorage.getItem('recent_exports');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        this.recentExports.set(parsed);
+      } catch {
+        // Ignore parse errors
+      }
+    }
+  }
 
-    // Auto-download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
+  async generateReport(report: ReportTemplate): Promise<void> {
+    try {
+      let blob: Blob;
+      switch (report.id) {
+        case 'couriers':
+          blob = await firstValueFrom(
+            this.adminRepo.generateCourierPerformanceReport(this.fromDate(), this.toDate())
+          ).then((data) => new Blob([JSON.stringify(data)], { type: 'application/json' }));
+          break;
+        case 'merchants':
+          blob = await firstValueFrom(
+            this.adminRepo.generateMerchantDeliveryReport(this.fromDate(), this.toDate())
+          ).then((data) => new Blob([JSON.stringify(data)], { type: 'application/json' }));
+          break;
+        default:
+          // Fallback to client-side CSV for reports without dedicated endpoints
+          blob = new Blob([this.buildCsvContent(report.id)], { type: 'text/csv;charset=utf-8;' });
+      }
+
+      const url = URL.createObjectURL(blob);
+      const fileName = `${report.id}_${this.fromDate()}_${this.toDate()}.${report.format}`;
+
+      this.recentExports.update((list) => [
+        { name: report.name, format: report.format, generatedAt: new Date(), url, fileName },
+        ...list,
+      ].slice(0, 5));
+
+      // Auto-download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+    } catch {
+      // Fallback to client-side generation on API error
+      const csvContent = this.buildCsvContent(report.id);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const fileName = `${report.id}_${this.fromDate()}_${this.toDate()}.${report.format}`;
+
+      this.recentExports.update((list) => [
+        { name: report.name, format: report.format, generatedAt: new Date(), url, fileName },
+        ...list,
+      ].slice(0, 5));
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+    }
   }
 
   private buildCsvContent(reportId: string): string {
@@ -131,5 +185,13 @@ export class ReportsPageComponent {
       zones: 'Nasr City,Cairo,65,58,7,3.1h\nMaadi,Cairo,42,38,4,3.5h\nHeliopolis,Cairo,38,35,3,2.9h\nDowntown,Cairo,28,25,3,4.2h\n',
     };
     return (headers[reportId] || '') + (rows[reportId] || '');
+  }
+
+  trackByReportId(_index: number, report: ReportTemplate): string {
+    return report.id;
+  }
+
+  trackByExportUrl(_index: number, ex: { url: string }): string {
+    return ex.url;
   }
 }

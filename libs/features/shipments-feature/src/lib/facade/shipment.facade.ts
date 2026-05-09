@@ -24,22 +24,41 @@ export class ShipmentFacade {
 
   constructor(private readonly repo: ShipmentRepository) {}
 
+  private readonly _error = signal<string | null>(null);
+  readonly error = this._error.asReadonly();
+
   async loadShipments(filters?: Partial<ShipmentFilters>): Promise<void> {
     this._loading.set(true);
+    this._error.set(null);
     const merged = { ...this._filters(), ...filters };
     this._filters.set(merged);
 
-    const result = await firstValueFrom(this.repo.findAll(merged));
-    this._shipments.set(result.data);
-    this._meta.set(result.meta ?? null);
-    this._loading.set(false);
+    try {
+      const result = await firstValueFrom(this.repo.findAll(merged));
+      this._shipments.set(result.data);
+      this._meta.set(result.meta ?? null);
+    } catch (err: any) {
+      this._error.set(err.message ?? 'Failed to load shipments');
+      this._shipments.set([]);
+      this._meta.set(null);
+    } finally {
+      this._loading.set(false);
+    }
   }
 
   async loadShipmentDetail(id: string): Promise<void> {
     this._loading.set(true);
-    const shipment = await firstValueFrom(this.repo.findById(id));
-    this._selectedShipment.set(shipment);
-    this._loading.set(false);
+    this._error.set(null);
+
+    try {
+      const shipment = await firstValueFrom(this.repo.findById(id));
+      this._selectedShipment.set(shipment);
+    } catch (err: any) {
+      this._error.set(err.message ?? 'Failed to load shipment details');
+      this._selectedShipment.set(null);
+    } finally {
+      this._loading.set(false);
+    }
   }
 
   optimisticUpdateStatus(id: string, newStatus: ShipmentStatus): void {

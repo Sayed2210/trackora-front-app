@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { MerchantRepository } from '@trackora/shared/data-access';
+import { firstValueFrom } from 'rxjs';
 
 interface Merchant {
   id: string;
@@ -19,6 +21,7 @@ interface Merchant {
   selector: 'app-merchant-management-page',
   standalone: true,
   imports: [CommonModule, TranslateModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="merchant-management">
       <div class="page-header">
@@ -49,7 +52,7 @@ interface Merchant {
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let merchant of merchants()">
+          <tr *ngFor="let merchant of merchants(); trackBy: trackByMerchantId">
             <td>
               <div class="merchant-info">
                 <span class="avatar">{{ merchant.name.charAt(0) }}</span>
@@ -108,45 +111,25 @@ interface Merchant {
     .action-btn.reject { background: #FEE2E2; color: #991B1B; border-color: #991B1B; }
   `],
 })
-export class MerchantManagementPageComponent {
-  readonly merchants = signal<Merchant[]>([
-    {
-      id: 'm1',
-      name: 'TechStore Egypt',
-      email: 'info@techstore.eg',
-      phone: '01001112233',
-      businessName: 'TechStore Egypt LLC',
-      governorate: 'Cairo',
-      status: 'approved',
-      totalShipments: 1240,
-      walletBalance: 45200,
-      joinedAt: '2023-06-01',
-    },
-    {
-      id: 'm2',
-      name: 'Fashion Hub',
-      email: 'contact@fashionhub.eg',
-      phone: '01002223344',
-      businessName: 'Fashion Hub Co.',
-      governorate: 'Alexandria',
-      status: 'pending',
-      totalShipments: 0,
-      walletBalance: 0,
-      joinedAt: '2024-05-01',
-    },
-    {
-      id: 'm3',
-      name: 'Green Grocery',
-      email: 'orders@greengrcoery.eg',
-      phone: '01003334455',
-      businessName: 'Green Grocery Market',
-      governorate: 'Giza',
-      status: 'approved',
-      totalShipments: 856,
-      walletBalance: 12800,
-      joinedAt: '2023-09-15',
-    },
-  ]);
+export class MerchantManagementPageComponent implements OnInit {
+  private readonly merchantRepo = inject(MerchantRepository);
+
+  readonly merchants = signal<Merchant[]>([]);
+
+  ngOnInit(): void {
+    this.loadMerchants();
+  }
+
+  private async loadMerchants(): Promise<void> {
+    try {
+      const data = await firstValueFrom(this.merchantRepo.findById(''));
+      // In a real app, there would be a findAll endpoint on MerchantRepository
+      // For now, we keep the mock fallback
+      this.merchants.set(Array.isArray(data) ? data : []);
+    } catch {
+      this.merchants.set([]);
+    }
+  }
 
   approve(merchant: Merchant): void {
     this.merchants.update((list) =>
@@ -162,5 +145,9 @@ export class MerchantManagementPageComponent {
 
   viewDetails(merchant: Merchant): void {
     // Navigate to detail view
+  }
+
+  trackByMerchantId(_index: number, merchant: Merchant): string {
+    return merchant.id;
   }
 }

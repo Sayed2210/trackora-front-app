@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { CourierRepository } from '@trackora/shared/data-access';
+import { firstValueFrom } from 'rxjs';
 
 interface Courier {
   id: string;
@@ -19,6 +21,7 @@ interface Courier {
   selector: 'app-courier-management-page',
   standalone: true,
   imports: [CommonModule, TranslateModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="courier-management">
       <div class="page-header">
@@ -56,7 +59,7 @@ interface Courier {
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let courier of couriers()">
+          <tr *ngFor="let courier of couriers(); trackBy: trackByCourierId">
             <td>
               <div class="courier-name">
                 <span class="avatar">{{ courier.name.charAt(0) }}</span>
@@ -121,45 +124,24 @@ interface Courier {
     .action-btn { padding: 0.375rem 0.75rem; background: var(--trackora-surface); border: 1px solid var(--trackora-border); border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
   `],
 })
-export class CourierManagementPageComponent {
-  readonly couriers = signal<Courier[]>([
-    {
-      id: 'c1',
-      name: 'Mohamed Ali',
-      phone: '01001234567',
-      email: 'mohamed@trackora.com',
-      status: 'active',
-      zone: 'Cairo - Nasr City',
-      currentTasks: 8,
-      capacity: 15,
-      rating: 4.8,
-      joinedAt: '2024-01-15',
-    },
-    {
-      id: 'c2',
-      name: 'Ahmed Hassan',
-      phone: '01009876543',
-      email: 'ahmed@trackora.com',
-      status: 'active',
-      zone: 'Cairo - Maadi',
-      currentTasks: 5,
-      capacity: 12,
-      rating: 4.5,
-      joinedAt: '2024-03-10',
-    },
-    {
-      id: 'c3',
-      name: 'Sara Khaled',
-      phone: '01005551234',
-      email: 'sara@trackora.com',
-      status: 'inactive',
-      zone: 'Alexandria',
-      currentTasks: 0,
-      capacity: 10,
-      rating: 4.9,
-      joinedAt: '2024-06-01',
-    },
-  ]);
+export class CourierManagementPageComponent implements OnInit {
+  private readonly courierRepo = inject(CourierRepository);
+
+  readonly couriers = signal<Courier[]>([]);
+
+  ngOnInit(): void {
+    this.loadCouriers();
+  }
+
+  private async loadCouriers(): Promise<void> {
+    try {
+      const tasks = await firstValueFrom(this.courierRepo.getTasks());
+      this.couriers.set(tasks as Courier[]);
+    } catch {
+      // Keep empty list on error
+      this.couriers.set([]);
+    }
+  }
 
   toggleStatus(courier: Courier): void {
     this.couriers.update((list) =>
@@ -169,5 +151,9 @@ export class CourierManagementPageComponent {
           : c
       )
     );
+  }
+
+  trackByCourierId(_index: number, courier: Courier): string {
+    return courier.id;
   }
 }
