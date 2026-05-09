@@ -10,3 +10,4 @@ export * from './lib/entities/zone.entity';
 export * from './lib/value-objects/money.vo';
 export * from './lib/value-objects/phone-number.vo';
 export * from './lib/rules/shipment-state-machine';
+export * from './lib/realtime-events';
