@@ -8,7 +8,7 @@ export class SseTransport implements RealTimeTransport {
 
   connect(): void {
     if (this.eventSource) return;
-    this.eventSource = new EventSource('/api/v1/events/stream', {
+    this.eventSource = new EventSource('/v1/events/stream', {
       withCredentials: true,
     });
     this.eventSource.onmessage = (msg) => {

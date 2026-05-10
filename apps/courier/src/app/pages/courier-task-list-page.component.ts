@@ -1,14 +1,15 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { courierDb, CachedTask } from '../../services/offline-store.service';
-import { OfflineSyncService } from '../../services/offline-sync.service';
+import { courierDb, CachedTask } from '../services/offline-store.service';
+import { OfflineSyncService } from '../services/offline-sync.service';
 
 @Component({
   selector: 'app-courier-task-list-page',
   standalone: true,
   imports: [CommonModule, RouterLink, TranslateModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="task-list">
       <div class="task-header">
@@ -37,7 +38,7 @@ import { OfflineSyncService } from '../../services/offline-sync.service';
 
       <div class="conflict-panel" *ngIf="showConflicts()">
         <h4>Sync Conflicts</h4>
-        <div class="conflict-item" *ngFor="let item of conflictItems()">
+        <div class="conflict-item" *ngFor="let item of conflictItems(); trackBy: trackByConflictId">
           <div class="conflict-header">
             <span class="conflict-type">{{ item.type }}</span>
             <span class="conflict-retry">Retry {{ item.retryCount }}/3</span>
@@ -52,7 +53,7 @@ import { OfflineSyncService } from '../../services/offline-sync.service';
 
       <div class="task-filters">
         <button
-          *ngFor="let filter of filters"
+          *ngFor="let filter of filters; trackBy: trackByFilterValue"
           [class.active]="activeFilter() === filter.value"
           (click)="setFilter(filter.value)"
         >
@@ -64,7 +65,7 @@ import { OfflineSyncService } from '../../services/offline-sync.service';
       <div class="task-cards">
         <a
           class="task-card"
-          *ngFor="let task of filteredTasks()"
+          *ngFor="let task of filteredTasks(); trackBy: trackByTaskId"
           [routerLink]="['/tasks', task.id]"
         >
           <div class="task-card-header">
@@ -135,7 +136,7 @@ import { OfflineSyncService } from '../../services/offline-sync.service';
     .empty-state { text-align: center; padding: 2rem; color: var(--trackora-text-secondary); }
   `],
 })
-export class CourierTaskListPageComponent implements OnInit {
+export class CourierTaskListPageComponent implements OnInit, OnDestroy {
   private readonly syncService = inject(OfflineSyncService);
 
   readonly tasks = signal<CachedTask[]>([]);
@@ -161,13 +162,33 @@ export class CourierTaskListPageComponent implements OnInit {
     return this.tasks().filter((t) => t.status === filter);
   };
 
+  private onlineHandler = () => this.isOnline.set(true);
+  private offlineHandler = () => this.isOnline.set(false);
+
   ngOnInit(): void {
     this.loadTasks();
     this.loadPendingCount();
     this.loadConflicts();
 
-    window.addEventListener('online', () => this.isOnline.set(true));
-    window.addEventListener('offline', () => this.isOnline.set(false));
+    window.addEventListener('online', this.onlineHandler);
+    window.addEventListener('offline', this.offlineHandler);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('online', this.onlineHandler);
+    window.removeEventListener('offline', this.offlineHandler);
+  }
+
+  trackByTaskId(_index: number, task: CachedTask): string {
+    return task.id;
+  }
+
+  trackByConflictId(_index: number, item: { id: string }): string {
+    return item.id;
+  }
+
+  trackByFilterValue(_index: number, filter: { value: string }): string {
+    return filter.value;
   }
 
   private async loadTasks(): Promise<void> {

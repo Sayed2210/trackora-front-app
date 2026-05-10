@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '@trackora/core/auth';
 
 export const appRoutes: Routes = [
   {
     path: '',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/courier-layout.component').then((m) => m.CourierLayoutComponent),
     children: [

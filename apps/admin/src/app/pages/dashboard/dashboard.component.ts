@@ -1,9 +1,8 @@
-import { Component, OnInit, signal, inject, OnDestroy } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { ShipmentRepository, WalletRepository } from '@trackora/shared/data-access';
-import { ShipmentStatus } from '@trackora/shared/domain';
+import { AdminRepository } from '@trackora/shared/data-access';
 import { EgpCurrencyPipe, LocalDatePipe } from '@trackora/shared/ui';
 import { firstValueFrom } from 'rxjs';
 
@@ -28,19 +27,73 @@ interface RealtimeAlert {
   message: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
   timestamp: string;
+  read?: boolean;
+}
+
+interface TodayStats {
+  shipmentsCreated?: number;
+  shipmentsDelivered?: number;
+  shipmentsFailed?: number;
+  totalCodCollected?: number;
+}
+
+interface AdminDashboardData {
+  [key: string]: unknown;
+  today?: TodayStats;
+  todayShipments?: number;
+  deliveredToday?: number;
+  failedToday?: number;
+  totalCod?: number;
+  pendingAssignments?: number;
+  subtitles?: Record<string, string>;
+  courierStatus?: {
+    online?: number;
+    offline?: number;
+    onDelivery?: number;
+    total?: number;
+  };
+  couriers?: {
+    online?: number;
+    offline?: number;
+    onDelivery?: number;
+    total?: number;
+  };
+  couriersOnline?: number;
+  couriersOffline?: number;
+  alerts?: Array<{
+    id?: string;
+    type?: string;
+    message?: string;
+    title?: string;
+    severity?: string;
+    timestamp?: string;
+    createdAt?: string;
+    read?: boolean;
+  }>;
+  notifications?: Array<{
+    id?: string;
+    type?: string;
+    message?: string;
+    title?: string;
+    severity?: string;
+    timestamp?: string;
+    createdAt?: string;
+    read?: boolean;
+  }>;
 }
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, EgpCurrencyPipe, LocalDatePipe],
+  imports: [CommonModule, RouterLink, TranslateModule, LocalDatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="admin-dashboard">
       <h1>Admin Dashboard</h1>
       <p class="subtitle">Operations overview and real-time monitoring</p>
 
       <div class="kpi-grid">
-        <div class="kpi-card" *ngFor="let kpi of kpis()">
+        <div class="kpi-card" *ngFor="let kpi of kpis(); trackBy: trackByKpiLabel">
           <div class="kpi-icon" [style.background]="kpi.color + '20'" [style.color]="kpi.color">
             {{ kpi.icon }}
           </div>
@@ -84,7 +137,7 @@ interface RealtimeAlert {
             <span class="alert-badge" *ngIf="unreadAlerts() > 0">{{ unreadAlerts() }}</span>
           </div>
           <div class="alerts-list">
-            <div class="alert-item" *ngFor="let alert of alerts()" [class]="alert.severity">
+            <div class="alert-item" *ngFor="let alert of alerts(); trackBy: trackByAlertId" [class]="alert.severity">
               <div class="alert-icon">{{ getAlertIcon(alert.type) }}</div>
               <div class="alert-content">
                 <span class="alert-message">{{ alert.message }}</span>
@@ -173,10 +226,8 @@ interface RealtimeAlert {
     .quick-link .icon { font-size: 1.5rem; }
   `],
 })
-export class DashboardComponent implements OnInit, OnDestroy {
-  private readonly shipmentRepo = inject(ShipmentRepository);
-  private readonly walletRepo = inject(WalletRepository);
-  private sseInterval: any;
+export class DashboardComponent implements OnInit {
+  private readonly adminRepo = inject(AdminRepository);
 
   readonly kpis = signal<AdminKpi[]>([]);
   readonly courierStatus = signal<CourierStatus>({ online: 0, offline: 0, onDelivery: 0, total: 0 });
@@ -185,105 +236,101 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDashboardData();
-    this.startSseSimulation();
-  }
-
-  ngOnDestroy(): void {
-    clearInterval(this.sseInterval);
   }
 
   private async loadDashboardData(): Promise<void> {
     try {
-      const [shipmentsResult] = await Promise.all([
-        firstValueFrom(this.shipmentRepo.findAll({ page: 1, limit: 100 })),
-      ]);
+      const dashboard = await firstValueFrom(this.adminRepo.getDashboard());
 
-      const shipments = shipmentsResult.data;
-      const today = new Date().toISOString().split('T')[0];
-      const todayShipments = shipments.filter((s) => s.createdAt.startsWith(today));
-      const todayDelivered = shipments.filter((s) => s.status === ShipmentStatus.DELIVERED && s.updatedAt.startsWith(today));
-      const todayFailed = shipments.filter((s) => s.status === ShipmentStatus.FAILED && s.updatedAt.startsWith(today));
-      const totalCod = shipments.filter((s) => s.codAmount).reduce((sum, s) => sum + (s.codAmount || 0), 0);
-
-      this.kpis.set([
-        { label: "Today's Shipments", value: todayShipments.length, icon: '📦', color: '#3B82F6', subtitle: '+5 vs yesterday' },
-        { label: 'Delivered Today', value: todayDelivered.length, icon: '✅', color: '#10B981', subtitle: `${Math.round((todayDelivered.length / Math.max(todayShipments.length, 1)) * 100)}% success rate` },
-        { label: 'Failed Today', value: todayFailed.length, icon: '⚠️', color: '#EF4444' },
-        { label: 'Total COD', value: totalCod.toFixed(0) + ' EGP', icon: '💰', color: '#F59E0B' },
-      ]);
-
-      // Mock courier status
-      this.courierStatus.set({
-        online: 12,
-        offline: 3,
-        onDelivery: 8,
-        total: 23,
-      });
+      this.setKpis(dashboard);
+      this.setCourierStatus(dashboard);
+      this.setAlerts(dashboard);
     } catch {
-      this.loadFallbackData();
+      this.clearDashboard();
     }
   }
 
-  private loadFallbackData(): void {
-    this.kpis.set([
-      { label: "Today's Shipments", value: 45, icon: '📦', color: '#3B82F6', subtitle: '+5 vs yesterday' },
-      { label: 'Delivered Today', value: 38, icon: '✅', color: '#10B981', subtitle: '84% success rate' },
-      { label: 'Failed Today', value: 4, icon: '⚠️', color: '#EF4444' },
-      { label: 'Total COD', value: '8,450 EGP', icon: '💰', color: '#F59E0B' },
-    ]);
+  private setKpis(data: AdminDashboardData): void {
+    const today = data?.today ?? {};
 
+    const kpiConfig: Record<string, { label: string; icon: string; color: string; value?: number | null }> = {
+      todayShipments: { label: "Today's Shipments", icon: '📦', color: '#3B82F6', value: today.shipmentsCreated ?? data?.todayShipments },
+      deliveredToday: { label: 'Delivered Today', icon: '✅', color: '#10B981', value: today.shipmentsDelivered ?? data?.deliveredToday },
+      failedToday: { label: 'Failed Today', icon: '⚠️', color: '#EF4444', value: today.shipmentsFailed ?? data?.failedToday },
+      totalCod: { label: 'Total COD', icon: '💰', color: '#F59E0B', value: today.totalCodCollected ?? data?.totalCod },
+      pendingAssignments: { label: 'Pending Assignments', icon: '📋', color: '#8B5CF6', value: data?.pendingAssignments },
+    };
+
+    const builtKpis: AdminKpi[] = [];
+
+    for (const [key, config] of Object.entries(kpiConfig)) {
+      const raw = config.value;
+      if (raw === undefined || raw === null) continue;
+
+      const value = key === 'totalCod' ? `${raw as number} EGP` : raw as string | number;
+      const subtitle = data?.subtitles?.[key];
+
+      builtKpis.push({
+        label: config.label,
+        value,
+        icon: config.icon,
+        color: config.color,
+        subtitle,
+      });
+    }
+
+    this.kpis.set(builtKpis);
+  }
+
+  private setCourierStatus(data: AdminDashboardData): void {
+    const status = data?.courierStatus ?? data?.couriers;
+
+    if (status) {
+      this.courierStatus.set({
+        online: status.online ?? 0,
+        offline: status.offline ?? 0,
+        onDelivery: status.onDelivery ?? 0,
+        total: status.total ?? (status.online ?? 0) + (status.offline ?? 0) + (status.onDelivery ?? 0),
+      });
+      return;
+    }
+
+    // Fallback for root-level courier fields from admin/dashboard response
+    const online = data?.couriersOnline ?? 0;
+    const offline = data?.couriersOffline ?? 0;
     this.courierStatus.set({
-      online: 12,
-      offline: 3,
-      onDelivery: 8,
-      total: 23,
+      online,
+      offline,
+      onDelivery: 0,
+      total: online + offline,
     });
   }
 
-  private startSseSimulation(): void {
-    // Simulate SSE events with periodic alerts
-    this.sseInterval = setInterval(() => {
-      const alertTypes: RealtimeAlert['type'][] = ['cash_risk', 'failed_spike', 'delayed_shipment', 'system'];
-      const severities: RealtimeAlert['severity'][] = ['low', 'medium', 'high', 'critical'];
-      const messages = [
-        'High cash collection risk detected',
-        'Failed delivery spike in Zone 3',
-        'Shipment TRK-2045 delayed > 24h',
-        'Courier Mohamed Ali went offline',
-        'New merchant registration pending approval',
-      ];
+  private setAlerts(data: AdminDashboardData): void {
+    const rawAlerts = data?.alerts ?? data?.notifications ?? [];
+    if (!Array.isArray(rawAlerts)) {
+      this.alerts.set([]);
+      this.unreadAlerts.set(0);
+      return;
+    }
 
-      if (Math.random() > 0.7) {
-        const newAlert: RealtimeAlert = {
-          id: crypto.randomUUID(),
-          type: alertTypes[Math.floor(Math.random() * alertTypes.length)],
-          message: messages[Math.floor(Math.random() * messages.length)],
-          severity: severities[Math.floor(Math.random() * severities.length)],
-          timestamp: new Date().toISOString(),
-        };
-        this.alerts.update((list) => [newAlert, ...list].slice(0, 10));
-        this.unreadAlerts.update((n) => n + 1);
-      }
-    }, 8000);
+    const mapped: RealtimeAlert[] = rawAlerts.map((a: NonNullable<AdminDashboardData['alerts']>[number]) => ({
+      id: a.id ?? crypto.randomUUID(),
+      type: (a.type ?? 'system') as RealtimeAlert['type'],
+      message: a.message ?? a.title ?? '',
+      severity: (a.severity ?? 'medium') as RealtimeAlert['severity'],
+      timestamp: a.timestamp ?? a.createdAt ?? new Date().toISOString(),
+    }));
 
-    // Initial alerts
-    this.alerts.set([
-      {
-        id: '1',
-        type: 'cash_risk',
-        message: 'High cash collection risk detected',
-        severity: 'high',
-        timestamp: new Date(Date.now() - 300000).toISOString(),
-      },
-      {
-        id: '2',
-        type: 'failed_spike',
-        message: 'Failed delivery spike in Zone 3',
-        severity: 'critical',
-        timestamp: new Date(Date.now() - 600000).toISOString(),
-      },
-    ]);
-    this.unreadAlerts.set(2);
+    this.alerts.set(mapped.slice(0, 10));
+    this.unreadAlerts.set(mapped.filter((a) => !a.read).length);
+  }
+
+  private clearDashboard(): void {
+    this.kpis.set([]);
+    this.courierStatus.set({ online: 0, offline: 0, onDelivery: 0, total: 0 });
+    this.alerts.set([]);
+    this.unreadAlerts.set(0);
   }
 
   getAlertIcon(type: string): string {
@@ -294,5 +341,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       system: '🔔',
     };
     return icons[type] || '🔔';
+  }
+
+  trackByKpiLabel(_index: number, kpi: AdminKpi): string {
+    return kpi.label;
+  }
+
+  trackByAlertId(_index: number, alert: RealtimeAlert): string {
+    return alert.id;
   }
 }

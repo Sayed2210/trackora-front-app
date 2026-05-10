@@ -1,16 +1,18 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { Shipment, TimelineEvent, ShipmentStatus } from '@trackora/shared/domain';
+import { ShipmentRepository } from '@trackora/shared/data-access';
 import { LocalDatePipe } from '@trackora/shared/ui';
 
 @Component({
   selector: 'app-tracking-page',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, TranslateModule, LocalDatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tracking-page">
       <div class="tracking-header">
@@ -71,7 +73,7 @@ import { LocalDatePipe } from '@trackora/shared/ui';
         <div class="timeline" *ngIf="timeline().length">
           <h3>Shipment Timeline</h3>
           <div class="timeline-list">
-            <div class="timeline-item" *ngFor="let event of timeline(); let last = last" [class.last]="last">
+            <div class="timeline-item" *ngFor="let event of timeline(); trackBy: trackByEventId; let last = last" [class.last]="last">
               <div class="timeline-marker" [class]="event.status"></div>
               <div class="timeline-content">
                 <div class="timeline-status">{{ event.status }}</div>
@@ -142,7 +144,7 @@ import { LocalDatePipe } from '@trackora/shared/ui';
 export class TrackingPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
-  private readonly http = inject(HttpClient);
+  private readonly repo = inject(ShipmentRepository);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -167,90 +169,25 @@ export class TrackingPageComponent implements OnInit {
     this.loadTracking(trackingNumber);
   }
 
-  private loadTracking(trackingNumber: string): void {
+  private async loadTracking(trackingNumber: string): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
     this.shipment.set(null);
     this.timeline.set([]);
 
-    // In production, this would call the real API
-    // For now, simulate with mock data after a short delay
-    setTimeout(() => {
+    try {
+      const shipment = await firstValueFrom(this.repo.findByTrackingNumber(trackingNumber));
+      this.shipment.set(shipment);
+      const timeline = await firstValueFrom(this.repo.getTimeline(shipment.id));
+      this.timeline.set(timeline);
+    } catch (err: any) {
+      this.error.set(err.message ?? 'Shipment not found. Please check your tracking number and try again.');
+    } finally {
       this.loading.set(false);
-      if (trackingNumber.toLowerCase().startsWith('trk-')) {
-        this.shipment.set(this.createMockShipment(trackingNumber));
-        this.timeline.set(this.createMockTimeline());
-      } else {
-        this.error.set('Shipment not found. Please check your tracking number and try again.');
-      }
-    }, 800);
+    }
   }
 
-  private createMockShipment(trackingNumber: string): Shipment {
-    return {
-      id: 'ship-' + trackingNumber,
-      trackingNumber,
-      merchantId: 'merch-001',
-      merchantName: 'Demo Merchant',
-      customerName: 'Ahmed Mohamed',
-      customerPhone: '01001234567',
-      address: {
-        id: 'addr-001',
-        street: '123 Main Street',
-        building: 'Building A',
-        floor: '3',
-        apartment: '12',
-        governorate: 'Cairo',
-        city: 'Nasr City',
-        zone: 'Zone 1',
-      },
-      status: ShipmentStatus.OUT_FOR_DELIVERY,
-      type: 'COD' as any,
-      codAmount: 150,
-      deliveryFee: 25,
-      weight: 2.5,
-      notes: 'Leave at reception',
-      assignedCourierId: 'cour-001',
-      assignedCourierName: 'Mohamed Ali',
-      createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-      updatedAt: new Date(Date.now() - 3600000).toISOString(),
-      estimatedDelivery: new Date(Date.now() + 3600000 * 4).toISOString(),
-    };
-  }
-
-  private createMockTimeline(): TimelineEvent[] {
-    const now = Date.now();
-    return [
-      {
-        id: 'evt-001',
-        shipmentId: 'ship-001',
-        status: ShipmentStatus.PENDING,
-        timestamp: new Date(now - 86400000 * 2).toISOString(),
-        actorId: 'merch-001',
-        actorName: 'Demo Merchant',
-        actorRole: 'MERCHANT',
-        notes: 'Shipment created',
-      },
-      {
-        id: 'evt-002',
-        shipmentId: 'ship-001',
-        status: ShipmentStatus.CONFIRMED,
-        timestamp: new Date(now - 86400000 * 1.5).toISOString(),
-        actorId: 'admin-001',
-        actorName: 'System',
-        actorRole: 'ADMIN',
-        notes: 'Shipment confirmed and ready for pickup',
-      },
-      {
-        id: 'evt-003',
-        shipmentId: 'ship-001',
-        status: ShipmentStatus.OUT_FOR_DELIVERY,
-        timestamp: new Date(now - 3600000 * 2).toISOString(),
-        actorId: 'cour-001',
-        actorName: 'Mohamed Ali',
-        actorRole: 'COURIER',
-        notes: 'Out for delivery',
-      },
-    ];
+  trackByEventId(_index: number, event: TimelineEvent): string {
+    return event.id;
   }
 }

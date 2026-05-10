@@ -1,8 +1,11 @@
 import { Routes } from '@angular/router';
+import { authGuard, roleGuard } from '@trackora/core/auth';
+import { UserRole } from '@trackora/shared/domain';
 
 export const appRoutes: Routes = [
   {
     path: '',
+    canActivate: [authGuard, roleGuard([UserRole.ADMIN, UserRole.SUPER_ADMIN])],
     loadComponent: () =>
       import('./layout/admin-layout.component').then((m) => m.AdminLayoutComponent),
     children: [
@@ -16,8 +19,8 @@ export const appRoutes: Routes = [
       },
       {
         path: 'shipments',
-        loadComponent: () =>
-          import('@trackora/shipments-feature').then((m) => m.ShipmentsFeatureComponent),
+        loadChildren: () =>
+          import('@trackora/shipments-feature').then((m) => m.shipmentsRoutes),
       },
       {
         path: 'assignments',
@@ -28,6 +31,11 @@ export const appRoutes: Routes = [
         path: 'analytics',
         loadComponent: () =>
           import('@trackora/analytics-feature').then((m) => m.AnalyticsFeatureComponent),
+      },
+      {
+        path: 'zones',
+        loadChildren: () =>
+          import('@trackora/zones-feature').then((m) => m.zonesRoutes),
       },
       {
         path: 'couriers',

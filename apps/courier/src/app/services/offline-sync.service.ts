@@ -1,8 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { CourierRepository } from '@trackora/shared/data-access';
 import { courierDb, PendingUpdate } from './offline-store.service';
 
 @Injectable({ providedIn: 'root' })
 export class OfflineSyncService {
+  private readonly courierRepo = inject(CourierRepository);
   private syncInProgress = false;
 
   async queueUpdate(taskId: string, type: PendingUpdate['type'], payload: any): Promise<void> {
@@ -47,12 +50,50 @@ export class OfflineSyncService {
   }
 
   private async sendUpdate(update: PendingUpdate): Promise<void> {
-    // In production, this calls the real API
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
     if (update.retryCount >= 3) {
       throw new Error('Max retries exceeded');
+    }
+
+    switch (update.type) {
+      case 'STATUS_UPDATE':
+        await firstValueFrom(
+          this.courierRepo.updateTaskStatus(update.taskId, {
+            status: update.payload.status,
+            notes: update.payload.notes,
+          })
+        );
+        break;
+      case 'COD_COLLECTED':
+        await firstValueFrom(
+          this.courierRepo.updateTaskStatus(update.taskId, {
+            status: 'DELIVERED',
+            collectedCash: update.payload.amount,
+            notes: update.payload.notes,
+          })
+        );
+        break;
+      case 'PHOTO_UPLOAD':
+        // In production, upload photo to storage first, then send URL
+        await firstValueFrom(
+          this.courierRepo.updateTaskStatus(update.taskId, {
+            status: update.payload.status,
+            photoUrl: update.payload.photoUrl,
+            notes: update.payload.notes,
+          })
+        );
+        break;
+      case 'SIGNATURE_UPLOAD':
+        // In production, upload signature to storage first, then send URL
+        await firstValueFrom(
+          this.courierRepo.updateTaskStatus(update.taskId, {
+            status: update.payload.status,
+            signatureUrl: update.payload.signatureUrl,
+            notes: update.payload.notes,
+          })
+        );
+        break;
+      default:
+        throw new Error(`Unknown update type: ${update.type}`);
     }
   }
 

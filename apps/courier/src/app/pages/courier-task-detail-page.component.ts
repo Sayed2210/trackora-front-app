@@ -1,15 +1,16 @@
-import { Component, inject, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { courierDb, CachedTask } from '../../services/offline-store.service';
-import { OfflineSyncService } from '../../services/offline-sync.service';
+import { courierDb, CachedTask } from '../services/offline-store.service';
+import { OfflineSyncService } from '../services/offline-sync.service';
 
 @Component({
   selector: 'app-courier-task-detail-page',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, TranslateModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="task-detail" *ngIf="task() as t">
       <div class="detail-header">
@@ -141,7 +142,7 @@ import { OfflineSyncService } from '../../services/offline-sync.service';
     .status-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   `],
 })
-export class CourierTaskDetailPageComponent implements OnInit {
+export class CourierTaskDetailPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly syncService = inject(OfflineSyncService);
@@ -161,9 +162,27 @@ export class CourierTaskDetailPageComponent implements OnInit {
   private canvasContext: CanvasRenderingContext2D | null = null;
   private isDrawing = false;
 
+  private mouseDownHandler!: (e: MouseEvent) => void;
+  private mouseMoveHandler!: (e: MouseEvent) => void;
+  private mouseUpHandler!: () => void;
+  private touchStartHandler!: (e: TouchEvent) => void;
+  private touchMoveHandler!: (e: TouchEvent) => void;
+  private touchEndHandler!: () => void;
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) this.loadTask(id);
+  }
+
+  ngOnDestroy(): void {
+    const canvas = this.signaturePad?.nativeElement;
+    if (!canvas) return;
+    canvas.removeEventListener('mousedown', this.mouseDownHandler);
+    canvas.removeEventListener('mousemove', this.mouseMoveHandler);
+    canvas.removeEventListener('mouseup', this.mouseUpHandler);
+    canvas.removeEventListener('touchstart', this.touchStartHandler);
+    canvas.removeEventListener('touchmove', this.touchMoveHandler);
+    canvas.removeEventListener('touchend', this.touchEndHandler);
   }
 
   private async loadTask(id: string): Promise<void> {
@@ -187,12 +206,19 @@ export class CourierTaskDetailPageComponent implements OnInit {
     this.canvasContext.strokeStyle = '#000';
     this.canvasContext.lineWidth = 2;
 
-    canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
-    canvas.addEventListener('mousemove', (e) => this.draw(e));
-    canvas.addEventListener('mouseup', () => this.stopDrawing());
-    canvas.addEventListener('touchstart', (e) => this.startDrawing(e.touches[0] as any));
-    canvas.addEventListener('touchmove', (e) => this.draw(e.touches[0] as any));
-    canvas.addEventListener('touchend', () => this.stopDrawing());
+    this.mouseDownHandler = (e) => this.startDrawing(e);
+    this.mouseMoveHandler = (e) => this.draw(e);
+    this.mouseUpHandler = () => this.stopDrawing();
+    this.touchStartHandler = (e) => this.startDrawing(e.touches[0] as any);
+    this.touchMoveHandler = (e) => this.draw(e.touches[0] as any);
+    this.touchEndHandler = () => this.stopDrawing();
+
+    canvas.addEventListener('mousedown', this.mouseDownHandler);
+    canvas.addEventListener('mousemove', this.mouseMoveHandler);
+    canvas.addEventListener('mouseup', this.mouseUpHandler);
+    canvas.addEventListener('touchstart', this.touchStartHandler);
+    canvas.addEventListener('touchmove', this.touchMoveHandler);
+    canvas.addEventListener('touchend', this.touchEndHandler);
   }
 
   private startDrawing(e: MouseEvent | TouchEvent): void {
@@ -280,7 +306,7 @@ export class CourierTaskDetailPageComponent implements OnInit {
   captureGps(): void {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        this.gpsCoords.set(`${position.coords.lat}, ${position.coords.lng}`);
+        this.gpsCoords.set(`${position.coords.latitude}, ${position.coords.longitude}`);
         this.gpsCaptured.set(true);
       },
       () => {

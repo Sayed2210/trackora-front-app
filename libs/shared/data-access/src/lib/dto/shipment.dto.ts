@@ -38,6 +38,7 @@ export interface ShipmentResponseDto {
 export interface CreateShipmentDto {
   customerName: string;
   customerPhone: string;
+  customerPhone2?: string;
   address: {
     street: string;
     building: string;
@@ -48,16 +49,28 @@ export interface CreateShipmentDto {
     city: string;
     zone?: string;
   };
+  addressText: string;
   type: ShipmentType;
   codAmount?: number;
-  deliveryFee: number;
+  productDescription: string;
+  productValue?: number;
   weight?: number;
+  pieces?: number;
   notes?: string;
+  preferredDeliveryDate?: string;
+  zoneId?: string;
 }
 
 export interface UpdateShipmentStatusDto {
-  status: ShipmentStatus;
+  newStatus: ShipmentStatus;
+  otp?: string;
+  collectedCash?: number;
   notes?: string;
+  reason?: string;
+  photoUrl?: string;
+  signatureUrl?: string;
+  gpsLocation?: object;
+  returnReason?: ReturnReason;
 }
 
 export interface ShipmentQueryDto {
@@ -66,6 +79,10 @@ export interface ShipmentQueryDto {
   status?: ShipmentStatus;
   type?: ShipmentType;
   search?: string;
-  fromDate?: string;
-  toDate?: string;
+  trackingNumber?: string;
+  merchantId?: string;
+  courierId?: string;
+  zoneId?: string;
+  from?: string;
+  to?: string;
 }

@@ -5,7 +5,8 @@
     "declaration": true,
     "declarationMap": true,
     "inlineSources": true,
-    "types": []
+    "types": [],
+    "module": "esnext"
   },
   "include": ["src/**/*.ts"],
   "exclude": [

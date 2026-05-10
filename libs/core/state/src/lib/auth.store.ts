@@ -1,4 +1,4 @@
-import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
+import { createFeature, createReducer, createSelector, createAction, props, on } from '@ngrx/store';
 import { User } from '@trackora/shared/domain';
 
 export interface AuthState {
@@ -13,18 +13,15 @@ const initialState: AuthState = {
   error: null,
 };
 
+export const loginSuccess = createAction('[Auth] Login Success', props<{ user: User }>());
+export const logout = createAction('[Auth] Logout');
+
 export const authFeature = createFeature({
   name: 'auth',
   reducer: createReducer(
     initialState,
-    on(
-      { type: '[Auth] Login Success', user: null as unknown as User },
-      (state, { user }) => ({ ...state, user, loading: false, error: null })
-    ),
-    on(
-      { type: '[Auth] Logout' },
-      () => initialState
-    )
+    on(loginSuccess, (state, { user }) => ({ ...state, user, loading: false, error: null })),
+    on(logout, () => initialState)
   ),
 });
 

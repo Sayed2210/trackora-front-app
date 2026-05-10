@@ -32,7 +32,8 @@
       "@trackora/wallet-feature": ["libs/features/wallet-feature/src/index.ts"],
       "@trackora/payouts-feature": ["libs/features/payouts-feature/src/index.ts"],
       "@trackora/tracking-feature": ["libs/features/tracking-feature/src/index.ts"],
-      "@trackora/analytics-feature": ["libs/features/analytics-feature/src/index.ts"]
+      "@trackora/analytics-feature": ["libs/features/analytics-feature/src/index.ts"],
+      "@trackora/zones-feature": ["libs/features/zones-feature/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
