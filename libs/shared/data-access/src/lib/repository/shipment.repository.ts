@@ -11,10 +11,16 @@ export class ShipmentRepository {
   constructor(private readonly api: ApiClient) {}
 
   findAll(query: ShipmentQueryDto): Observable<PaginatedResult<Shipment>> {
-    return this.api.get<{ data: ShipmentResponseDto[]; meta: PaginationMeta }>('/shipments', this.toParams(query))
+    return this.api.get<{ data: ShipmentResponseDto[]; total: number; page: number; limit: number }>('/shipments', this.toParams(query))
       .pipe(map((res) => ({
         data: res.data.map(ShipmentMapper.toDomain),
-        meta: res.meta,
+        meta: {
+          page: res.page,
+          limit: res.limit,
+          total: res.total,
+          totalItems: res.total,
+          totalPages: Math.ceil(res.total / res.limit),
+        },
       })));
   }
 

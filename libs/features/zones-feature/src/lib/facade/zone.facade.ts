@@ -36,7 +36,7 @@ export class ZoneFacade {
     this._error.set(null);
     try {
       const result = await firstValueFrom(this.repo.findAll(query));
-      this._zones.set(result);
+      this._zones.set(result.data);
     } catch (err: any) {
       this._error.set(err?.message || 'Failed to load zones');
     } finally {

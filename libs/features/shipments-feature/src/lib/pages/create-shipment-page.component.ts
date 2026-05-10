@@ -140,8 +140,8 @@ export class CreateShipmentPageComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.zonesLoading.set(true);
     try {
-      const zones = await firstValueFrom(this.zoneRepo.findAll({ isActive: true }));
-      this.zones.set(zones);
+      const zonesResult = await firstValueFrom(this.zoneRepo.findAll({ isActive: true }));
+      this.zones.set(zonesResult.data);
     } finally {
       this.zonesLoading.set(false);
     }
