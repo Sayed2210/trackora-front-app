@@ -94,8 +94,8 @@ export class ShipmentListPageComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.facade.loadShipments({ page: 1, limit: 10 });
-    const zones = await firstValueFrom(this.zoneRepo.findAll({ isActive: true }));
-    this.zones.set(zones);
+    const zonesResult = await firstValueFrom(this.zoneRepo.findAll({ isActive: true }));
+    this.zones.set(zonesResult.data);
   }
 
   onStatusChange(event: Event): void {

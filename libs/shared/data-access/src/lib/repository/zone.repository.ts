@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ApiClient } from '@trackora/core/api';
-import { Zone } from '@trackora/shared/domain';
+import { Zone, PaginatedResult, PaginationMeta } from '@trackora/shared/domain';
 import {
   ZoneResponseDto,
   CreateZoneDto,
@@ -14,10 +14,18 @@ import { ZoneMapper } from '../mapper/zone.mapper';
 export class ZoneRepository {
   constructor(private readonly api: ApiClient) {}
 
-  findAll(query?: ZoneQueryDto): Observable<Zone[]> {
-    return this.api.get<ZoneResponseDto[]>('/zones', query).pipe(
-      map((list) => list.map(ZoneMapper.toDomain)),
-    );
+  findAll(query?: ZoneQueryDto): Observable<PaginatedResult<Zone>> {
+    return this.api.get<{ data: ZoneResponseDto[]; total: number; page: number; limit: number }>('/zones', query)
+      .pipe(map((res) => ({
+        data: res.data.map(ZoneMapper.toDomain),
+        meta: {
+          page: res.page,
+          limit: res.limit,
+          total: res.total,
+          totalItems: res.total,
+          totalPages: Math.ceil(res.total / res.limit),
+        },
+      })));
   }
 
   findById(id: string): Observable<Zone> {
