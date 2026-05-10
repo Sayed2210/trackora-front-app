@@ -23,6 +23,61 @@ interface ActivityEvent {
   status?: string;
 }
 
+interface MerchantDashboardData {
+  [key: string]: unknown;
+  totalShipments?: number;
+  deliveryRate?: number;
+  avgCod?: number;
+  availableBalance?: number;
+  pending?: number;
+  failed?: number;
+  trends?: Record<string, string>;
+  recentActivity?: Array<{
+    id?: string;
+    type?: string;
+    title?: string;
+    trackingNumber?: string;
+    description?: string;
+    message?: string;
+    timestamp?: string;
+    createdAt?: string;
+    status?: string;
+  }>;
+  activities?: Array<{
+    id?: string;
+    type?: string;
+    title?: string;
+    trackingNumber?: string;
+    description?: string;
+    message?: string;
+    timestamp?: string;
+    createdAt?: string;
+    status?: string;
+  }>;
+  statusBreakdown?: {
+    delivered?: number;
+    pending?: number;
+    failed?: number;
+    returned?: number;
+  };
+}
+
+interface MerchantAnalyticsData {
+  trends?: Array<{
+    label?: string;
+    period?: string;
+    delivered?: number;
+    failed?: number;
+    pending?: number;
+  }>;
+  statusBreakdown?: {
+    delivered?: number;
+    pending?: number;
+    failed?: number;
+    returned?: number;
+  };
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -187,7 +242,7 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  private setKpis(data: any): void {
+  private setKpis(data: MerchantDashboardData): void {
     const kpiConfig: Record<string, { icon: string; color: string }> = {
       totalShipments: { icon: '📦', color: '#3B82F6' },
       deliveryRate: { icon: '✅', color: '#10B981' },
@@ -213,8 +268,8 @@ export class DashboardComponent implements OnInit {
       if (raw === undefined || raw === null) continue;
 
       const value = key === 'deliveryRate' || key === 'avgCod'
-        ? `${raw}${key === 'deliveryRate' ? '%' : ' EGP'}`
-        : raw;
+        ? `${raw as number}${key === 'deliveryRate' ? '%' : ' EGP'}`
+        : raw as string | number;
 
       builtKpis.push({
         label: labelMap[key],
@@ -228,7 +283,7 @@ export class DashboardComponent implements OnInit {
     this.kpis.set(builtKpis);
   }
 
-  private setActivities(data: any): void {
+  private setActivities(data: MerchantDashboardData): void {
     const rawActivities = data?.recentActivity ?? data?.activities ?? [];
     if (!Array.isArray(rawActivities)) {
       this.activities.set([]);
@@ -236,9 +291,9 @@ export class DashboardComponent implements OnInit {
     }
 
     this.activities.set(
-      rawActivities.map((a: any) => ({
+      rawActivities.map((a: NonNullable<MerchantDashboardData['recentActivity']>[number]) => ({
         id: a.id ?? crypto.randomUUID(),
-        type: a.type ?? 'shipment',
+        type: (a.type ?? 'shipment') as ActivityEvent['type'],
         title: a.title ?? a.trackingNumber ?? 'Activity',
         description: a.description ?? a.message ?? '',
         timestamp: a.timestamp ?? a.createdAt ?? new Date().toISOString(),
@@ -247,14 +302,14 @@ export class DashboardComponent implements OnInit {
     );
   }
 
-  private setCharts(dashboard: any, analytics: any): void {
+  private setCharts(dashboard: MerchantDashboardData, analytics: MerchantAnalyticsData): void {
     const trends = analytics?.trends ?? dashboard?.trends;
     if (Array.isArray(trends) && trends.length > 0) {
-      this.chartLabels.set(trends.map((t: any) => t.label ?? t.period ?? ''));
+      this.chartLabels.set(trends.map((t: NonNullable<MerchantAnalyticsData['trends']>[number]) => t.label ?? t.period ?? ''));
       const datasets = [
-        { label: 'Delivered', data: trends.map((t: any) => t.delivered ?? 0), borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.2)' },
-        { label: 'Failed', data: trends.map((t: any) => t.failed ?? 0), borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.2)' },
-        { label: 'Pending', data: trends.map((t: any) => t.pending ?? 0), borderColor: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.2)' },
+        { label: 'Delivered', data: trends.map((t: NonNullable<MerchantAnalyticsData['trends']>[number]) => t.delivered ?? 0), borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.2)' },
+        { label: 'Failed', data: trends.map((t: NonNullable<MerchantAnalyticsData['trends']>[number]) => t.failed ?? 0), borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.2)' },
+        { label: 'Pending', data: trends.map((t: NonNullable<MerchantAnalyticsData['trends']>[number]) => t.pending ?? 0), borderColor: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.2)' },
       ];
       this.shipmentTrendDatasets.set(datasets);
     }

@@ -30,6 +30,47 @@ interface RealtimeAlert {
   read?: boolean;
 }
 
+interface AdminDashboardData {
+  [key: string]: unknown;
+  todayShipments?: number;
+  deliveredToday?: number;
+  failedToday?: number;
+  totalCod?: number;
+  subtitles?: Record<string, string>;
+  courierStatus?: {
+    online?: number;
+    offline?: number;
+    onDelivery?: number;
+    total?: number;
+  };
+  couriers?: {
+    online?: number;
+    offline?: number;
+    onDelivery?: number;
+    total?: number;
+  };
+  alerts?: Array<{
+    id?: string;
+    type?: string;
+    message?: string;
+    title?: string;
+    severity?: string;
+    timestamp?: string;
+    createdAt?: string;
+    read?: boolean;
+  }>;
+  notifications?: Array<{
+    id?: string;
+    type?: string;
+    message?: string;
+    title?: string;
+    severity?: string;
+    timestamp?: string;
+    createdAt?: string;
+    read?: boolean;
+  }>;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -198,7 +239,7 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  private setKpis(data: any): void {
+  private setKpis(data: AdminDashboardData): void {
     const kpiConfig: Record<string, { label: string; icon: string; color: string }> = {
       todayShipments: { label: "Today's Shipments", icon: '📦', color: '#3B82F6' },
       deliveredToday: { label: 'Delivered Today', icon: '✅', color: '#10B981' },
@@ -212,7 +253,7 @@ export class DashboardComponent implements OnInit {
       const raw = data?.[key];
       if (raw === undefined || raw === null) continue;
 
-      const value = key === 'totalCod' ? `${raw} EGP` : raw;
+      const value = key === 'totalCod' ? `${raw as number} EGP` : raw as string | number;
       const subtitle = data?.subtitles?.[key];
 
       builtKpis.push({
@@ -227,7 +268,7 @@ export class DashboardComponent implements OnInit {
     this.kpis.set(builtKpis);
   }
 
-  private setCourierStatus(data: any): void {
+  private setCourierStatus(data: AdminDashboardData): void {
     const status = data?.courierStatus ?? data?.couriers;
     if (!status) {
       this.courierStatus.set({ online: 0, offline: 0, onDelivery: 0, total: 0 });
@@ -242,7 +283,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  private setAlerts(data: any): void {
+  private setAlerts(data: AdminDashboardData): void {
     const rawAlerts = data?.alerts ?? data?.notifications ?? [];
     if (!Array.isArray(rawAlerts)) {
       this.alerts.set([]);
@@ -250,11 +291,11 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    const mapped: RealtimeAlert[] = rawAlerts.map((a: any) => ({
+    const mapped: RealtimeAlert[] = rawAlerts.map((a: NonNullable<AdminDashboardData['alerts']>[number]) => ({
       id: a.id ?? crypto.randomUUID(),
-      type: a.type ?? 'system',
+      type: (a.type ?? 'system') as RealtimeAlert['type'],
       message: a.message ?? a.title ?? '',
-      severity: a.severity ?? 'medium',
+      severity: (a.severity ?? 'medium') as RealtimeAlert['severity'],
       timestamp: a.timestamp ?? a.createdAt ?? new Date().toISOString(),
     }));
 

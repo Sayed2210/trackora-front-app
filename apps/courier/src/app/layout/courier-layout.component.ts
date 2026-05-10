@@ -1,6 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Renderer2, effect } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { AuthService } from '@trackora/core/auth';
+import { layoutFeature } from '@trackora/core/state';
 
 @Component({
   selector: 'app-courier-layout',
@@ -15,7 +18,7 @@ import { AuthService } from '@trackora/core/auth';
           <button class="logout-btn" (click)="logout()">Logout</button>
         </div>
       </header>
-      <main class="main-content">
+      <main id="main-content" class="main-content">
         <router-outlet />
       </main>
       <nav class="bottom-nav">
@@ -53,6 +56,16 @@ import { AuthService } from '@trackora/core/auth';
 export class CourierLayoutComponent {
   readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly store = inject(Store);
+  private readonly renderer = inject(Renderer2);
+  private readonly document = inject(DOCUMENT);
+
+  constructor() {
+    effect(() => {
+      const direction = this.store.selectSignal(layoutFeature.selectDirection)();
+      this.renderer.setAttribute(this.document.documentElement, 'dir', direction);
+    });
+  }
 
   logout(): void {
     this.authService.logout();
