@@ -23,6 +23,10 @@ import { firstValueFrom } from 'rxjs';
         </div>
       </div>
       <app-loading-spinner *ngIf="facade.loading()" />
+      <div class="error" *ngIf="facade.error()">
+        {{ facade.error() }}
+        <button (click)="facade.loadShipments({ page: 1, limit: 10 })">Retry</button>
+      </div>
       <div class="filters">
         <select (change)="onStatusChange($event)">
           <option value="">{{ 'common.filter' | translate }} Status</option>
@@ -70,6 +74,7 @@ import { firstValueFrom } from 'rxjs';
     .actions { display: flex; gap: 0.5rem; }
     .filters { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
     .filters select { padding: 0.5rem; border: 1px solid var(--trackora-border); border-radius: 4px; min-width: 160px; }
+    .error { background: #FEE2E2; color: #991B1B; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
     .shipment-table { width: 100%; border-collapse: collapse; background: white; }
     .shipment-table th, .shipment-table td { padding: 0.75rem; border-bottom: 1px solid var(--trackora-border); text-align: start; }
     .shipment-table tr { cursor: pointer; }

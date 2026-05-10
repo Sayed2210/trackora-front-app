@@ -31,18 +31,18 @@ export class ShipmentMapper {
 
   private static mapAddress(dtoAddress: ShipmentResponseDto['address']): Address {
     return {
-      id: dtoAddress.id,
-      street: dtoAddress.street,
-      building: dtoAddress.building,
-      floor: dtoAddress.floor,
-      apartment: dtoAddress.apartment,
+      id: (dtoAddress as any).id ?? '',
+      street: (dtoAddress as any).text ?? (dtoAddress as any).street ?? '',
+      building: (dtoAddress as any).building ?? '',
+      floor: (dtoAddress as any).floor,
+      apartment: (dtoAddress as any).apartment,
       landmark: dtoAddress.landmark,
       governorate: dtoAddress.governorate,
       city: dtoAddress.city,
       zone: dtoAddress.zone,
-      lat: dtoAddress.lat,
-      lng: dtoAddress.lng,
-      geocodingConfidence: dtoAddress.geocodingConfidence,
+      lat: (dtoAddress as any).lat,
+      lng: (dtoAddress as any).lng,
+      geocodingConfidence: (dtoAddress as any).geocodingConfidence,
     };
   }
 }

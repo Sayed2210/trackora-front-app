@@ -15,17 +15,45 @@ export class ZoneRepository {
   constructor(private readonly api: ApiClient) {}
 
   findAll(query?: ZoneQueryDto): Observable<PaginatedResult<Zone>> {
-    return this.api.get<{ data: ZoneResponseDto[]; total: number; page: number; limit: number }>('/zones', query)
-      .pipe(map((res) => ({
-        data: res.data.map(ZoneMapper.toDomain),
-        meta: {
-          page: res.page,
-          limit: res.limit,
-          total: res.total,
-          totalItems: res.total,
-          totalPages: Math.ceil(res.total / res.limit),
-        },
-      })));
+    return this.api.get<any>('/zones', query).pipe(
+      map((res) => {
+        let rawData: any[];
+        let page = 1;
+        let limit = 10;
+        let total = 0;
+
+        if (Array.isArray(res)) {
+          rawData = res;
+          total = res.length;
+        } else if (res && typeof res === 'object') {
+          const payload = res.success === true && Array.isArray(res.data) ? res : res;
+          if (Array.isArray(payload.data)) {
+            rawData = payload.data;
+            total = payload.total ?? payload.meta?.total ?? rawData.length;
+            page = payload.page ?? payload.meta?.page ?? 1;
+            limit = payload.limit ?? payload.meta?.limit ?? rawData.length;
+          } else if (Array.isArray(payload)) {
+            rawData = payload;
+            total = payload.length;
+          } else {
+            rawData = [];
+          }
+        } else {
+          rawData = [];
+        }
+
+        return {
+          data: rawData.map(ZoneMapper.toDomain),
+          meta: {
+            page,
+            limit,
+            total,
+            totalItems: total,
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+          },
+        };
+      })
+    );
   }
 
   findById(id: string): Observable<Zone> {
