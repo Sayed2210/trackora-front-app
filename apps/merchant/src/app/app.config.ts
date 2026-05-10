@@ -14,7 +14,7 @@ import {
   errorInterceptor,
   retryInterceptor,
 } from '@trackora/core/api';
-import { authFeature, layoutFeature, notificationsFeature, permissionsFeature } from '@trackora/core/state';
+import { authFeature, layoutFeature, permissionsFeature } from '@trackora/core/state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -31,7 +31,6 @@ export const appConfig: ApplicationConfig = {
     provideStore({
       auth: authFeature.reducer,
       layout: layoutFeature.reducer,
-      notifications: notificationsFeature.reducer,
       permissions: permissionsFeature.reducer,
     }),
     provideTranslateService(),

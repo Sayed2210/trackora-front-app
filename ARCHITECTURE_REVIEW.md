@@ -252,23 +252,23 @@ The Trackora front-end is a well-structured Nx Angular monorepo with clean domai
 
 | ID | Task | Severity | Status |
 |----|------|----------|--------|
-| TASK-01 | Sync dual auth state | HIGH | ☐ |
-| TASK-02 | Add roleGuard to admin routes | HIGH | ☐ |
-| TASK-03 | Complete courier API integration | HIGH | ☐ |
-| TASK-04 | Complete admin API integration | HIGH | ☐ |
-| TASK-05 | Add OnPush change detection | MEDIUM | ☐ |
-| TASK-06 | Add trackBy to all *ngFor | MEDIUM | ☐ |
-| TASK-07 | Fix ShipmentFacade error handling | MEDIUM | ☐ |
-| TASK-08 | Fix ApiClient baseUrl config | MEDIUM | ☐ |
-| TASK-09 | Fix tracking page repository bypass | MEDIUM | ☐ |
-| TASK-10 | Fix courier event listener leaks | MEDIUM | ☐ |
-| TASK-11 | Remove or connect notifications store | MEDIUM | ☐ |
-| TASK-12 | Connect layout store to components | MEDIUM | ☐ |
+| TASK-01 | Sync dual auth state | HIGH | ☑ |
+| TASK-02 | Add roleGuard to admin routes | HIGH | ☑ |
+| TASK-03 | Complete courier API integration | HIGH | ☑ |
+| TASK-04 | Complete admin API integration | HIGH | ☑ |
+| TASK-05 | Add OnPush change detection | MEDIUM | ☑ |
+| TASK-06 | Add trackBy to all *ngFor | MEDIUM | ☑ |
+| TASK-07 | Fix ShipmentFacade error handling | MEDIUM | ☑ |
+| TASK-08 | Fix ApiClient baseUrl config | MEDIUM | ☑ |
+| TASK-09 | Fix tracking page repository bypass | MEDIUM | ☑ |
+| TASK-10 | Fix courier event listener leaks | MEDIUM | ☑ |
+| TASK-11 | Remove or connect notifications store | MEDIUM | ☑ |
+| TASK-12 | Connect layout store to components | MEDIUM | ☑ |
 | TASK-13 | Adopt i18n consistently | MEDIUM | ☐ |
 | TASK-14 | Extract shared table component | MEDIUM | ☐ |
-| TASK-15 | Fix skip link accessibility | LOW | ☐ |
-| TASK-16 | Fix admin responsive sidebar | LOW | ☐ |
-| TASK-17 | Replace dashboard `any` types | LOW | ☐ |
-| TASK-18 | Remove dead AbortController code | LOW | ☐ |
+| TASK-15 | Fix skip link accessibility | LOW | ☑ |
+| TASK-16 | Fix admin responsive sidebar | LOW | ☑ |
+| TASK-17 | Replace dashboard `any` types | LOW | ☑ |
+| TASK-18 | Remove dead AbortController code | LOW | ☑ |
 | TASK-19 | Add courier unit tests | LOW | ☐ |
 | TASK-20 | Consider sessionStorage security | LOW | ☐ |
