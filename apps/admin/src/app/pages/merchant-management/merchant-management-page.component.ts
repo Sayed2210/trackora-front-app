@@ -6,15 +6,14 @@ import { firstValueFrom } from 'rxjs';
 
 interface Merchant {
   id: string;
-  name: string;
-  email: string;
-  phone: string;
   businessName: string;
-  governorate: string;
+  businessType?: string;
+  websiteUrl?: string;
+  commissionRate?: string;
+  feePerShipment?: string;
   status: 'pending' | 'approved' | 'rejected' | 'suspended';
-  totalShipments: number;
-  walletBalance: number;
-  joinedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 @Component({
@@ -29,8 +28,14 @@ interface Merchant {
       </div>
 
       <div class="filters-bar">
-        <input type="text" placeholder="Search merchants..." class="search-input" />
-        <select class="filter-select">
+        <input
+          type="text"
+          placeholder="Search merchants..."
+          class="search-input"
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)"
+        />
+        <select class="filter-select" [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value)">
           <option value="">All Status</option>
           <option value="pending">Pending</option>
           <option value="approved">Approved</option>
@@ -42,38 +47,35 @@ interface Merchant {
       <table class="data-table">
         <thead>
           <tr>
-            <th>Merchant</th>
-            <th>Contact</th>
-            <th>Location</th>
+            <th>Business Name</th>
+            <th>Type</th>
+            <th>Website</th>
+            <th>Commission</th>
+            <th>Fee/Shipment</th>
             <th>Status</th>
-            <th>Shipments</th>
-            <th>Wallet</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let merchant of merchants(); trackBy: trackByMerchantId">
+          <tr *ngFor="let merchant of filteredMerchants(); trackBy: trackByMerchantId">
             <td>
               <div class="merchant-info">
-                <span class="avatar">{{ merchant.name.charAt(0) }}</span>
+                <span class="avatar">{{ merchant.businessName.charAt(0) }}</span>
                 <div>
-                  <div class="name">{{ merchant.name }}</div>
-                  <small>{{ merchant.businessName }}</small>
+                  <div class="name">{{ merchant.businessName }}</div>
                 </div>
               </div>
             </td>
+            <td>{{ merchant.businessType || 'N/A' }}</td>
             <td>
-              <div class="contact">
-                <span>{{ merchant.email }}</span>
-                <span>{{ merchant.phone }}</span>
-              </div>
+              <a *ngIf="merchant.websiteUrl" [href]="merchant.websiteUrl" target="_blank" class="link">{{ merchant.websiteUrl }}</a>
+              <span *ngIf="!merchant.websiteUrl">N/A</span>
             </td>
-            <td>{{ merchant.governorate }}</td>
+            <td>{{ merchant.commissionRate || 'N/A' }}</td>
+            <td>{{ merchant.feePerShipment || 'N/A' }}</td>
             <td>
               <span class="status-badge" [class]="merchant.status">{{ merchant.status }}</span>
             </td>
-            <td>{{ merchant.totalShipments }}</td>
-            <td>{{ merchant.walletBalance | currency:'EGP':'symbol':'1.0-0' }}</td>
             <td>
               <div class="actions">
                 <button *ngIf="merchant.status === 'pending'" class="action-btn approve" (click)="approve(merchant)">Approve</button>
@@ -81,6 +83,9 @@ interface Merchant {
                 <button class="action-btn" (click)="viewDetails(merchant)">View</button>
               </div>
             </td>
+          </tr>
+          <tr *ngIf="!filteredMerchants().length">
+            <td colspan="7" class="empty-cell">No merchants found</td>
           </tr>
         </tbody>
       </table>
@@ -99,7 +104,8 @@ interface Merchant {
     .merchant-info { display: flex; align-items: center; gap: 0.75rem; }
     .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--trackora-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 600; }
     .name { font-weight: 600; }
-    .contact { display: flex; flex-direction: column; font-size: 0.875rem; }
+    .link { color: var(--trackora-primary); text-decoration: none; }
+    .link:hover { text-decoration: underline; }
     .status-badge { padding: 0.25rem 0.625rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
     .pending { background: #FEF3C7; color: #92400E; }
     .approved { background: #D1FAE5; color: #065F46; }
@@ -109,12 +115,29 @@ interface Merchant {
     .action-btn { padding: 0.375rem 0.75rem; background: var(--trackora-surface); border: 1px solid var(--trackora-border); border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
     .action-btn.approve { background: #D1FAE5; color: #065F46; border-color: #065F46; }
     .action-btn.reject { background: #FEE2E2; color: #991B1B; border-color: #991B1B; }
+    .empty-cell { text-align: center; padding: 2rem; color: var(--trackora-text-secondary); }
   `],
 })
 export class MerchantManagementPageComponent implements OnInit {
   private readonly merchantRepo = inject(MerchantRepository);
 
   readonly merchants = signal<Merchant[]>([]);
+  readonly searchQuery = signal('');
+  readonly statusFilter = signal('');
+
+  readonly filteredMerchants = () => {
+    let list = this.merchants();
+    const query = this.searchQuery().toLowerCase();
+    const status = this.statusFilter();
+
+    if (query) {
+      list = list.filter((m) => m.businessName.toLowerCase().includes(query));
+    }
+    if (status) {
+      list = list.filter((m) => m.status === status);
+    }
+    return list;
+  };
 
   ngOnInit(): void {
     this.loadMerchants();
@@ -122,22 +145,26 @@ export class MerchantManagementPageComponent implements OnInit {
 
   private async loadMerchants(): Promise<void> {
     try {
-      const data = await firstValueFrom(this.merchantRepo.findById(''));
-      // In a real app, there would be a findAll endpoint on MerchantRepository
-      // For now, we keep the mock fallback
-      this.merchants.set(Array.isArray(data) ? data : []);
+      const data = await firstValueFrom(this.merchantRepo.findAll());
+      this.merchants.set(Array.isArray(data) ? data : data?.data ?? []);
     } catch {
       this.merchants.set([]);
     }
   }
 
-  approve(merchant: Merchant): void {
-    this.merchants.update((list) =>
-      list.map((m) => (m.id === merchant.id ? { ...m, status: 'approved' as Merchant['status'] } : m))
-    );
+  async approve(merchant: Merchant): Promise<void> {
+    try {
+      await firstValueFrom(this.merchantRepo.updateKyc(merchant.id));
+      this.merchants.update((list) =>
+        list.map((m) => (m.id === merchant.id ? { ...m, status: 'approved' as Merchant['status'] } : m))
+      );
+    } catch {
+      // Error handled silently; in production show a toast
+    }
   }
 
-  reject(merchant: Merchant): void {
+  async reject(merchant: Merchant): Promise<void> {
+    // The API does not expose a dedicated reject endpoint; update locally
     this.merchants.update((list) =>
       list.map((m) => (m.id === merchant.id ? { ...m, status: 'rejected' as Merchant['status'] } : m))
     );
@@ -145,6 +172,7 @@ export class MerchantManagementPageComponent implements OnInit {
 
   viewDetails(merchant: Merchant): void {
     // Navigate to detail view
+    alert(`Merchant details for ${merchant.businessName}`);
   }
 
   trackByMerchantId(_index: number, merchant: Merchant): string {

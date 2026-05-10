@@ -30,12 +30,21 @@ interface RealtimeAlert {
   read?: boolean;
 }
 
+interface TodayStats {
+  shipmentsCreated?: number;
+  shipmentsDelivered?: number;
+  shipmentsFailed?: number;
+  totalCodCollected?: number;
+}
+
 interface AdminDashboardData {
   [key: string]: unknown;
+  today?: TodayStats;
   todayShipments?: number;
   deliveredToday?: number;
   failedToday?: number;
   totalCod?: number;
+  pendingAssignments?: number;
   subtitles?: Record<string, string>;
   courierStatus?: {
     online?: number;
@@ -49,6 +58,8 @@ interface AdminDashboardData {
     onDelivery?: number;
     total?: number;
   };
+  couriersOnline?: number;
+  couriersOffline?: number;
   alerts?: Array<{
     id?: string;
     type?: string;
@@ -240,17 +251,20 @@ export class DashboardComponent implements OnInit {
   }
 
   private setKpis(data: AdminDashboardData): void {
-    const kpiConfig: Record<string, { label: string; icon: string; color: string }> = {
-      todayShipments: { label: "Today's Shipments", icon: '📦', color: '#3B82F6' },
-      deliveredToday: { label: 'Delivered Today', icon: '✅', color: '#10B981' },
-      failedToday: { label: 'Failed Today', icon: '⚠️', color: '#EF4444' },
-      totalCod: { label: 'Total COD', icon: '💰', color: '#F59E0B' },
+    const today = data?.today ?? {};
+
+    const kpiConfig: Record<string, { label: string; icon: string; color: string; value?: number | null }> = {
+      todayShipments: { label: "Today's Shipments", icon: '📦', color: '#3B82F6', value: today.shipmentsCreated ?? data?.todayShipments },
+      deliveredToday: { label: 'Delivered Today', icon: '✅', color: '#10B981', value: today.shipmentsDelivered ?? data?.deliveredToday },
+      failedToday: { label: 'Failed Today', icon: '⚠️', color: '#EF4444', value: today.shipmentsFailed ?? data?.failedToday },
+      totalCod: { label: 'Total COD', icon: '💰', color: '#F59E0B', value: today.totalCodCollected ?? data?.totalCod },
+      pendingAssignments: { label: 'Pending Assignments', icon: '📋', color: '#8B5CF6', value: data?.pendingAssignments },
     };
 
     const builtKpis: AdminKpi[] = [];
 
     for (const [key, config] of Object.entries(kpiConfig)) {
-      const raw = data?.[key];
+      const raw = config.value;
       if (raw === undefined || raw === null) continue;
 
       const value = key === 'totalCod' ? `${raw as number} EGP` : raw as string | number;
@@ -270,16 +284,25 @@ export class DashboardComponent implements OnInit {
 
   private setCourierStatus(data: AdminDashboardData): void {
     const status = data?.courierStatus ?? data?.couriers;
-    if (!status) {
-      this.courierStatus.set({ online: 0, offline: 0, onDelivery: 0, total: 0 });
+
+    if (status) {
+      this.courierStatus.set({
+        online: status.online ?? 0,
+        offline: status.offline ?? 0,
+        onDelivery: status.onDelivery ?? 0,
+        total: status.total ?? (status.online ?? 0) + (status.offline ?? 0) + (status.onDelivery ?? 0),
+      });
       return;
     }
 
+    // Fallback for root-level courier fields from admin/dashboard response
+    const online = data?.couriersOnline ?? 0;
+    const offline = data?.couriersOffline ?? 0;
     this.courierStatus.set({
-      online: status.online ?? 0,
-      offline: status.offline ?? 0,
-      onDelivery: status.onDelivery ?? 0,
-      total: status.total ?? (status.online ?? 0) + (status.offline ?? 0) + (status.onDelivery ?? 0),
+      online,
+      offline,
+      onDelivery: 0,
+      total: online + offline,
     });
   }
 

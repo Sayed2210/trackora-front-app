@@ -23,6 +23,10 @@ export class MerchantRepository {
     return this.api.post('/merchants', dto);
   }
 
+  findAll(): Observable<any> {
+    return this.api.get('/merchants');
+  }
+
   findById(id: string): Observable<any> {
     return this.api.get(`/merchants/${id}`);
   }
