@@ -14,6 +14,8 @@ export class AuthMapper {
       phone: dto.phone,
       roles: rawRoles as User['roles'],
       permissions: dto.permissions,
+      merchantId: dto.merchantId,
+      courierId: dto.courierId,
       avatarUrl: dto.avatarUrl,
       isActive: dto.isActive,
       createdAt: dto.createdAt,

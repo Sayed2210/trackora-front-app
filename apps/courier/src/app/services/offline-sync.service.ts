@@ -57,19 +57,7 @@ export class OfflineSyncService {
     switch (update.type) {
       case 'STATUS_UPDATE':
         await firstValueFrom(
-          this.courierRepo.updateTaskStatus(update.taskId, {
-            status: update.payload.status,
-            notes: update.payload.notes,
-          })
-        );
-        break;
-      case 'COD_COLLECTED':
-        await firstValueFrom(
-          this.courierRepo.updateTaskStatus(update.taskId, {
-            status: 'DELIVERED',
-            collectedCash: update.payload.amount,
-            notes: update.payload.notes,
-          })
+          this.courierRepo.updateTaskStatus(update.taskId, update.payload)
         );
         break;
       case 'PHOTO_UPLOAD':
@@ -78,6 +66,15 @@ export class OfflineSyncService {
           this.courierRepo.updateTaskStatus(update.taskId, {
             status: update.payload.status,
             photoUrl: update.payload.photoUrl,
+            notes: update.payload.notes,
+          })
+        );
+        break;
+      case 'CASH_DEPOSIT':
+        await firstValueFrom(
+          this.courierRepo.logDeposit({
+            amount: update.payload.amount,
+            depositedTo: update.payload.depositedTo,
             notes: update.payload.notes,
           })
         );

@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { CourierRepository, CourierTask, UpdateTaskStatusDto } from '@trackora/shared/data-access';
 import { courierDb, CachedTask } from '../services/offline-store.service';
 import { OfflineSyncService } from '../services/offline-sync.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-courier-task-detail-page',
@@ -146,6 +148,7 @@ export class CourierTaskDetailPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly syncService = inject(OfflineSyncService);
+  private readonly courierRepo = inject(CourierRepository);
 
   readonly task = signal<CachedTask | null>(null);
   readonly showOtp = signal(false);
@@ -153,8 +156,10 @@ export class CourierTaskDetailPageComponent implements OnInit, OnDestroy {
   readonly otpValues = signal<string[]>([]);
   readonly codConfirmed = signal(false);
   readonly capturedPhoto = signal<string | null>(null);
+  readonly savedSignature = signal<string | null>(null);
   readonly gpsCaptured = signal(false);
   readonly gpsCoords = signal<string | null>(null);
+  readonly gpsLocation = signal<{ lat: number; lng: number } | null>(null);
 
   otpDigits = [0, 1, 2, 3];
 
@@ -190,6 +195,37 @@ export class CourierTaskDetailPageComponent implements OnInit, OnDestroy {
     if (t) {
       this.task.set(t);
       this.initSignaturePad();
+      return;
+    }
+
+    try {
+      const apiTask = await firstValueFrom(this.courierRepo.getTaskById(id));
+      const cachedTask = this.toCachedTask(apiTask);
+      await courierDb.cachedTasks.put(cachedTask);
+      this.task.set(cachedTask);
+      this.initSignaturePad();
+    } catch {
+      this.initSignaturePad();
+    }
+  }
+
+  private toCachedTask(task: CourierTask): CachedTask {
+    return {
+      id: task.shipmentId ?? task.id ?? task.trackingNumber,
+      trackingNumber: task.trackingNumber,
+      customerName: task.customerName,
+      customerPhone: task.customerPhone ?? task.customerPhoneMasked ?? '',
+      address: task.addressText ?? task.address ?? '',
+      governorate: task.governorate ?? '',
+      city: task.city ?? '',
+      status: task.status,
+      codAmount: task.codAmount,
+      deliveryFee: task.deliveryFee ?? 0,
+      notes: task.notes,
+      lat: task.lat,
+      lng: task.lng,
+      assignedAt: task.assignedAt ?? new Date().toISOString(),
+      syncedAt: new Date().toISOString(),
     }
   }
 
@@ -268,8 +304,6 @@ export class CourierTaskDetailPageComponent implements OnInit, OnDestroy {
 
   verifyOtp(): void {
     this.otpAttempts.update((n) => n + 1);
-    // In production, validate against backend
-    // For demo, any 4 digits work
     this.showOtp.set(false);
   }
 
@@ -295,18 +329,14 @@ export class CourierTaskDetailPageComponent implements OnInit, OnDestroy {
 
   saveSignature(): void {
     const canvas = this.signaturePad.nativeElement;
-    // In production, convert to blob and save
-    canvas.toBlob((blob) => {
-      if (blob) {
-        // Save signature blob
-      }
-    });
+    this.savedSignature.set(canvas.toDataURL('image/png'));
   }
 
   captureGps(): void {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         this.gpsCoords.set(`${position.coords.latitude}, ${position.coords.longitude}`);
+        this.gpsLocation.set({ lat: position.coords.latitude, lng: position.coords.longitude });
         this.gpsCaptured.set(true);
       },
       () => {
@@ -316,22 +346,32 @@ export class CourierTaskDetailPageComponent implements OnInit, OnDestroy {
   }
 
   canDeliver(): boolean {
-    return this.gpsCaptured();
+    const t = this.task();
+    return this.gpsCaptured() && (!t?.codAmount || this.codConfirmed());
   }
 
   async updateStatus(status: string): Promise<void> {
     const t = this.task();
     if (!t) return;
+    if (status === 'DELIVERED' && t.codAmount && !this.isOtpComplete()) {
+      this.showOtp.set(true);
+      return;
+    }
 
-    // Optimistic update
-    const previousStatus = t.status;
     await courierDb.cachedTasks.update(t.id, { status });
     this.task.set({ ...t, status });
 
-    // Queue for sync
-    await this.syncService.queueUpdate(t.id, 'STATUS_UPDATE', {
+    const payload: UpdateTaskStatusDto & { timestamp: string } = {
       status,
+      otp: this.otpValues().join('') || undefined,
+      collectedCash: status === 'DELIVERED' ? t.codAmount : undefined,
+      photoUrl: this.capturedPhoto() ?? undefined,
+      signatureUrl: this.savedSignature() ?? undefined,
+      gpsLocation: this.gpsLocation() ?? undefined,
+      notes: t.notes,
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    await this.syncService.queueUpdate(t.id, 'STATUS_UPDATE', payload);
   }
 }

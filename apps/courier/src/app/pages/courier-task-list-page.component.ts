@@ -2,8 +2,10 @@ import { Component, inject, OnInit, OnDestroy, signal, ChangeDetectionStrategy }
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { CourierRepository, CourierTask } from '@trackora/shared/data-access';
 import { courierDb, CachedTask } from '../services/offline-store.service';
 import { OfflineSyncService } from '../services/offline-sync.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-courier-task-list-page',
@@ -138,6 +140,7 @@ import { OfflineSyncService } from '../services/offline-sync.service';
 })
 export class CourierTaskListPageComponent implements OnInit, OnDestroy {
   private readonly syncService = inject(OfflineSyncService);
+  private readonly courierRepo = inject(CourierRepository);
 
   readonly tasks = signal<CachedTask[]>([]);
   readonly activeFilter = signal<string>('ALL');
@@ -192,52 +195,36 @@ export class CourierTaskListPageComponent implements OnInit, OnDestroy {
   }
 
   private async loadTasks(): Promise<void> {
-    // In production, fetch from API and cache in Dexie
-    // For now, use mock data
-    const mockTasks: CachedTask[] = [
-      {
-        id: 'task-001',
-        trackingNumber: 'TRK-1001',
-        customerName: 'Ahmed Mohamed',
-        customerPhone: '01001234567',
-        address: '123 Main St, Building A',
-        governorate: 'Cairo',
-        city: 'Nasr City',
-        status: 'OUT_FOR_DELIVERY',
-        codAmount: 150,
-        deliveryFee: 25,
-        assignedAt: new Date().toISOString(),
-      },
-      {
-        id: 'task-002',
-        trackingNumber: 'TRK-1002',
-        customerName: 'Sara Ali',
-        customerPhone: '01009876543',
-        address: '45 El-Horreya St',
-        governorate: 'Alexandria',
-        city: 'Miami',
-        status: 'PENDING',
-        codAmount: 320,
-        deliveryFee: 25,
-        assignedAt: new Date().toISOString(),
-      },
-      {
-        id: 'task-003',
-        trackingNumber: 'TRK-1003',
-        customerName: 'Omar Hassan',
-        customerPhone: '01005551234',
-        address: '78 Tahrir Square',
-        governorate: 'Cairo',
-        city: 'Downtown',
-        status: 'DELIVERED',
-        deliveryFee: 25,
-        assignedAt: new Date(Date.now() - 86400000).toISOString(),
-      },
-    ];
-
-    await courierDb.cachedTasks.bulkPut(mockTasks);
-    this.tasks.set(await courierDb.cachedTasks.toArray());
+    try {
+      const apiTasks = await firstValueFrom(this.courierRepo.getTasks());
+      const cachedTasks = apiTasks.map((task) => this.toCachedTask(task));
+      await courierDb.cachedTasks.bulkPut(cachedTasks);
+      this.tasks.set(cachedTasks);
+    } catch {
+      this.tasks.set(await courierDb.cachedTasks.toArray());
+    }
     this.updateFilterCounts();
+  }
+
+  private toCachedTask(task: CourierTask): CachedTask {
+    const addressParts = [task.addressText ?? task.address, task.city, task.governorate].filter(Boolean);
+    return {
+      id: task.shipmentId ?? task.id ?? task.trackingNumber,
+      trackingNumber: task.trackingNumber,
+      customerName: task.customerName,
+      customerPhone: task.customerPhone ?? task.customerPhoneMasked ?? '',
+      address: task.addressText ?? task.address ?? addressParts.join(', '),
+      governorate: task.governorate ?? '',
+      city: task.city ?? '',
+      status: task.status,
+      codAmount: task.codAmount,
+      deliveryFee: task.deliveryFee ?? 0,
+      notes: task.notes,
+      lat: task.lat,
+      lng: task.lng,
+      assignedAt: task.assignedAt ?? new Date().toISOString(),
+      syncedAt: new Date().toISOString(),
+    };
   }
 
   private async loadPendingCount(): Promise<void> {

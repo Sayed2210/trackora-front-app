@@ -25,6 +25,8 @@ export interface LoginResponseDto {
     /** Preferred plural array */
     roles?: UserRole[];
     permissions: Permission[];
+    merchantId?: string;
+    courierId?: string;
     avatarUrl?: string;
     isActive: boolean;
     createdAt: string;

@@ -7,6 +7,8 @@ export interface User {
   phone: string;
   roles: UserRole[];
   permissions: Permission[];
+  merchantId?: string;
+  courierId?: string;
   avatarUrl?: string;
   isActive: boolean;
   createdAt: string;

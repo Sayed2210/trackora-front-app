@@ -1,8 +1,8 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { ShipmentRepository } from '@trackora/shared/data-access';
-import { Shipment, ShipmentStatus, ShipmentType } from '@trackora/shared/domain';
+import { AssignmentRepository, CourierAdmin, CourierRepository, ShipmentRepository } from '@trackora/shared/data-access';
+import { Shipment, ShipmentStatus } from '@trackora/shared/domain';
 import { firstValueFrom } from 'rxjs';
 
 interface Courier {
@@ -184,6 +184,8 @@ interface Courier {
 })
 export class AssignmentsFeatureComponent implements OnInit {
   private readonly shipmentRepo = inject(ShipmentRepository);
+  private readonly courierRepo = inject(CourierRepository);
+  private readonly assignmentRepo = inject(AssignmentRepository);
 
   readonly unassignedShipments = signal<Shipment[]>([]);
   readonly activeCouriers = signal<Courier[]>([]);
@@ -225,52 +227,17 @@ export class AssignmentsFeatureComponent implements OnInit {
       const uniqueZones = Array.from(new Set(shipments.map((s) => s.address.zone).filter(Boolean))) as string[];
       this.zones.set(uniqueZones);
     } catch {
-      // Fallback mock data
-      this.loadMockData();
+      this.unassignedShipments.set([]);
+      this.zones.set([]);
     }
 
-    // Mock couriers
-    this.activeCouriers.set([
-      { id: 'c1', name: 'Ahmed Hassan', status: 'online', currentLoad: 8, maxCapacity: 15, zone: 'Nasr City' },
-      { id: 'c2', name: 'Mohamed Ali', status: 'on_delivery', currentLoad: 12, maxCapacity: 15, zone: 'Maadi' },
-      { id: 'c3', name: 'Khaled Ibrahim', status: 'online', currentLoad: 5, maxCapacity: 12, zone: 'Heliopolis' },
-      { id: 'c4', name: 'Omar Said', status: 'offline', currentLoad: 0, maxCapacity: 10, zone: 'Downtown' },
-      { id: 'c5', name: 'Youssef Khaled', status: 'online', currentLoad: 3, maxCapacity: 12, zone: 'Nasr City' },
-    ]);
-  }
-
-  private loadMockData(): void {
-    this.unassignedShipments.set([
-      {
-        id: 's1', trackingNumber: 'TRK-3001', merchantId: 'm1', merchantName: 'Shop A',
-        customerName: 'Fatima Zahra', customerPhone: '01001112222',
-        address: { id: 'a1', street: '10th St', building: '5', governorate: 'Cairo', city: 'Nasr City', zone: 'Nasr City' },
-        status: ShipmentStatus.PENDING, type: ShipmentType.COD, codAmount: 750, deliveryFee: 25,
-        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-      },
-      {
-        id: 's2', trackingNumber: 'TRK-3002', merchantId: 'm2', merchantName: 'Shop B',
-        customerName: 'Hassan Moustafa', customerPhone: '01002223333',
-        address: { id: 'a2', street: 'Road 9', building: '12', governorate: 'Cairo', city: 'Maadi', zone: 'Maadi' },
-        status: ShipmentStatus.PENDING, type: ShipmentType.COD, codAmount: 120, deliveryFee: 25,
-        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-      },
-      {
-        id: 's3', trackingNumber: 'TRK-3003', merchantId: 'm1', merchantName: 'Shop A',
-        customerName: 'Nourhan Samy', customerPhone: '01003334444',
-        address: { id: 'a3', street: 'Sphinx Square', building: '3', governorate: 'Cairo', city: 'Heliopolis', zone: 'Heliopolis' },
-        status: ShipmentStatus.PENDING, type: ShipmentType.PREPAID, codAmount: 0, deliveryFee: 35,
-        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-      },
-      {
-        id: 's4', trackingNumber: 'TRK-3004', merchantId: 'm3', merchantName: 'Shop C',
-        customerName: 'Tarek El-Sayed', customerPhone: '01004445555',
-        address: { id: 'a4', street: 'Tahrir St', building: '1', governorate: 'Cairo', city: 'Downtown', zone: 'Downtown' },
-        status: ShipmentStatus.PENDING, type: ShipmentType.COD, codAmount: 320, deliveryFee: 25,
-        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-      },
-    ]);
-    this.zones.set(['Nasr City', 'Maadi', 'Heliopolis', 'Downtown']);
+    try {
+      const data = await firstValueFrom(this.courierRepo.findAll({ isActive: true, isAvailable: true, page: 1, limit: 100 }));
+      const items = Array.isArray(data) ? data : data?.data ?? [];
+      this.activeCouriers.set(items.map((courier: CourierAdmin) => this.toDispatchCourier(courier)));
+    } catch {
+      this.activeCouriers.set([]);
+    }
   }
 
   selectShipment(shipment: Shipment): void {
@@ -282,13 +249,17 @@ export class AssignmentsFeatureComponent implements OnInit {
     this.selectedCourier.set(courier);
   }
 
-  assignShipment(event: Event): void {
+  async assignShipment(event: Event): Promise<void> {
     event.stopPropagation();
     const shipment = this.selectedShipment();
     const courier = this.selectedCourier();
     if (!shipment || !courier) return;
 
-    // Update local state
+    await firstValueFrom(this.assignmentRepo.create({
+      shipmentIds: [shipment.id],
+      courierId: courier.id,
+    }));
+
     this.unassignedShipments.update((list) => list.filter((s) => s.id !== shipment.id));
     this.activeCouriers.update((list) =>
       list.map((c) => (c.id === courier.id ? { ...c, currentLoad: c.currentLoad + 1 } : c))
@@ -301,5 +272,16 @@ export class AssignmentsFeatureComponent implements OnInit {
 
     this.selectedShipment.set(null);
     this.selectedCourier.set(null);
+  }
+
+  private toDispatchCourier(courier: CourierAdmin): Courier {
+    return {
+      id: courier.id,
+      name: courier.name,
+      status: courier.isAvailable ? 'online' : 'offline',
+      currentLoad: courier.currentTasks ?? courier.activeTasks ?? 0,
+      maxCapacity: courier.capacity ?? courier.maxDailyCapacity ?? 1,
+      zone: courier.zoneCodes?.join(', ') || 'N/A',
+    };
   }
 }

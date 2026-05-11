@@ -115,7 +115,7 @@ export const environment = {
 - GET `/shipments/:id` — Detail
 - POST `/shipments` — Create
 - PATCH `/shipments/:id/status` — Update status
-- POST `/shipments/bulk` — Bulk upload
+- POST `/shipments/bulk-upload` — Bulk upload
 
 ### Courier Tasks
 - GET `/courier/tasks` — Assigned tasks

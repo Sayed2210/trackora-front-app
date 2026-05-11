@@ -1,20 +1,21 @@
 import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { CourierRepository } from '@trackora/shared/data-access';
+import { CourierAdmin, CourierRepository } from '@trackora/shared/data-access';
 import { firstValueFrom } from 'rxjs';
 
 interface Courier {
   id: string;
   name: string;
-  phone: string;
-  email: string;
+  phone?: string;
+  email?: string;
   status: 'active' | 'inactive' | 'suspended';
   zone: string;
   currentTasks: number;
   capacity: number;
   rating: number;
-  joinedAt: string;
+  isAvailable?: boolean;
+  joinedAt?: string;
 }
 
 @Component({
@@ -69,7 +70,7 @@ interface Courier {
             <td>
               <div class="contact">
                 <span>{{ courier.phone }}</span>
-                <small>{{ courier.email }}</small>
+                <small>{{ courier.email || 'N/A' }}</small>
               </div>
             </td>
             <td>{{ courier.zone }}</td>
@@ -88,8 +89,8 @@ interface Courier {
             </td>
             <td>
               <div class="actions">
-                <button class="action-btn" (click)="toggleStatus(courier)">
-                  {{ courier.status === 'active' ? 'Deactivate' : 'Activate' }}
+                <button class="action-btn" (click)="toggleAvailability(courier)">
+                  {{ courier.isAvailable ? 'Set Offline' : 'Set Available' }}
                 </button>
               </div>
             </td>
@@ -135,27 +136,49 @@ export class CourierManagementPageComponent implements OnInit {
 
   private async loadCouriers(): Promise<void> {
     try {
-      const tasks = await firstValueFrom(this.courierRepo.getTasks());
-      // TODO: Replace with proper courier user list endpoint when available
-      // CourierTask shape differs from Courier admin view; mapping as-is for now
-      this.couriers.set((tasks as unknown) as Courier[]);
+      const data = await firstValueFrom(this.courierRepo.findAll({ page: 1, limit: 50 }));
+      const items = Array.isArray(data) ? data : data?.data ?? [];
+      this.couriers.set(items.map((courier: CourierAdmin) => this.toCourierRow(courier)));
     } catch {
-      // Keep empty list on error
       this.couriers.set([]);
     }
   }
 
-  toggleStatus(courier: Courier): void {
-    this.couriers.update((list) =>
-      list.map((c) =>
-        c.id === courier.id
-          ? { ...c, status: c.status === 'active' ? 'inactive' : 'active' as Courier['status'] }
-          : c
-      )
-    );
+  async toggleAvailability(courier: Courier): Promise<void> {
+    const nextAvailability = !courier.isAvailable;
+    try {
+      await firstValueFrom(this.courierRepo.updateAvailability(courier.id, nextAvailability));
+      this.couriers.update((list) =>
+        list.map((c) =>
+          c.id === courier.id
+            ? { ...c, isAvailable: nextAvailability, status: nextAvailability ? 'active' : 'inactive' }
+            : c
+        )
+      );
+    } catch {
+      // In production show a toast
+    }
   }
 
   trackByCourierId(_index: number, courier: Courier): string {
     return courier.id;
+  }
+
+  private toCourierRow(courier: CourierAdmin): Courier {
+    const isActive = courier.isActive ?? (courier.status === 'active' || courier.status === 'online');
+    const isAvailable = courier.isAvailable ?? courier.status === 'online';
+    return {
+      id: courier.id,
+      name: courier.name,
+      phone: courier.phone,
+      email: courier.email,
+      status: isActive ? 'active' : 'inactive',
+      zone: courier.zoneCodes?.join(', ') || 'N/A',
+      currentTasks: courier.currentTasks ?? courier.activeTasks ?? 0,
+      capacity: courier.capacity ?? courier.maxDailyCapacity ?? 1,
+      rating: courier.rating ?? 0,
+      isAvailable,
+      joinedAt: courier.createdAt,
+    };
   }
 }
