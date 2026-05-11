@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { MerchantDashboardRepository } from '@trackora/shared/data-access';
+import { AuthService } from '@trackora/core/auth';
 import { EgpCurrencyPipe, LocalDatePipe, AnalyticsChartComponent } from '@trackora/shared/ui';
 import { firstValueFrom } from 'rxjs';
 
@@ -28,9 +29,24 @@ interface MerchantDashboardData {
   totalShipments?: number;
   deliveryRate?: number;
   avgCod?: number;
+  avgCodAmount?: number;
   availableBalance?: number;
   pending?: number;
   failed?: number;
+  shipments?: {
+    total?: number;
+    pending?: number;
+    inTransit?: number;
+    delivered?: number;
+    returned?: number;
+    failed?: number;
+  };
+  wallet?: {
+    balance?: number;
+    availableBalance?: number;
+    pending?: number;
+    pendingBalance?: number;
+  };
   trends?: Record<string, string>;
   recentActivity?: Array<{
     id?: string;
@@ -41,6 +57,8 @@ interface MerchantDashboardData {
     message?: string;
     timestamp?: string;
     createdAt?: string;
+    time?: string;
+    amount?: number;
     status?: string;
   }>;
   activities?: Array<{
@@ -52,6 +70,8 @@ interface MerchantDashboardData {
     message?: string;
     timestamp?: string;
     createdAt?: string;
+    time?: string;
+    amount?: number;
     status?: string;
   }>;
   statusBreakdown?: {
@@ -212,6 +232,7 @@ interface MerchantAnalyticsData {
 })
 export class DashboardComponent implements OnInit {
   private readonly dashboardRepo = inject(MerchantDashboardRepository);
+  private readonly authService = inject(AuthService);
 
   readonly kpis = signal<DashboardKpi[]>([]);
   readonly activities = signal<ActivityEvent[]>([]);
@@ -225,8 +246,12 @@ export class DashboardComponent implements OnInit {
   }
 
   private async loadDashboardData(): Promise<void> {
-    // TODO: replace with real merchant id from auth context
-    const merchantId = 'current';
+    const user = this.authService.user();
+    const merchantId = user?.merchantId ?? user?.id;
+    if (!merchantId) {
+      this.clearDashboard();
+      return;
+    }
 
     try {
       const [dashboard, analytics] = await Promise.all([
@@ -243,44 +268,25 @@ export class DashboardComponent implements OnInit {
   }
 
   private setKpis(data: MerchantDashboardData): void {
-    const kpiConfig: Record<string, { icon: string; color: string }> = {
-      totalShipments: { icon: '📦', color: '#3B82F6' },
-      deliveryRate: { icon: '✅', color: '#10B981' },
-      avgCod: { icon: '💰', color: '#F59E0B' },
-      availableBalance: { icon: '👛', color: '#8B5CF6' },
-      pending: { icon: '⏳', color: '#EF4444' },
-      failed: { icon: '⚠️', color: '#6B7280' },
-    };
+    const avgCod = data.avgCod ?? data.avgCodAmount;
+    const values: Array<{ key: string; label: string; value: string | number | undefined; icon: string; color: string }> = [
+      { key: 'totalShipments', label: 'Total Shipments', value: data.totalShipments ?? data.shipments?.total, icon: '📦', color: '#3B82F6' },
+      { key: 'deliveryRate', label: 'Delivery Rate', value: data.deliveryRate !== undefined ? `${data.deliveryRate}%` : undefined, icon: '✅', color: '#10B981' },
+      { key: 'avgCod', label: 'Avg COD', value: avgCod !== undefined ? `${avgCod} EGP` : undefined, icon: '💰', color: '#F59E0B' },
+      { key: 'availableBalance', label: 'Available Balance', value: data.availableBalance ?? data.wallet?.availableBalance ?? data.wallet?.balance, icon: '👛', color: '#8B5CF6' },
+      { key: 'pending', label: 'Pending', value: data.pending ?? data.shipments?.pending, icon: '⏳', color: '#EF4444' },
+      { key: 'failed', label: 'Failed', value: data.failed ?? data.shipments?.failed, icon: '⚠️', color: '#6B7280' },
+    ];
 
-    const labelMap: Record<string, string> = {
-      totalShipments: 'Total Shipments',
-      deliveryRate: 'Delivery Rate',
-      avgCod: 'Avg COD',
-      availableBalance: 'Available Balance',
-      pending: 'Pending',
-      failed: 'Failed',
-    };
-
-    const builtKpis: DashboardKpi[] = [];
-
-    for (const [key, config] of Object.entries(kpiConfig)) {
-      const raw = data?.[key];
-      if (raw === undefined || raw === null) continue;
-
-      const value = key === 'deliveryRate' || key === 'avgCod'
-        ? `${raw as number}${key === 'deliveryRate' ? '%' : ' EGP'}`
-        : raw as string | number;
-
-      builtKpis.push({
-        label: labelMap[key],
-        value,
-        icon: config.icon,
-        color: config.color,
-        trend: data?.trends?.[key],
-      });
-    }
-
-    this.kpis.set(builtKpis);
+    this.kpis.set(values
+      .filter((kpi) => kpi.value !== undefined && kpi.value !== null)
+      .map((kpi) => ({
+        label: kpi.label,
+        value: kpi.value as string | number,
+        icon: kpi.icon,
+        color: kpi.color,
+        trend: data?.trends?.[kpi.key],
+      })));
   }
 
   private setActivities(data: MerchantDashboardData): void {
@@ -295,8 +301,8 @@ export class DashboardComponent implements OnInit {
         id: a.id ?? crypto.randomUUID(),
         type: (a.type ?? 'shipment') as ActivityEvent['type'],
         title: a.title ?? a.trackingNumber ?? 'Activity',
-        description: a.description ?? a.message ?? '',
-        timestamp: a.timestamp ?? a.createdAt ?? new Date().toISOString(),
+        description: a.description ?? a.message ?? (a.amount ? `${a.amount} EGP` : ''),
+        timestamp: a.timestamp ?? a.createdAt ?? a.time ?? new Date().toISOString(),
         status: a.status,
       }))
     );
@@ -314,7 +320,12 @@ export class DashboardComponent implements OnInit {
       this.shipmentTrendDatasets.set(datasets);
     }
 
-    const statusBreakdown = dashboard?.statusBreakdown ?? analytics?.statusBreakdown;
+    const statusBreakdown = dashboard?.statusBreakdown ?? analytics?.statusBreakdown ?? {
+      delivered: dashboard.shipments?.delivered,
+      pending: dashboard.shipments?.pending,
+      failed: dashboard.shipments?.failed,
+      returned: dashboard.shipments?.returned,
+    };
     if (statusBreakdown) {
       const labels = ['Delivered', 'Pending', 'Failed', 'Returned'];
       const data = [
