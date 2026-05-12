@@ -1,5 +1,9 @@
-import { Shipment, Address, TimelineEvent } from '@trackora/shared/domain';
+import { Shipment, Address } from '@trackora/shared/domain';
 import { ShipmentResponseDto } from '../dto/shipment.dto';
+
+type ShipmentAddressDto = ShipmentResponseDto['address'] & {
+  text?: string;
+};
 
 export class ShipmentMapper {
   static toDomain(dto: ShipmentResponseDto): Shipment {
@@ -13,7 +17,7 @@ export class ShipmentMapper {
       customerPhoneMasked: dto.customerPhone
         ? `${dto.customerPhone.slice(0, 4)}*****${dto.customerPhone.slice(-2)}`
         : undefined,
-      address: this.mapAddress(dto.address),
+      address: ShipmentMapper.mapAddress(dto.address),
       status: dto.status,
       type: dto.type,
       codAmount: dto.codAmount,
@@ -29,20 +33,32 @@ export class ShipmentMapper {
     };
   }
 
-  private static mapAddress(dtoAddress: ShipmentResponseDto['address']): Address {
+  private static mapAddress(dtoAddress?: ShipmentResponseDto['address']): Address {
+    if (!dtoAddress) {
+      return {
+        id: '',
+        street: '',
+        building: '',
+        governorate: '',
+        city: '',
+      };
+    }
+
+    const address = dtoAddress as ShipmentAddressDto;
+
     return {
-      id: (dtoAddress as any).id ?? '',
-      street: (dtoAddress as any).text ?? (dtoAddress as any).street ?? '',
-      building: (dtoAddress as any).building ?? '',
-      floor: (dtoAddress as any).floor,
-      apartment: (dtoAddress as any).apartment,
-      landmark: dtoAddress.landmark,
-      governorate: dtoAddress.governorate,
-      city: dtoAddress.city,
-      zone: dtoAddress.zone,
-      lat: (dtoAddress as any).lat,
-      lng: (dtoAddress as any).lng,
-      geocodingConfidence: (dtoAddress as any).geocodingConfidence,
+      id: address.id ?? '',
+      street: address.text ?? address.street ?? '',
+      building: address.building ?? '',
+      floor: address.floor,
+      apartment: address.apartment,
+      landmark: address.landmark,
+      governorate: address.governorate,
+      city: address.city,
+      zone: address.zone,
+      lat: address.lat,
+      lng: address.lng,
+      geocodingConfidence: address.geocodingConfidence,
     };
   }
 }

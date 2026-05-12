@@ -1,5 +1,6 @@
 import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { CourierAdmin, CourierRepository } from '@trackora/shared/data-access';
 import { firstValueFrom } from 'rxjs';
@@ -21,14 +22,61 @@ interface Courier {
 @Component({
   selector: 'app-courier-management-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="courier-management">
       <div class="page-header">
         <h1>Courier Management</h1>
-        <button class="p-button p-button-primary">+ Add Courier</button>
+        <button class="p-button p-button-primary" (click)="openCreateForm()">+ Add Courier</button>
       </div>
+
+      @if (showCreateForm()) {
+        <form class="create-form" [formGroup]="createForm" (ngSubmit)="createCourier()">
+          <div class="field">
+            <label for="courier-name">Name</label>
+            <input id="courier-name" formControlName="name" />
+          </div>
+          <div class="field">
+            <label for="courier-phone">Phone</label>
+            <input id="courier-phone" formControlName="phone" />
+          </div>
+          <div class="field">
+            <label for="courier-email">Email</label>
+            <input id="courier-email" type="email" formControlName="email" />
+          </div>
+          <div class="field">
+            <label for="courier-zone-codes">Zone Codes</label>
+            <input id="courier-zone-codes" formControlName="zoneCodes" placeholder="EG-C-MAD, EG-G-DOK" />
+          </div>
+          <div class="field">
+            <label for="courier-capacity">Daily Capacity</label>
+            <input id="courier-capacity" type="number" min="1" formControlName="maxDailyCapacity" />
+          </div>
+          <div class="field">
+            <label for="courier-vehicle-type">Vehicle Type</label>
+            <select id="courier-vehicle-type" formControlName="vehicleType">
+              <option value="MOTORCYCLE">Motorcycle</option>
+              <option value="CAR">Car</option>
+              <option value="VAN">Van</option>
+              <option value="BICYCLE">Bicycle</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="courier-license-plate">License Plate</label>
+            <input id="courier-license-plate" formControlName="licensePlate" />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="p-button p-button-primary" [disabled]="createForm.invalid || creating()">
+              {{ creating() ? 'Adding...' : 'Save Courier' }}
+            </button>
+            <button type="button" class="action-btn" (click)="cancelCreateForm()" [disabled]="creating()">Cancel</button>
+          </div>
+          @if (createError()) {
+            <p class="error-message">{{ createError() }}</p>
+          }
+        </form>
+      }
 
       <div class="filters-bar">
         <input type="text" placeholder="Search couriers..." class="search-input" />
@@ -104,6 +152,12 @@ interface Courier {
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .page-header h1 { margin: 0; }
     .p-button-primary { padding: 0.625rem 1.25rem; background: var(--trackora-primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .create-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; padding: 1rem; margin-bottom: 1.5rem; background: white; border: 1px solid var(--trackora-border); border-radius: 8px; }
+    .field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .field label { font-size: 0.75rem; font-weight: 600; color: var(--trackora-text-secondary); }
+    .field input, .field select { padding: 0.625rem 0.75rem; border: 1px solid var(--trackora-border); border-radius: 6px; font-size: 0.875rem; }
+    .form-actions { display: flex; align-items: end; gap: 0.5rem; }
+    .error-message { grid-column: 1 / -1; margin: 0; color: var(--trackora-danger); font-size: 0.875rem; }
     .filters-bar { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
     .search-input { flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--trackora-border); border-radius: 8px; font-size: 0.875rem; }
     .filter-select { padding: 0.625rem 1rem; border: 1px solid var(--trackora-border); border-radius: 8px; font-size: 0.875rem; background: white; }
@@ -127,8 +181,22 @@ interface Courier {
 })
 export class CourierManagementPageComponent implements OnInit {
   private readonly courierRepo = inject(CourierRepository);
+  private readonly fb = inject(FormBuilder);
 
   readonly couriers = signal<Courier[]>([]);
+  readonly showCreateForm = signal(false);
+  readonly creating = signal(false);
+  readonly createError = signal<string | null>(null);
+
+  readonly createForm = this.fb.group({
+    name: ['', Validators.required],
+    phone: ['', [Validators.required, Validators.pattern(/^01[0125]\d{8}$/)]],
+    email: ['', Validators.email],
+    zoneCodes: [''],
+    maxDailyCapacity: [25, [Validators.required, Validators.min(1)]],
+    vehicleType: ['MOTORCYCLE'],
+    licensePlate: [''],
+  });
 
   ngOnInit(): void {
     this.loadCouriers();
@@ -141,6 +209,59 @@ export class CourierManagementPageComponent implements OnInit {
       this.couriers.set(items.map((courier: CourierAdmin) => this.toCourierRow(courier)));
     } catch {
       this.couriers.set([]);
+    }
+  }
+
+  openCreateForm(): void {
+    this.createError.set(null);
+    this.showCreateForm.set(true);
+  }
+
+  cancelCreateForm(): void {
+    this.showCreateForm.set(false);
+    this.createError.set(null);
+    this.createForm.reset({
+      name: '',
+      phone: '',
+      email: '',
+      zoneCodes: '',
+      maxDailyCapacity: 25,
+      vehicleType: 'MOTORCYCLE',
+      licensePlate: '',
+    });
+  }
+
+  async createCourier(): Promise<void> {
+    if (this.createForm.invalid) return;
+
+    this.creating.set(true);
+    this.createError.set(null);
+
+    const value = this.createForm.getRawValue();
+    const name = value.name ?? '';
+    const phone = value.phone ?? '';
+    const zoneCodes = (value.zoneCodes ?? '')
+      .split(',')
+      .map((zoneCode) => zoneCode.trim())
+      .filter(Boolean);
+
+    try {
+      const courier = await firstValueFrom(this.courierRepo.create({
+        name,
+        phone,
+        email: value.email || undefined,
+        zoneCodes: zoneCodes.length ? zoneCodes : undefined,
+        maxDailyCapacity: value.maxDailyCapacity ?? 25,
+        vehicleType: value.vehicleType || undefined,
+        licensePlate: value.licensePlate || undefined,
+      }));
+
+      this.couriers.update((list) => [this.toCourierRow(courier), ...list]);
+      this.cancelCreateForm();
+    } catch {
+      this.createError.set('Could not add courier. Check the details and try again.');
+    } finally {
+      this.creating.set(false);
     }
   }
 

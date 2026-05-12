@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ApiClient } from '@trackora/core/api';
-import { Shipment, PaginatedResult, PaginationMeta } from '@trackora/shared/domain';
+import { Shipment, PaginatedResult } from '@trackora/shared/domain';
 import { ShipmentResponseDto, ShipmentQueryDto, CreateShipmentDto, UpdateShipmentStatusDto } from '../dto/shipment.dto';
 import { BulkUploadResultDto } from '../dto/bulk-upload.dto';
 import { ShipmentMapper } from '../mapper/shipment.mapper';
@@ -42,7 +42,7 @@ export class ShipmentRepository {
         }
 
         return {
-          data: rawData.map(ShipmentMapper.toDomain),
+          data: rawData.map((dto) => ShipmentMapper.toDomain(dto)),
           meta: {
             page,
             limit,
@@ -57,12 +57,12 @@ export class ShipmentRepository {
 
   findById(id: string): Observable<Shipment> {
     return this.api.get<ShipmentResponseDto>(`/shipments/${id}`)
-      .pipe(map(ShipmentMapper.toDomain));
+      .pipe(map((dto) => ShipmentMapper.toDomain(dto)));
   }
 
   findByTrackingNumber(trackingNumber: string): Observable<Shipment> {
     return this.api.get<ShipmentResponseDto>(`/shipments/tracking/${trackingNumber}`)
-      .pipe(map(ShipmentMapper.toDomain));
+      .pipe(map((dto) => ShipmentMapper.toDomain(dto)));
   }
 
   getTimeline(id: string): Observable<any> {
@@ -71,12 +71,12 @@ export class ShipmentRepository {
 
   create(dto: CreateShipmentDto): Observable<Shipment> {
     return this.api.post<ShipmentResponseDto>('/shipments', dto)
-      .pipe(map(ShipmentMapper.toDomain));
+      .pipe(map((response) => ShipmentMapper.toDomain(response)));
   }
 
   updateStatus(id: string, dto: UpdateShipmentStatusDto): Observable<Shipment> {
     return this.api.patch<ShipmentResponseDto>(`/shipments/${id}/status`, dto)
-      .pipe(map(ShipmentMapper.toDomain));
+      .pipe(map((response) => ShipmentMapper.toDomain(response)));
   }
 
   bulkUpload(file: File): Observable<BulkUploadResultDto> {
