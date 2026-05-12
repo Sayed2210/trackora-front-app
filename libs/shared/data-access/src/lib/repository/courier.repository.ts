@@ -58,6 +58,16 @@ export interface CourierAdmin {
   createdAt?: string;
 }
 
+export interface CreateCourierDto {
+  name: string;
+  phone: string;
+  email?: string;
+  zoneCodes?: string[];
+  maxDailyCapacity?: number;
+  vehicleType?: string;
+  licensePlate?: string;
+}
+
 export interface CourierQuery {
   search?: string;
   isActive?: boolean;
@@ -127,6 +137,10 @@ export class CourierRepository {
 
   findAll(query?: CourierQuery): Observable<any> {
     return this.api.get('/couriers', query);
+  }
+
+  create(dto: CreateCourierDto): Observable<CourierAdmin> {
+    return this.api.post<CourierAdmin>('/couriers', dto);
   }
 
   updateAvailability(id: string, isAvailable: boolean): Observable<CourierAdmin> {
