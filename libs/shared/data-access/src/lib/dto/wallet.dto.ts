@@ -1,14 +1,15 @@
 import { TransactionType } from '@trackora/shared/domain';
 
 export interface WalletResponseDto {
-  id: string;
-  merchantId: string;
-  availableBalance: number;
+  id?: string;
+  merchantId?: string;
+  balance?: number;
+  availableBalance?: number;
   pendingBalance: number;
   totalCredited: number;
   totalDebited: number;
   currency: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface TransactionResponseDto {
@@ -16,7 +17,8 @@ export interface TransactionResponseDto {
   walletId: string;
   type: TransactionType;
   amount: number;
-  balanceAfter: number;
+  balanceAfter?: number;
+  runningBalance?: number;
   referenceId?: string;
   referenceType?: string;
   description?: string;

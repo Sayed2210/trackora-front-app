@@ -1,6 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Wallet, Transaction } from '@trackora/shared/domain';
 import { WalletRepository } from '@trackora/shared/data-access';
+import { AuthService } from '@trackora/core/auth';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -18,12 +19,16 @@ export class WalletFacade {
   readonly availableBalance = computed(() => this._wallet()?.availableBalance ?? 0);
   readonly pendingBalance = computed(() => this._wallet()?.pendingBalance ?? 0);
 
-  constructor(private readonly repo: WalletRepository) {}
+  constructor(
+    private readonly repo: WalletRepository,
+    private readonly authService: AuthService,
+  ) {}
 
   async loadWallet(): Promise<void> {
     this._loading.set(true);
     try {
-      const wallet = await firstValueFrom(this.repo.getWallet());
+      const merchantId = this.requireMerchantId();
+      const wallet = await firstValueFrom(this.repo.getMerchantWallet(merchantId));
       this._wallet.set(wallet);
       this._error.set(null);
     } catch (err: any) {
@@ -36,7 +41,10 @@ export class WalletFacade {
   async loadTransactions(page = 1, limit = 20): Promise<void> {
     this._loading.set(true);
     try {
-      const result = await firstValueFrom(this.repo.getTransactions({ page, limit }));
+      const merchantId = this.requireMerchantId();
+      const result = await firstValueFrom(
+        this.repo.getMerchantTransactions(merchantId, { page: String(page), limit: String(limit) })
+      );
       this._transactions.set(result.data);
       this._error.set(null);
     } catch (err: any) {
@@ -44,5 +52,13 @@ export class WalletFacade {
     } finally {
       this._loading.set(false);
     }
+  }
+
+  private requireMerchantId(): string {
+    const merchantId = this.authService.user()?.merchantId;
+    if (!merchantId) {
+      throw new Error('Merchant account is missing from your profile');
+    }
+    return merchantId;
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Shipment, ShipmentFilters, PaginationMeta, ShipmentStatus } from '@trackora/shared/domain';
 import { ShipmentRepository } from '@trackora/shared/data-access';
+import { AuthService } from '@trackora/core/auth';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -22,7 +23,10 @@ export class ShipmentFacade {
     return m ? m.page < m.totalPages : false;
   });
 
-  constructor(private readonly repo: ShipmentRepository) {}
+  constructor(
+    private readonly repo: ShipmentRepository,
+    private readonly authService: AuthService,
+  ) {}
 
   private readonly _error = signal<string | null>(null);
   readonly error = this._error.asReadonly();
@@ -30,7 +34,16 @@ export class ShipmentFacade {
   async loadShipments(filters?: Partial<ShipmentFilters>): Promise<void> {
     this._loading.set(true);
     this._error.set(null);
-    const merged = { ...this._filters(), ...filters };
+    const merchantId = this.authService.user()?.merchantId;
+    if (!merchantId) {
+      this._error.set('Merchant account is missing from your profile');
+      this._shipments.set([]);
+      this._meta.set(null);
+      this._loading.set(false);
+      return;
+    }
+
+    const merged = { ...this._filters(), ...filters, merchantId };
     this._filters.set(merged);
 
     try {
