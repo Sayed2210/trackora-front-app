@@ -84,7 +84,7 @@
     "jest-preset-angular": "~16.0.0",
     "jest-util": "^30.0.2",
     "jiti": "2.4.2",
-    "jsdom": "~22.1.0",
+    "jsdom": "^26.1.0",
     "jsonc-eslint-parser": "^2.1.0",
     "ng-packagr": "~21.2.0",
     "nx": "22.7.0",
