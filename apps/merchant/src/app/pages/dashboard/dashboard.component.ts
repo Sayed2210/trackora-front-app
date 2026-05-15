@@ -41,12 +41,21 @@ interface MerchantDashboardData {
     returned?: number;
     failed?: number;
   };
+  counts?: {
+    total?: number;
+    pending?: number;
+    inTransit?: number;
+    delivered?: number;
+    returned?: number;
+  };
   wallet?: {
     balance?: number;
     availableBalance?: number;
     pending?: number;
     pendingBalance?: number;
   };
+  deliverySuccessRate?: number;
+  averageCodAmount?: number;
   trends?: Record<string, string>;
   recentActivity?: Array<{
     id?: string;
@@ -96,6 +105,26 @@ interface MerchantAnalyticsData {
     failed?: number;
     returned?: number;
   };
+  successRate?: {
+    current?: number;
+    previous?: number;
+    trend?: 'up' | 'down' | 'flat';
+  };
+  returnReasons?: Array<{
+    reason?: string;
+    count?: number;
+    percentage?: number;
+  }>;
+  zonePerformance?: Array<{
+    zone?: string;
+    delivered?: number;
+    failed?: number;
+    rate?: number;
+  }>;
+  codTrend?: Array<{
+    date?: string;
+    collected?: number;
+  }>;
 }
 
 @Component({
@@ -247,7 +276,7 @@ export class DashboardComponent implements OnInit {
 
   private async loadDashboardData(): Promise<void> {
     const user = this.authService.user();
-    const merchantId = user?.merchantId ?? user?.id;
+    const merchantId = user?.merchantId;
     if (!merchantId) {
       this.clearDashboard();
       return;
@@ -270,11 +299,11 @@ export class DashboardComponent implements OnInit {
   private setKpis(data: MerchantDashboardData): void {
     const avgCod = data.avgCod ?? data.avgCodAmount;
     const values: Array<{ key: string; label: string; value: string | number | undefined; icon: string; color: string }> = [
-      { key: 'totalShipments', label: 'Total Shipments', value: data.totalShipments ?? data.shipments?.total, icon: '📦', color: '#3B82F6' },
-      { key: 'deliveryRate', label: 'Delivery Rate', value: data.deliveryRate !== undefined ? `${data.deliveryRate}%` : undefined, icon: '✅', color: '#10B981' },
-      { key: 'avgCod', label: 'Avg COD', value: avgCod !== undefined ? `${avgCod} EGP` : undefined, icon: '💰', color: '#F59E0B' },
+      { key: 'totalShipments', label: 'Total Shipments', value: data.totalShipments ?? data.shipments?.total ?? data.counts?.total, icon: '📦', color: '#3B82F6' },
+      { key: 'deliveryRate', label: 'Delivery Rate', value: data.deliveryRate !== undefined || data.deliverySuccessRate !== undefined ? `${data.deliveryRate ?? data.deliverySuccessRate}%` : undefined, icon: '✅', color: '#10B981' },
+      { key: 'avgCod', label: 'Avg COD', value: avgCod !== undefined || data.averageCodAmount !== undefined ? `${avgCod ?? data.averageCodAmount} EGP` : undefined, icon: '💰', color: '#F59E0B' },
       { key: 'availableBalance', label: 'Available Balance', value: data.availableBalance ?? data.wallet?.availableBalance ?? data.wallet?.balance, icon: '👛', color: '#8B5CF6' },
-      { key: 'pending', label: 'Pending', value: data.pending ?? data.shipments?.pending, icon: '⏳', color: '#EF4444' },
+      { key: 'pending', label: 'Pending', value: data.pending ?? data.shipments?.pending ?? data.counts?.pending, icon: '⏳', color: '#EF4444' },
       { key: 'failed', label: 'Failed', value: data.failed ?? data.shipments?.failed, icon: '⚠️', color: '#6B7280' },
     ];
 
@@ -299,7 +328,7 @@ export class DashboardComponent implements OnInit {
     this.activities.set(
       rawActivities.map((a: NonNullable<MerchantDashboardData['recentActivity']>[number]) => ({
         id: a.id ?? crypto.randomUUID(),
-        type: (a.type ?? 'shipment') as ActivityEvent['type'],
+        type: this.mapActivityType(a.type ?? a.status),
         title: a.title ?? a.trackingNumber ?? 'Activity',
         description: a.description ?? a.message ?? (a.amount ? `${a.amount} EGP` : ''),
         timestamp: a.timestamp ?? a.createdAt ?? a.time ?? new Date().toISOString(),
@@ -318,13 +347,29 @@ export class DashboardComponent implements OnInit {
         { label: 'Pending', data: trends.map((t: NonNullable<MerchantAnalyticsData['trends']>[number]) => t.pending ?? 0), borderColor: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.2)' },
       ];
       this.shipmentTrendDatasets.set(datasets);
+    } else if (Array.isArray(analytics?.codTrend) && analytics.codTrend.length > 0) {
+      this.chartLabels.set(analytics.codTrend.map((t) => t.date ?? ''));
+      this.shipmentTrendDatasets.set([{
+        label: 'COD Collected',
+        data: analytics.codTrend.map((t) => t.collected ?? 0),
+        borderColor: '#10B981',
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+      }]);
+    } else if (Array.isArray(analytics?.zonePerformance) && analytics.zonePerformance.length > 0) {
+      this.chartLabels.set(analytics.zonePerformance.map((z) => z.zone ?? 'Unknown'));
+      this.shipmentTrendDatasets.set([{
+        label: 'Delivery Rate',
+        data: analytics.zonePerformance.map((z) => z.rate ?? 0),
+        borderColor: '#3B82F6',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+      }]);
     }
 
     const statusBreakdown = dashboard?.statusBreakdown ?? analytics?.statusBreakdown ?? {
-      delivered: dashboard.shipments?.delivered,
-      pending: dashboard.shipments?.pending,
+      delivered: dashboard.shipments?.delivered ?? dashboard.counts?.delivered,
+      pending: dashboard.shipments?.pending ?? dashboard.counts?.pending,
       failed: dashboard.shipments?.failed,
-      returned: dashboard.shipments?.returned,
+      returned: dashboard.shipments?.returned ?? dashboard.counts?.returned,
     };
     if (statusBreakdown) {
       const labels = ['Delivered', 'Pending', 'Failed', 'Returned'];
@@ -340,6 +385,22 @@ export class DashboardComponent implements OnInit {
         data,
         backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#9CA3AF'],
       }]);
+    }
+  }
+
+  private mapActivityType(type?: string): ActivityEvent['type'] {
+    switch ((type ?? '').toUpperCase()) {
+      case 'DELIVERED':
+        return 'delivery';
+      case 'RETURNED':
+      case 'FAILED':
+        return 'return';
+      case 'WALLET':
+      case 'PAYOUT_DEBIT':
+      case 'COD_CREDIT':
+        return 'wallet';
+      default:
+        return 'shipment';
     }
   }
 
