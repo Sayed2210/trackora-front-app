@@ -1,0 +1,19 @@
+html {
+  min-height: 100%;
+  background: var(--trackora-surface);
+}
+
+body {
+  min-height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
