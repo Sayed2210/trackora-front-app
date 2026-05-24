@@ -1,4 +1,8 @@
 import { Route } from '@angular/router';
+import {
+  ownerPlatformAnalyticsGuard,
+  VIEW_PLATFORM_ANALYTICS_PERMISSION,
+} from './guards/owner-platform-analytics.guard';
 
 const placeholder = (title: string, module: string, description: string) => ({
   title,
@@ -13,19 +17,24 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./layout/owner-layout.component').then(
         (m) => m.OwnerLayoutComponent,
-      ),
+    ),
     children: [
-      { path: '', redirectTo: 'overview', pathMatch: 'full' },
+      {
+        path: '',
+        canActivate: [ownerPlatformAnalyticsGuard],
+        data: { permission: VIEW_PLATFORM_ANALYTICS_PERMISSION },
+        loadComponent: () =>
+          import('./pages/overview-page.component').then(
+            (m) => m.OverviewPageComponent,
+          ),
+      },
       {
         path: 'overview',
-        data: placeholder(
-          'Owner Overview',
-          'Platform Analytics',
-          'Placeholder for platform-wide operational analytics and alert widgets.',
-        ),
+        canActivate: [ownerPlatformAnalyticsGuard],
+        data: { permission: VIEW_PLATFORM_ANALYTICS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('./pages/overview-page.component').then(
+            (m) => m.OverviewPageComponent,
           ),
       },
       {
