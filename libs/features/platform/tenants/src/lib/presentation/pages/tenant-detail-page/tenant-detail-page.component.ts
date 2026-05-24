@@ -31,7 +31,8 @@ import { TENANT_PAGE_STYLES } from '../tenant-page.styles';
         </nav>
         <app-owner-section-card title="ملخص المستأجر" description="بيانات آمنة للعرض على مالك النظام.">
           <div section-actions class="tenant-actions">
-            @if (canManage) { <button type="button" (click)="requestStatus('ACTIVE')">تفعيل</button><button type="button" class="danger" (click)="requestStatus('SUSPENDED')" [disabled]="!canSuspend">إيقاف</button><button type="button" class="danger" (click)="requestStatus('CANCELLED')">إلغاء</button> }
+            @if (canManage) { <button type="button" (click)="requestStatus('ACTIVE')">تفعيل</button><button type="button" class="danger" (click)="requestStatus('CANCELLED')">إلغاء</button> }
+            @if (canSuspend) { <button type="button" class="danger" (click)="requestStatus('SUSPENDED')">إيقاف</button> }
           </div>
           <div class="summary-grid">
             <div class="summary-item"><span>الاسم</span><strong>{{ tenant.name }}</strong></div>
@@ -71,7 +72,7 @@ export class TenantDetailPageComponent implements OnInit {
   readonly tenantStatusLabel = tenantStatusLabel;
   readonly slugPattern = slugPattern;
   readonly canManage = this.auth.hasPermission(MANAGE_TENANTS_PERMISSION);
-  readonly canSuspend = this.auth.hasPermission(SUSPEND_TENANTS_PERMISSION) || this.canManage;
+  readonly canSuspend = this.auth.hasPermission(SUSPEND_TENANTS_PERMISSION);
   edit = { name: '', slug: '', email: '', planId: '' };
   pendingStatus: TenantStatus | null = null;
   reasonOpen = false;
@@ -80,7 +81,10 @@ export class TenantDetailPageComponent implements OnInit {
   get tenantId(): string { return this.route.snapshot.paramMap.get('tenantId') ?? ''; }
   async load(): Promise<void> { await this.facade.loadDetail(this.tenantId); const tenant = this.facade.detail().data; if (tenant) { this.edit = { name: tenant.name, slug: tenant.slug, email: tenant.email, planId: '' }; } }
   async save(form: NgForm): Promise<void> { if (form.invalid) { return; } await this.facade.updateTenant(this.tenantId, this.edit); }
-  requestStatus(status: TenantStatus): void { if (status === 'SUSPENDED' && !this.canSuspend) { return; } this.pendingStatus = status; }
+  requestStatus(status: TenantStatus): void {
+    if ((status === 'SUSPENDED' && !this.canSuspend) || (status !== 'SUSPENDED' && !this.canManage)) { return; }
+    this.pendingStatus = status;
+  }
   confirmStatus(): void { this.reasonOpen = true; }
   async submitStatus(reason: string): Promise<void> { if (!this.pendingStatus) { return; } await this.facade.changeStatus(this.tenantId, this.pendingStatus, reason); this.reasonOpen = false; this.pendingStatus = null; }
 }
