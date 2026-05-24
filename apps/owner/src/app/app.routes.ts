@@ -1,8 +1,15 @@
 import { Route } from '@angular/router';
 import {
   ownerPlatformAnalyticsGuard,
+  ownerPermissionGuard,
+  ownerPlatformRoleGuard,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
 } from './guards/owner-platform-analytics.guard';
+import {
+  MANAGE_FEATURE_FLAGS_PERMISSION,
+  MANAGE_TENANTS_PERMISSION,
+  VIEW_BILLING_PERMISSION,
+} from '@trackora/platform-tenants';
 
 const placeholder = (title: string, module: string, description: string) => ({
   title,
@@ -39,86 +46,65 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'tenants',
-        data: placeholder(
-          'Tenants Management',
-          'Tenants',
-          'Placeholder for tenants table, search, filters, pagination, and lifecycle actions.',
-        ),
+        canActivate: [ownerPlatformRoleGuard],
+        data: { role: 'platform' },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantsListPageComponent,
           ),
       },
       {
         path: 'tenants/create',
-        data: placeholder(
-          'Create Tenant',
-          'Tenants',
-          'Placeholder for the tenant creation form.',
-        ),
+        canActivate: [ownerPermissionGuard(MANAGE_TENANTS_PERMISSION)],
+        data: { permission: MANAGE_TENANTS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantCreatePageComponent,
           ),
       },
       {
         path: 'tenants/:tenantId',
-        data: placeholder(
-          'Tenant Details',
-          'Tenants',
-          'Placeholder for tenant profile, status, and platform owner actions.',
-        ),
+        canActivate: [ownerPlatformRoleGuard],
+        data: { role: 'platform' },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantDetailPageComponent,
           ),
       },
       {
         path: 'tenants/:tenantId/usage',
-        data: placeholder(
-          'Tenant Usage',
-          'Tenants',
-          'Placeholder for tenant usage cards and limits.',
-        ),
+        canActivate: [ownerPlatformRoleGuard],
+        data: { role: 'platform' },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantUsagePageComponent,
           ),
       },
       {
         path: 'tenants/:tenantId/users',
-        data: placeholder(
-          'Tenant Users',
-          'Tenants',
-          'Placeholder for tenant users summary.',
-        ),
+        canActivate: [ownerPermissionGuard(MANAGE_TENANTS_PERMISSION)],
+        data: { permission: MANAGE_TENANTS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantUsersPageComponent,
           ),
       },
       {
         path: 'tenants/:tenantId/billing',
-        data: placeholder(
-          'Tenant Billing',
-          'Billing',
-          'Placeholder for tenant billing summary.',
-        ),
+        canActivate: [ownerPermissionGuard(VIEW_BILLING_PERMISSION)],
+        data: { permission: VIEW_BILLING_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantBillingPageComponent,
           ),
       },
       {
         path: 'tenants/:tenantId/feature-flags',
-        data: placeholder(
-          'Tenant Feature Flags',
-          'Feature Flags',
-          'Placeholder for tenant feature flag overrides and effective flag state.',
-        ),
+        canActivate: [ownerPermissionGuard(MANAGE_FEATURE_FLAGS_PERMISSION)],
+        data: { permission: MANAGE_FEATURE_FLAGS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantFeatureFlagsPageComponent,
           ),
       },
       {

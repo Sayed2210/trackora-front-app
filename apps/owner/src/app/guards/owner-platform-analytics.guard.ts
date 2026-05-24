@@ -31,3 +31,35 @@ export const ownerPlatformAnalyticsGuard: CanActivateFn = () => {
 
   return true;
 };
+
+export const ownerPlatformRoleGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isAuthenticated()) {
+    return router.createUrlTree(['/login']);
+  }
+
+  return authService.hasAnyRole(PLATFORM_OWNER_ROLES)
+    ? true
+    : router.createUrlTree(['/owner/forbidden']);
+};
+
+export const ownerPermissionGuard = (permission: Permission): CanActivateFn => {
+  return () => {
+    const authService = inject(AuthService);
+    const router = inject(Router);
+
+    if (!authService.isAuthenticated()) {
+      return router.createUrlTree(['/login']);
+    }
+
+    if (!authService.hasAnyRole(PLATFORM_OWNER_ROLES)) {
+      return router.createUrlTree(['/owner/forbidden']);
+    }
+
+    return authService.hasPermission(permission)
+      ? true
+      : router.createUrlTree(['/owner/forbidden']);
+  };
+};

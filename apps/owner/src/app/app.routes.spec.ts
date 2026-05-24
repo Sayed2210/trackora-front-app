@@ -1,5 +1,10 @@
 import { appRoutes } from './app.routes';
 import {
+  MANAGE_FEATURE_FLAGS_PERMISSION,
+  MANAGE_TENANTS_PERMISSION,
+  VIEW_BILLING_PERMISSION,
+} from '@trackora/platform-tenants';
+import {
   ownerPlatformAnalyticsGuard,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
 } from './guards/owner-platform-analytics.guard';
@@ -20,5 +25,15 @@ describe('owner routes', () => {
     expect(overviewRoute?.data?.['permission']).toBe(
       VIEW_PLATFORM_ANALYTICS_PERMISSION,
     );
+  });
+
+  it('configures tenant management route permissions', () => {
+    const ownerRoute = appRoutes.find((route) => route.path === 'owner');
+    const children = ownerRoute?.children ?? [];
+
+    expect(children.find((route) => route.path === 'tenants/create')?.data?.['permission']).toBe(MANAGE_TENANTS_PERMISSION);
+    expect(children.find((route) => route.path === 'tenants/:tenantId/users')?.data?.['permission']).toBe(MANAGE_TENANTS_PERMISSION);
+    expect(children.find((route) => route.path === 'tenants/:tenantId/billing')?.data?.['permission']).toBe(VIEW_BILLING_PERMISSION);
+    expect(children.find((route) => route.path === 'tenants/:tenantId/feature-flags')?.data?.['permission']).toBe(MANAGE_FEATURE_FLAGS_PERMISSION);
   });
 });
