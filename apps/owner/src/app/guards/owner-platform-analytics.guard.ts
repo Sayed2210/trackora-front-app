@@ -6,6 +6,13 @@ import { Permission, UserRole } from '@trackora/shared/domain';
 export const VIEW_PLATFORM_ANALYTICS_PERMISSION =
   'view_platform_analytics' as Permission;
 
+export const PLATFORM_OWNER_ROLES = [
+  'PLATFORM_OWNER',
+  'PLATFORM_ADMIN',
+  'PLATFORM_SUPPORT',
+  'PLATFORM_FINANCE',
+] as unknown as UserRole[];
+
 export const ownerPlatformAnalyticsGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -14,7 +21,7 @@ export const ownerPlatformAnalyticsGuard: CanActivateFn = () => {
     return router.createUrlTree(['/login']);
   }
 
-  if (!authService.hasRole(UserRole.SUPER_ADMIN)) {
+  if (!authService.hasAnyRole(PLATFORM_OWNER_ROLES)) {
     return router.createUrlTree(['/owner/forbidden']);
   }
 
