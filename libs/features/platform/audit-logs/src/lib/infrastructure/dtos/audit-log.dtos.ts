@@ -1,0 +1,71 @@
+export interface AuditLogsListDto<T> {
+  data?: unknown;
+  items?: unknown;
+  results?: unknown;
+  logs?: unknown;
+  auditLogs?: unknown;
+  audit_logs?: unknown;
+  meta?: {
+    page?: unknown;
+    limit?: unknown;
+    pageSize?: unknown;
+    total?: unknown;
+    totalPages?: unknown;
+  };
+  total?: unknown;
+  count?: unknown;
+  page?: unknown;
+  limit?: unknown;
+  pageSize?: unknown;
+  page_size?: unknown;
+  _item?: T;
+}
+
+export interface AuditLogDto {
+  id?: unknown;
+  _id?: unknown;
+  action?: unknown;
+  event?: unknown;
+  actor?: unknown;
+  user?: unknown;
+  actorId?: unknown;
+  actor_id?: unknown;
+  actorName?: unknown;
+  actor_name?: unknown;
+  actorEmail?: unknown;
+  actor_email?: unknown;
+  actorRole?: unknown;
+  actor_role?: unknown;
+  tenant?: unknown;
+  tenantId?: unknown;
+  tenant_id?: unknown;
+  tenantName?: unknown;
+  tenant_name?: unknown;
+  tenantSlug?: unknown;
+  tenant_slug?: unknown;
+  resource?: unknown;
+  resourceType?: unknown;
+  resource_type?: unknown;
+  resourceId?: unknown;
+  resource_id?: unknown;
+  reason?: unknown;
+  timestamp?: unknown;
+  createdAt?: unknown;
+  created_at?: unknown;
+  ipAddress?: unknown;
+  ip_address?: unknown;
+  ip?: unknown;
+  userAgent?: unknown;
+  user_agent?: unknown;
+  status?: unknown;
+  severity?: unknown;
+  level?: unknown;
+  oldValue?: unknown;
+  old_value?: unknown;
+  before?: unknown;
+  previous?: unknown;
+  newValue?: unknown;
+  new_value?: unknown;
+  after?: unknown;
+  next?: unknown;
+}
