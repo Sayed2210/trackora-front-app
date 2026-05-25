@@ -1,16 +1,30 @@
 import { Route } from '@angular/router';
 import {
-  MANAGE_PLANS_PERMISSION,
   ownerPlatformAnalyticsGuard,
-  ownerPlatformPermissionGuard,
+  ownerPermissionGuard,
   ownerPlatformRoleGuard,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
 } from './guards/owner-platform-analytics.guard';
+import {
+  MANAGE_FEATURE_FLAGS_PERMISSION,
+  MANAGE_TENANTS_PERMISSION,
+  VIEW_BILLING_PERMISSION,
+} from '@trackora/platform-tenants';
 
 const placeholder = (title: string, module: string, description: string) => ({
   title,
   module,
   description,
+});
+
+const protectedPlaceholder = (
+  title: string,
+  module: string,
+  description: string,
+  access: Record<string, unknown> = {},
+) => ({
+  ...placeholder(title, module, description),
+  ...access,
 });
 
 export const appRoutes: Route[] = [
@@ -33,8 +47,13 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'overview',
-        canActivate: [ownerPlatformAnalyticsGuard],
-        data: { permission: VIEW_PLATFORM_ANALYTICS_PERMISSION },
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
+          'Owner Overview',
+          'Platform Analytics',
+          'Placeholder for platform-wide operational analytics and alert widgets.',
+          { permission: Permission.VIEW_PLATFORM_ANALYTICS },
+        ),
         loadComponent: () =>
           import('./pages/overview-page.component').then(
             (m) => m.OverviewPageComponent,
@@ -42,91 +61,75 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'tenants',
-        data: placeholder(
-          'Tenants Management',
-          'Tenants',
-          'Placeholder for tenants table, search, filters, pagination, and lifecycle actions.',
-        ),
+        canActivate: [ownerPlatformRoleGuard],
+        data: { role: 'platform' },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantsListPageComponent,
           ),
       },
       {
         path: 'tenants/create',
-        data: placeholder(
-          'Create Tenant',
-          'Tenants',
-          'Placeholder for the tenant creation form.',
-        ),
+        canActivate: [ownerPermissionGuard(MANAGE_TENANTS_PERMISSION)],
+        data: { permission: MANAGE_TENANTS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantCreatePageComponent,
           ),
       },
       {
         path: 'tenants/:tenantId',
-        data: placeholder(
-          'Tenant Details',
-          'Tenants',
-          'Placeholder for tenant profile, status, and platform owner actions.',
-        ),
+        canActivate: [ownerPlatformRoleGuard],
+        data: { role: 'platform' },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantDetailPageComponent,
           ),
       },
       {
         path: 'tenants/:tenantId/usage',
-        data: placeholder(
-          'Tenant Usage',
-          'Tenants',
-          'Placeholder for tenant usage cards and limits.',
-        ),
+        canActivate: [ownerPlatformRoleGuard],
+        data: { role: 'platform' },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantUsagePageComponent,
           ),
       },
       {
         path: 'tenants/:tenantId/users',
-        data: placeholder(
-          'Tenant Users',
-          'Tenants',
-          'Placeholder for tenant users summary.',
-        ),
+        canActivate: [ownerPermissionGuard(MANAGE_TENANTS_PERMISSION)],
+        data: { permission: MANAGE_TENANTS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantUsersPageComponent,
           ),
       },
       {
         path: 'tenants/:tenantId/billing',
-        data: placeholder(
-          'Tenant Billing',
-          'Billing',
-          'Placeholder for tenant billing summary.',
-        ),
+        canActivate: [ownerPermissionGuard(VIEW_BILLING_PERMISSION)],
+        data: { permission: VIEW_BILLING_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantBillingPageComponent,
           ),
       },
       {
         path: 'tenants/:tenantId/feature-flags',
-        data: placeholder(
-          'Tenant Feature Flags',
-          'Feature Flags',
-          'Placeholder for tenant feature flag overrides and effective flag state.',
-        ),
+        canActivate: [ownerPermissionGuard(MANAGE_FEATURE_FLAGS_PERMISSION)],
+        data: { permission: MANAGE_FEATURE_FLAGS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-tenants').then(
+            (m) => m.TenantFeatureFlagsPageComponent,
           ),
       },
       {
         path: 'plans',
-        canActivate: [ownerPlatformRoleGuard],
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
+          'Plans Management',
+          'Plans',
+          'Placeholder for subscription plan cards, limits, pricing, and entitlements.',
+        ),
         loadComponent: () =>
           import('@trackora/platform-plans').then(
             (m) => m.PlansListPageComponent,
@@ -134,8 +137,13 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'plans/create',
-        canActivate: [ownerPlatformPermissionGuard],
-        data: { permission: MANAGE_PLANS_PERMISSION },
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
+          'Create Plan',
+          'Plans',
+          'Placeholder for plan creation form.',
+          { permission: Permission.MANAGE_PLANS },
+        ),
         loadComponent: () =>
           import('@trackora/platform-plans').then(
             (m) => m.PlanCreatePageComponent,
@@ -143,7 +151,12 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'plans/:planId',
-        canActivate: [ownerPlatformRoleGuard],
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
+          'Plan Details',
+          'Plans',
+          'Placeholder for plan details, limits, and feature entitlements.',
+        ),
         loadComponent: () =>
           import('@trackora/platform-plans').then(
             (m) => m.PlanDetailPageComponent,
@@ -151,8 +164,13 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'plans/:planId/edit',
-        canActivate: [ownerPlatformPermissionGuard],
-        data: { permission: MANAGE_PLANS_PERMISSION },
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
+          'Edit Plan',
+          'Plans',
+          'Placeholder for plan edit form.',
+          { permission: Permission.MANAGE_PLANS },
+        ),
         loadComponent: () =>
           import('@trackora/platform-plans').then(
             (m) => m.PlanEditPageComponent,
@@ -160,10 +178,18 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'subscriptions',
-        data: placeholder(
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
           'Subscriptions Management',
           'Subscriptions',
           'Placeholder for subscriptions table, filters, and payment status visibility.',
+          {
+            permissions: [
+              Permission.MANAGE_SUBSCRIPTIONS,
+              Permission.VIEW_BILLING,
+              Permission.VIEW_PLATFORM_ANALYTICS,
+            ],
+          },
         ),
         loadComponent: () =>
           import('./pages/placeholder-page.component').then(
@@ -172,10 +198,18 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'subscriptions/:subscriptionId',
-        data: placeholder(
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
           'Subscription Details',
           'Subscriptions',
           'Placeholder for subscription details and future reason-required mutations.',
+          {
+            permissions: [
+              Permission.MANAGE_SUBSCRIPTIONS,
+              Permission.VIEW_BILLING,
+              Permission.VIEW_PLATFORM_ANALYTICS,
+            ],
+          },
         ),
         loadComponent: () =>
           import('./pages/placeholder-page.component').then(
@@ -184,10 +218,12 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'usage',
-        data: placeholder(
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
           'Platform Usage',
           'Usage',
           'Placeholder for platform usage and limits visibility.',
+          { permission: Permission.VIEW_PLATFORM_ANALYTICS },
         ),
         loadComponent: () =>
           import('./pages/placeholder-page.component').then(
@@ -196,10 +232,12 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'billing',
-        data: placeholder(
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
           'Billing Overview',
           'Billing',
           'Placeholder for finance-only billing overview.',
+          { permission: Permission.VIEW_BILLING },
         ),
         loadComponent: () =>
           import('./pages/placeholder-page.component').then(
@@ -208,10 +246,12 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'invoices',
-        data: placeholder(
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
           'Invoices',
           'Billing',
           'Placeholder for invoices, manual invoices, and export flows.',
+          { permission: Permission.VIEW_BILLING },
         ),
         loadComponent: () =>
           import('./pages/placeholder-page.component').then(
@@ -220,10 +260,12 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'feature-flags',
-        data: placeholder(
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
           'Feature Flags',
           'Feature Flags',
           'Placeholder for global flags, plan inheritance, and tenant overrides.',
+          { permission: Permission.MANAGE_FEATURE_FLAGS },
         ),
         loadComponent: () =>
           import('./pages/placeholder-page.component').then(
@@ -232,10 +274,12 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'audit-logs',
-        data: placeholder(
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
           'Audit Logs',
           'Audit Logs',
           'Placeholder for platform audit logs, filters, reasons, and masked values.',
+          { permission: Permission.VIEW_AUDIT_LOGS },
         ),
         loadComponent: () =>
           import('./pages/placeholder-page.component').then(
@@ -244,10 +288,15 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'support',
-        data: placeholder(
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
           'Support Tools',
           'Support',
           'Placeholder for tenant search, health checks, and impersonation workflows.',
+          {
+            permissions: [Permission.IMPERSONATE_TENANT_ADMIN],
+            roles: [UserRole.PLATFORM_SUPPORT],
+          },
         ),
         loadComponent: () =>
           import('./pages/placeholder-page.component').then(
@@ -256,7 +305,8 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'settings',
-        data: placeholder(
+        canActivate: ownerGuards,
+        data: protectedPlaceholder(
           'Owner Settings',
           'Settings',
           'Placeholder for platform owner settings pending Swagger permission confirmation.',
@@ -274,6 +324,11 @@ export const appRoutes: Route[] = [
           ),
       },
     ],
+  },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('@trackora/auth-feature').then((m) => m.LoginPageComponent),
   },
   { path: '**', redirectTo: 'owner' },
 ];

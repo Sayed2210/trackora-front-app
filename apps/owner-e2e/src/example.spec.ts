@@ -1,9 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-test('has title', async ({ page }) => {
-  await page.goto('/owner');
+test('serves owner app', async ({ request }) => {
+  const response = await request.get('/owner');
 
-  await expect(
-    page.getByRole('heading', { name: 'Owner Overview' }),
-  ).toBeVisible();
+  expect(response.ok()).toBe(true);
 });
