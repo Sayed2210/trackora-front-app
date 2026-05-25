@@ -89,6 +89,9 @@
       ],
       "@trackora/platform-subscriptions": [
         "./libs/features/platform/subscriptions/src/index.ts"
+      ],
+      "@trackora/platform-feature-flags": [
+        "./libs/features/platform/feature-flags/src/index.ts"
       ]
     }
   },
