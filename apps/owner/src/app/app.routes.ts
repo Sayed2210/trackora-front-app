@@ -4,6 +4,7 @@ import {
   ownerPlatformAnalyticsGuard,
   ownerPermissionGuard,
   ownerPlatformRoleGuard,
+  ownerSupportAccessGuard,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
 } from './guards/owner-platform-analytics.guard';
 import { Permission, UserRole } from '@trackora/shared/domain';
@@ -15,6 +16,7 @@ import { MANAGE_FEATURE_FLAGS_PERMISSION } from '@trackora/platform-feature-flag
 import { MANAGE_SUBSCRIPTIONS_PERMISSION } from '@trackora/platform-subscriptions';
 import { VIEW_BILLING_PERMISSION as PLATFORM_VIEW_BILLING_PERMISSION } from '@trackora/platform-billing';
 import { VIEW_AUDIT_LOGS_PERMISSION } from '@trackora/platform-audit-logs';
+import { IMPERSONATE_TENANT_ADMIN_PERMISSION } from '@trackora/platform-support';
 
 const ownerGuards = [ownerPlatformAnalyticsGuard];
 const SUBSCRIPTION_VIEW_PERMISSIONS = [
@@ -272,19 +274,37 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'support',
-        canActivate: ownerGuards,
-        data: protectedPlaceholder(
-          'Support Tools',
-          'Support',
-          'Placeholder for tenant search, health checks, and impersonation workflows.',
-          {
-            permissions: [Permission.IMPERSONATE_TENANT_ADMIN],
-            roles: [UserRole.PLATFORM_SUPPORT],
-          },
-        ),
+        canActivate: [ownerSupportAccessGuard],
+        data: {
+          permissions: [IMPERSONATE_TENANT_ADMIN_PERMISSION],
+          roles: [UserRole.PLATFORM_SUPPORT],
+        },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-support').then(
+            (m) => m.SupportPageComponent,
+          ),
+      },
+      {
+        path: 'support/tenants/:tenantId',
+        canActivate: [ownerSupportAccessGuard],
+        data: {
+          permissions: [IMPERSONATE_TENANT_ADMIN_PERMISSION],
+          roles: [UserRole.PLATFORM_SUPPORT],
+        },
+        loadComponent: () =>
+          import('@trackora/platform-support').then(
+            (m) => m.TenantHealthPageComponent,
+          ),
+      },
+      {
+        path: 'support/impersonation',
+        canActivate: [
+          ownerPermissionGuard(IMPERSONATE_TENANT_ADMIN_PERMISSION),
+        ],
+        data: { permission: IMPERSONATE_TENANT_ADMIN_PERMISSION },
+        loadComponent: () =>
+          import('@trackora/platform-support').then(
+            (m) => m.ImpersonationPageComponent,
           ),
       },
       {

@@ -5,6 +5,7 @@ import { Permission, UserRole } from '@trackora/shared/domain';
 import {
   ownerAnyPermissionGuard,
   ownerPlatformAnalyticsGuard,
+  ownerSupportAccessGuard,
   PLATFORM_OWNER_ROLES,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
 } from './owner-platform-analytics.guard';
@@ -50,6 +51,23 @@ describe('ownerPlatformAnalyticsGuard', () => {
     });
 
     expect(result).toBe(true);
+  });
+
+  it('allows support access with impersonation permission or support role', () => {
+    expect(
+      runSupportAccessGuard({
+        authenticated: true,
+        roles: ['PLATFORM_OWNER' as UserRole],
+        permissions: [Permission.IMPERSONATE_TENANT_ADMIN],
+      }),
+    ).toBe(true);
+    expect(
+      runSupportAccessGuard({
+        authenticated: true,
+        roles: ['PLATFORM_SUPPORT' as UserRole],
+        permissions: [],
+      }),
+    ).toBe(true);
   });
 });
 
@@ -117,6 +135,37 @@ const runAnyPermissionGuard = (state: GuardUserState): boolean | string => {
       'manage_subscriptions' as Permission,
       'view_billing' as Permission,
     ])({} as never, {} as never),
+  );
+
+  return result instanceof UrlTree ? result.toString() : result;
+};
+
+const runSupportAccessGuard = (state: GuardUserState): boolean | string => {
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({
+    providers: [
+      {
+        provide: AuthService,
+        useValue: {
+          isAuthenticated: () => state.authenticated,
+          hasAnyRole: (roles: UserRole[]) =>
+            roles.some((role) => state.roles.includes(role)),
+          hasRole: (role: UserRole) => state.roles.includes(role),
+          hasPermission: (permission: Permission) =>
+            state.permissions.includes(permission),
+        },
+      },
+      {
+        provide: Router,
+        useValue: {
+          createUrlTree: (commands: string[]) => commands.join('/'),
+        },
+      },
+    ],
+  });
+
+  const result = TestBed.runInInjectionContext(() =>
+    ownerSupportAccessGuard({} as never, {} as never),
   );
 
   return result instanceof UrlTree ? result.toString() : result;

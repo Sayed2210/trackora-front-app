@@ -69,6 +69,9 @@
       ],
       "@trackora/platform-audit-logs": [
         "./libs/features/platform/audit-logs/src/index.ts"
+      ],
+      "@trackora/platform-support": [
+        "./libs/features/platform/support/src/index.ts"
       ]
     }
   },

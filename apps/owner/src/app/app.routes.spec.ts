@@ -7,6 +7,7 @@ import { MANAGE_FEATURE_FLAGS_PERMISSION } from '@trackora/platform-feature-flag
 import { MANAGE_SUBSCRIPTIONS_PERMISSION } from '@trackora/platform-subscriptions';
 import { VIEW_BILLING_PERMISSION as PLATFORM_VIEW_BILLING_PERMISSION } from '@trackora/platform-billing';
 import { VIEW_AUDIT_LOGS_PERMISSION } from '@trackora/platform-audit-logs';
+import { IMPERSONATE_TENANT_ADMIN_PERMISSION } from '@trackora/platform-support';
 import {
   ownerPlatformAnalyticsGuard,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
@@ -109,5 +110,23 @@ describe('owner routes', () => {
         'permission'
       ],
     ).toBe(VIEW_AUDIT_LOGS_PERMISSION);
+  });
+
+  it('configures support and impersonation route permissions', () => {
+    const ownerRoute = appRoutes.find((route) => route.path === 'owner');
+    const children = ownerRoute?.children ?? [];
+
+    expect(
+      children.find((route) => route.path === 'support')?.data?.['permissions'],
+    ).toEqual([IMPERSONATE_TENANT_ADMIN_PERMISSION]);
+    expect(
+      children.find((route) => route.path === 'support/tenants/:tenantId')
+        ?.data?.['permissions'],
+    ).toEqual([IMPERSONATE_TENANT_ADMIN_PERMISSION]);
+    expect(
+      children.find((route) => route.path === 'support/impersonation')?.data?.[
+        'permission'
+      ],
+    ).toBe(IMPERSONATE_TENANT_ADMIN_PERMISSION);
   });
 });
