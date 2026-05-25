@@ -7,7 +7,8 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { AuthService } from '@trackora/core/auth';
-import { Permission } from '@trackora/shared/domain';
+import { ActiveImpersonationBannerComponent } from '@trackora/platform-support';
+import { Permission, UserRole } from '@trackora/shared/domain';
 import { filter } from 'rxjs';
 
 type OwnerNavItem = {
@@ -15,11 +16,17 @@ type OwnerNavItem = {
   path: string;
   section: string;
   permission?: Permission;
+  roles?: UserRole[];
 };
 
 @Component({
   selector: 'app-owner-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [
+    ActiveImpersonationBannerComponent,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+  ],
   templateUrl: './owner-layout.component.html',
   styleUrl: './owner-layout.component.scss',
 })
@@ -55,7 +62,13 @@ export class OwnerLayoutComponent {
       section: 'Controls',
     },
     { label: 'Audit Logs', path: '/owner/audit-logs', section: 'Security' },
-    { label: 'Support', path: '/owner/support', section: 'Support' },
+    {
+      label: 'Support',
+      path: '/owner/support',
+      section: 'Support',
+      permission: Permission.IMPERSONATE_TENANT_ADMIN,
+      roles: [UserRole.PLATFORM_SUPPORT],
+    },
     { label: 'Settings', path: '/owner/settings', section: 'Platform' },
   ];
 
@@ -63,7 +76,9 @@ export class OwnerLayoutComponent {
   protected readonly visibleNavItems = () =>
     this.navItems.filter(
       (item) =>
-        !item.permission || this.authService.hasPermission(item.permission),
+        (!item.permission && !item.roles?.length) ||
+        (item.permission && this.authService.hasPermission(item.permission)) ||
+        item.roles?.some((role) => this.authService.hasRole(role)),
     );
 
   constructor() {

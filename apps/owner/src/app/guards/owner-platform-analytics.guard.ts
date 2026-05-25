@@ -95,3 +95,21 @@ export const ownerAnyPermissionGuard = (
       : router.createUrlTree(['/owner/forbidden']);
   };
 };
+
+export const ownerSupportAccessGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isAuthenticated()) {
+    return router.createUrlTree(['/login']);
+  }
+
+  if (!authService.hasAnyRole(PLATFORM_OWNER_ROLES)) {
+    return router.createUrlTree(['/owner/forbidden']);
+  }
+
+  return authService.hasPermission(Permission.IMPERSONATE_TENANT_ADMIN) ||
+    authService.hasRole(UserRole.PLATFORM_SUPPORT)
+    ? true
+    : router.createUrlTree(['/owner/forbidden']);
+};
