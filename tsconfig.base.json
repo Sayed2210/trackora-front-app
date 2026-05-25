@@ -48,6 +48,9 @@
       "@trackora/zones-feature": ["libs/features/zones-feature/src/index.ts"],
       "@trackora/platform-overview": [
         "./libs/features/platform/overview/src/index.ts"
+      ],
+      "@trackora/platform-plans": [
+        "./libs/features/platform/plans/src/index.ts"
       ]
     }
   },

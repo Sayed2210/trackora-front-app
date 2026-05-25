@@ -1,6 +1,9 @@
 import { Route } from '@angular/router';
 import {
+  MANAGE_PLANS_PERMISSION,
   ownerPlatformAnalyticsGuard,
+  ownerPlatformPermissionGuard,
+  ownerPlatformRoleGuard,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
 } from './guards/owner-platform-analytics.guard';
 
@@ -123,50 +126,36 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'plans',
-        data: placeholder(
-          'Plans Management',
-          'Plans',
-          'Placeholder for subscription plan cards, limits, pricing, and entitlements.',
-        ),
+        canActivate: [ownerPlatformRoleGuard],
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-plans').then(
+            (m) => m.PlansListPageComponent,
           ),
       },
       {
         path: 'plans/create',
-        data: placeholder(
-          'Create Plan',
-          'Plans',
-          'Placeholder for plan creation form.',
-        ),
+        canActivate: [ownerPlatformPermissionGuard],
+        data: { permission: MANAGE_PLANS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-plans').then(
+            (m) => m.PlanCreatePageComponent,
           ),
       },
       {
         path: 'plans/:planId',
-        data: placeholder(
-          'Plan Details',
-          'Plans',
-          'Placeholder for plan details, limits, and feature entitlements.',
-        ),
+        canActivate: [ownerPlatformRoleGuard],
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-plans').then(
+            (m) => m.PlanDetailPageComponent,
           ),
       },
       {
         path: 'plans/:planId/edit',
-        data: placeholder(
-          'Edit Plan',
-          'Plans',
-          'Placeholder for plan edit form.',
-        ),
+        canActivate: [ownerPlatformPermissionGuard],
+        data: { permission: MANAGE_PLANS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-plans').then(
+            (m) => m.PlanEditPageComponent,
           ),
       },
       {
