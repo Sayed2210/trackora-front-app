@@ -8,10 +8,10 @@ import {
 } from './guards/owner-platform-analytics.guard';
 import { Permission, UserRole } from '@trackora/shared/domain';
 import {
-  MANAGE_FEATURE_FLAGS_PERMISSION,
   MANAGE_TENANTS_PERMISSION,
   VIEW_BILLING_PERMISSION,
 } from '@trackora/platform-tenants';
+import { MANAGE_FEATURE_FLAGS_PERMISSION } from '@trackora/platform-feature-flags';
 import { MANAGE_SUBSCRIPTIONS_PERMISSION } from '@trackora/platform-subscriptions';
 
 const ownerGuards = [ownerPlatformAnalyticsGuard];
@@ -128,7 +128,7 @@ export const appRoutes: Route[] = [
         canActivate: [ownerPermissionGuard(MANAGE_FEATURE_FLAGS_PERMISSION)],
         data: { permission: MANAGE_FEATURE_FLAGS_PERMISSION },
         loadComponent: () =>
-          import('@trackora/platform-tenants').then(
+          import('@trackora/platform-feature-flags').then(
             (m) => m.TenantFeatureFlagsPageComponent,
           ),
       },
@@ -262,16 +262,11 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'feature-flags',
-        canActivate: ownerGuards,
-        data: protectedPlaceholder(
-          'Feature Flags',
-          'Feature Flags',
-          'Placeholder for global flags, plan inheritance, and tenant overrides.',
-          { permission: Permission.MANAGE_FEATURE_FLAGS },
-        ),
+        canActivate: [ownerPermissionGuard(MANAGE_FEATURE_FLAGS_PERMISSION)],
+        data: { permission: MANAGE_FEATURE_FLAGS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-feature-flags').then(
+            (m) => m.GlobalFeatureFlagsPageComponent,
           ),
       },
       {
