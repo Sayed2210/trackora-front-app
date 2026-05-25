@@ -138,11 +138,12 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'plans',
-        canActivate: ownerGuards,
+        canActivate: [ownerPermissionGuard(Permission.MANAGE_PLANS)],
         data: protectedPlaceholder(
           'Plans Management',
           'Plans',
           'Placeholder for subscription plan cards, limits, pricing, and entitlements.',
+          { permission: Permission.MANAGE_PLANS },
         ),
         loadComponent: () =>
           import('@trackora/platform-plans').then(
@@ -151,7 +152,7 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'plans/create',
-        canActivate: ownerGuards,
+        canActivate: [ownerPermissionGuard(Permission.MANAGE_PLANS)],
         data: protectedPlaceholder(
           'Create Plan',
           'Plans',
@@ -165,11 +166,12 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'plans/:planId',
-        canActivate: ownerGuards,
+        canActivate: [ownerPermissionGuard(Permission.MANAGE_PLANS)],
         data: protectedPlaceholder(
           'Plan Details',
           'Plans',
           'Placeholder for plan details, limits, and feature entitlements.',
+          { permission: Permission.MANAGE_PLANS },
         ),
         loadComponent: () =>
           import('@trackora/platform-plans').then(
@@ -178,7 +180,7 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'plans/:planId/edit',
-        canActivate: ownerGuards,
+        canActivate: [ownerPermissionGuard(Permission.MANAGE_PLANS)],
         data: protectedPlaceholder(
           'Edit Plan',
           'Plans',
