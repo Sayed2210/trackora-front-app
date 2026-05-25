@@ -26,14 +26,32 @@
       "@trackora/shared/utils": ["libs/shared/utils/src/index.ts"],
       "@trackora/shared/data-access": ["libs/shared/data-access/src/index.ts"],
       "@trackora/auth-feature": ["libs/features/auth-feature/src/index.ts"],
-      "@trackora/shipments-feature": ["libs/features/shipments-feature/src/index.ts"],
-      "@trackora/assignments-feature": ["libs/features/assignments-feature/src/index.ts"],
-      "@trackora/courier-tasks-feature": ["libs/features/courier-tasks-feature/src/index.ts"],
+      "@trackora/shipments-feature": [
+        "libs/features/shipments-feature/src/index.ts"
+      ],
+      "@trackora/assignments-feature": [
+        "libs/features/assignments-feature/src/index.ts"
+      ],
+      "@trackora/courier-tasks-feature": [
+        "libs/features/courier-tasks-feature/src/index.ts"
+      ],
       "@trackora/wallet-feature": ["libs/features/wallet-feature/src/index.ts"],
-      "@trackora/payouts-feature": ["libs/features/payouts-feature/src/index.ts"],
-      "@trackora/tracking-feature": ["libs/features/tracking-feature/src/index.ts"],
-      "@trackora/analytics-feature": ["libs/features/analytics-feature/src/index.ts"],
-      "@trackora/zones-feature": ["libs/features/zones-feature/src/index.ts"]
+      "@trackora/payouts-feature": [
+        "libs/features/payouts-feature/src/index.ts"
+      ],
+      "@trackora/tracking-feature": [
+        "libs/features/tracking-feature/src/index.ts"
+      ],
+      "@trackora/analytics-feature": [
+        "libs/features/analytics-feature/src/index.ts"
+      ],
+      "@trackora/zones-feature": ["libs/features/zones-feature/src/index.ts"],
+      "@trackora/platform-overview": [
+        "./libs/features/platform/overview/src/index.ts"
+      ],
+      "@trackora/platform-plans": [
+        "./libs/features/platform/plans/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

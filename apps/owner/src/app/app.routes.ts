@@ -27,9 +27,17 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./layout/owner-layout.component').then(
         (m) => m.OwnerLayoutComponent,
-      ),
+    ),
     children: [
-      { path: '', redirectTo: 'overview', pathMatch: 'full' },
+      {
+        path: '',
+        canActivate: [ownerPlatformAnalyticsGuard],
+        data: { permission: VIEW_PLATFORM_ANALYTICS_PERMISSION },
+        loadComponent: () =>
+          import('./pages/overview-page.component').then(
+            (m) => m.OverviewPageComponent,
+          ),
+      },
       {
         path: 'overview',
         canActivate: ownerGuards,
@@ -40,8 +48,8 @@ export const appRoutes: Route[] = [
           { permission: Permission.VIEW_PLATFORM_ANALYTICS },
         ),
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('./pages/overview-page.component').then(
+            (m) => m.OverviewPageComponent,
           ),
       },
       {
@@ -147,8 +155,8 @@ export const appRoutes: Route[] = [
           'Placeholder for subscription plan cards, limits, pricing, and entitlements.',
         ),
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-plans').then(
+            (m) => m.PlansListPageComponent,
           ),
       },
       {
@@ -161,8 +169,8 @@ export const appRoutes: Route[] = [
           { permission: Permission.MANAGE_PLANS },
         ),
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-plans').then(
+            (m) => m.PlanCreatePageComponent,
           ),
       },
       {
@@ -174,8 +182,8 @@ export const appRoutes: Route[] = [
           'Placeholder for plan details, limits, and feature entitlements.',
         ),
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-plans').then(
+            (m) => m.PlanDetailPageComponent,
           ),
       },
       {
@@ -188,8 +196,8 @@ export const appRoutes: Route[] = [
           { permission: Permission.MANAGE_PLANS },
         ),
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-plans').then(
+            (m) => m.PlanEditPageComponent,
           ),
       },
       {
