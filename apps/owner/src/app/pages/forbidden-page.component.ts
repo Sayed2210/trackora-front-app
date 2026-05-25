@@ -1,15 +1,14 @@
-import { Component } from '@angular/core';
+import { Location } from '@angular/common';
+import { Component, inject } from '@angular/core';
 
 @Component({
   selector: 'app-owner-forbidden-page',
   template: `
     <section class="forbidden-page">
       <span>403</span>
-      <h1>Access forbidden</h1>
-      <p>
-        This placeholder is reserved for Phase 2 platform role and permission
-        guard flows.
-      </p>
+      <h1>ليس لديك صلاحية للوصول لهذه الصفحة</h1>
+      <p>يرجى الرجوع للوحة النظام أو التواصل مع مسؤول المنصة.</p>
+      <button type="button" (click)="goBack()">رجوع</button>
     </section>
   `,
   styles: [
@@ -40,7 +39,25 @@ import { Component } from '@angular/core';
         color: var(--trackora-text-secondary);
         line-height: 1.7;
       }
+
+      button {
+        width: fit-content;
+        margin-top: 0.5rem;
+        padding: 0.7rem 1rem;
+        color: var(--trackora-primary-contrast);
+        background: var(--trackora-primary);
+        border: 0;
+        border-radius: 999px;
+        cursor: pointer;
+        font-weight: 700;
+      }
     `,
   ],
 })
-export class ForbiddenPageComponent {}
+export class ForbiddenPageComponent {
+  private readonly location = inject(Location);
+
+  goBack(): void {
+    this.location.back();
+  }
+}

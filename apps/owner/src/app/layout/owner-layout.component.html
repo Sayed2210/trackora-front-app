@@ -39,6 +39,12 @@
       }
     </div>
 
+    @if (authService.user()?.impersonationContext) {
+      <div class="owner-impersonation-banner" role="status">
+        وضع الانتحال نشط حاليا. هذه رسالة تنبيه مؤقتة حتى تنفيذ سير العمل الكامل.
+      </div>
+    }
+
     <main class="owner-content" id="owner-content">
       <router-outlet />
     </main>

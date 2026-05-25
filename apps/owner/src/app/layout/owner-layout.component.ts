@@ -6,6 +6,7 @@ import {
   RouterLinkActive,
   RouterOutlet,
 } from '@angular/router';
+import { AuthService } from '@trackora/core/auth';
 import { filter } from 'rxjs';
 
 type OwnerNavItem = {
@@ -22,6 +23,7 @@ type OwnerNavItem = {
 })
 export class OwnerLayoutComponent {
   private readonly router = inject(Router);
+  protected readonly authService = inject(AuthService);
 
   protected readonly navItems: OwnerNavItem[] = [
     { label: 'Overview', path: '/owner/overview', section: 'Platform' },

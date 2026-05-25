@@ -4,7 +4,7 @@ import { RealTimeTransport } from './realtime-transport.interface';
 @Injectable({ providedIn: 'root' })
 export class SseTransport implements RealTimeTransport {
   private eventSource: EventSource | null = null;
-  private handlers = new Map<string, Set<Function>>();
+  private handlers = new Map<string, Set<(data: unknown) => void>>();
 
   connect(): void {
     if (this.eventSource) return;
@@ -27,11 +27,12 @@ export class SseTransport implements RealTimeTransport {
   }
 
   on<T>(event: string, handler: (data: T) => void): void {
-    if (!this.handlers.has(event)) this.handlers.set(event, new Set());
-    this.handlers.get(event)!.add(handler);
+    const handlers = this.handlers.get(event) ?? new Set<(data: unknown) => void>();
+    handlers.add(handler as (data: unknown) => void);
+    this.handlers.set(event, handlers);
   }
 
   off<T>(event: string, handler: (data: T) => void): void {
-    this.handlers.get(event)?.delete(handler);
+    this.handlers.get(event)?.delete(handler as (data: unknown) => void);
   }
 }
