@@ -5,9 +5,10 @@ import {
   VIEW_BILLING_PERMISSION,
 } from '@trackora/platform-tenants';
 import {
+  MANAGE_SUBSCRIPTIONS_PERMISSION,
+} from '@trackora/platform-subscriptions';
+import {
   ownerPlatformAnalyticsGuard,
-  ownerPlatformPermissionGuard,
-  ownerPlatformRoleGuard,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
 } from './guards/owner-platform-analytics.guard';
 
@@ -37,5 +38,19 @@ describe('owner routes', () => {
     expect(children.find((route) => route.path === 'tenants/:tenantId/users')?.data?.['permission']).toBe(MANAGE_TENANTS_PERMISSION);
     expect(children.find((route) => route.path === 'tenants/:tenantId/billing')?.data?.['permission']).toBe(VIEW_BILLING_PERMISSION);
     expect(children.find((route) => route.path === 'tenants/:tenantId/feature-flags')?.data?.['permission']).toBe(MANAGE_FEATURE_FLAGS_PERMISSION);
+  });
+
+  it('configures subscription management route permissions', () => {
+    const ownerRoute = appRoutes.find((route) => route.path === 'owner');
+    const children = ownerRoute?.children ?? [];
+    const listRoute = children.find((route) => route.path === 'subscriptions');
+    const detailRoute = children.find((route) => route.path === 'subscriptions/:subscriptionId');
+
+    expect(listRoute?.data?.['permissions']).toEqual([
+      MANAGE_SUBSCRIPTIONS_PERMISSION,
+      VIEW_BILLING_PERMISSION,
+      VIEW_PLATFORM_ANALYTICS_PERMISSION,
+    ]);
+    expect(detailRoute?.data?.['permissions']).toEqual(listRoute?.data?.['permissions']);
   });
 });

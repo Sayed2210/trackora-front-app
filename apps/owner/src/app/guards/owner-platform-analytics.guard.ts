@@ -17,9 +17,6 @@ export const PLATFORM_OWNER_ROLES = [
 export const ownerPlatformAnalyticsGuard: CanActivateFn = () =>
   checkPlatformPermission(VIEW_PLATFORM_ANALYTICS_PERMISSION);
 
-export const ownerPlatformRoleGuard: CanActivateFn = () =>
-  checkPlatformPermission();
-
 export const ownerPlatformPermissionGuard: CanActivateFn = (
   route: ActivatedRouteSnapshot,
 ) => checkPlatformPermission(route.data['permission'] as Permission | undefined);
@@ -70,6 +67,25 @@ export const ownerPermissionGuard = (permission: Permission): CanActivateFn => {
     }
 
     return authService.hasPermission(permission)
+      ? true
+      : router.createUrlTree(['/owner/forbidden']);
+  };
+};
+
+export const ownerAnyPermissionGuard = (permissions: Permission[]): CanActivateFn => {
+  return () => {
+    const authService = inject(AuthService);
+    const router = inject(Router);
+
+    if (!authService.isAuthenticated()) {
+      return router.createUrlTree(['/login']);
+    }
+
+    if (!authService.hasAnyRole(PLATFORM_OWNER_ROLES)) {
+      return router.createUrlTree(['/owner/forbidden']);
+    }
+
+    return permissions.some((permission) => authService.hasPermission(permission))
       ? true
       : router.createUrlTree(['/owner/forbidden']);
   };
