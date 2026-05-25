@@ -66,6 +66,9 @@
       ],
       "@trackora/platform-billing": [
         "./libs/features/platform/billing/src/index.ts"
+      ],
+      "@trackora/platform-audit-logs": [
+        "./libs/features/platform/audit-logs/src/index.ts"
       ]
     }
   },

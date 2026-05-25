@@ -14,6 +14,7 @@ import {
 import { MANAGE_FEATURE_FLAGS_PERMISSION } from '@trackora/platform-feature-flags';
 import { MANAGE_SUBSCRIPTIONS_PERMISSION } from '@trackora/platform-subscriptions';
 import { VIEW_BILLING_PERMISSION as PLATFORM_VIEW_BILLING_PERMISSION } from '@trackora/platform-billing';
+import { VIEW_AUDIT_LOGS_PERMISSION } from '@trackora/platform-audit-logs';
 
 const ownerGuards = [ownerPlatformAnalyticsGuard];
 const SUBSCRIPTION_VIEW_PERMISSIONS = [
@@ -262,16 +263,11 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'audit-logs',
-        canActivate: ownerGuards,
-        data: protectedPlaceholder(
-          'Audit Logs',
-          'Audit Logs',
-          'Placeholder for platform audit logs, filters, reasons, and masked values.',
-          { permission: Permission.VIEW_AUDIT_LOGS },
-        ),
+        canActivate: [ownerPermissionGuard(VIEW_AUDIT_LOGS_PERMISSION)],
+        data: { permission: VIEW_AUDIT_LOGS_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-audit-logs').then(
+            (m) => m.AuditLogsPageComponent,
           ),
       },
       {

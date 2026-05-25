@@ -6,6 +6,7 @@ import {
 import { MANAGE_FEATURE_FLAGS_PERMISSION } from '@trackora/platform-feature-flags';
 import { MANAGE_SUBSCRIPTIONS_PERMISSION } from '@trackora/platform-subscriptions';
 import { VIEW_BILLING_PERMISSION as PLATFORM_VIEW_BILLING_PERMISSION } from '@trackora/platform-billing';
+import { VIEW_AUDIT_LOGS_PERMISSION } from '@trackora/platform-audit-logs';
 import {
   ownerPlatformAnalyticsGuard,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
@@ -97,5 +98,16 @@ describe('owner routes', () => {
     expect(
       children.find((route) => route.path === 'invoices')?.data?.['permission'],
     ).toBe(PLATFORM_VIEW_BILLING_PERMISSION);
+  });
+
+  it('requires view_audit_logs for audit logs route', () => {
+    const ownerRoute = appRoutes.find((route) => route.path === 'owner');
+    const children = ownerRoute?.children ?? [];
+
+    expect(
+      children.find((route) => route.path === 'audit-logs')?.data?.[
+        'permission'
+      ],
+    ).toBe(VIEW_AUDIT_LOGS_PERMISSION);
   });
 });
