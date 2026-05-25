@@ -20,16 +20,14 @@ export class AuthRepository {
 
   login(dto: LoginRequestDto): Observable<User> {
     return this.api.post<LoginResponseDto>('/auth/login', dto).pipe(
-      tap((res) => {
+      map((res) => ({ res, user: AuthMapper.mapUser(res.user) })),
+      tap(({ res, user }) => {
         this.tokenStorage.setAccessToken(res.accessToken);
         this.tokenStorage.setRefreshToken(res.refreshToken);
-      }),
-      map((res) => {
-        const user = AuthMapper.mapUser(res.user);
         this.authService.setUser(user);
         this.store.dispatch(loginSuccess({ user }));
-        return user;
-      })
+      }),
+      map(({ user }) => user)
     );
   }
 

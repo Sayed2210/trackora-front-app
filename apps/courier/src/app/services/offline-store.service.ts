@@ -21,7 +21,7 @@ export interface CachedTask {
 export interface PendingUpdate {
   id: string;
   taskId: string;
-  type: 'STATUS_UPDATE' | 'COD_COLLECTED' | 'PHOTO_UPLOAD' | 'SIGNATURE_UPLOAD';
+  type: 'STATUS_UPDATE' | 'PHOTO_UPLOAD' | 'SIGNATURE_UPLOAD' | 'CASH_DEPOSIT';
   payload: any;
   createdAt: string;
   retryCount: number;

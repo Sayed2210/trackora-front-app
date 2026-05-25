@@ -3,12 +3,14 @@ import { Observable } from 'rxjs';
 import { ApiClient } from '@trackora/core/api';
 
 export interface CreateAssignmentDto {
-  shipmentId: string;
+  shipmentIds: string[];
   courierId: string;
+  reason?: string;
 }
 
 export interface ReassignAssignmentDto {
-  courierId: string;
+  newCourierId: string;
+  reason: string;
 }
 
 export interface CancelAssignmentDto {

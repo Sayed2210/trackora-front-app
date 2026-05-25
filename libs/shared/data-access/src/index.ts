@@ -12,6 +12,7 @@ export * from './lib/repository/assignment.repository';
 export * from './lib/repository/merchant.repository';
 export * from './lib/repository/admin.repository';
 export * from './lib/repository/merchant-dashboard.repository';
+export * from './lib/repository/payout.repository';
 export * from './lib/dto/bulk-upload.dto';
 export * from './lib/dto/zone.dto';
 export * from './lib/mapper/zone.mapper';

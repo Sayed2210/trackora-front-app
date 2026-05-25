@@ -2,8 +2,10 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { CourierRepository } from '@trackora/shared/data-access';
 import { courierDb, CashLogEntry } from '../services/offline-store.service';
 import { OfflineSyncService } from '../services/offline-sync.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-cash-deposit-page',
@@ -31,6 +33,15 @@ import { OfflineSyncService } from '../services/offline-sync.service';
           />
         </div>
         <div class="form-row">
+          <label>Deposited To</label>
+          <input
+            type="text"
+            [value]="depositedTo()"
+            (input)="depositedTo.set($any($event.target).value)"
+            placeholder="Admin/user ID"
+          />
+        </div>
+        <div class="form-row">
           <label>Notes</label>
           <textarea
             [value]="depositNotes()"
@@ -39,7 +50,7 @@ import { OfflineSyncService } from '../services/offline-sync.service';
             rows="2"
           ></textarea>
         </div>
-        <button class="submit-btn" (click)="logDeposit()" [disabled]="depositAmount() <= 0">
+        <button class="submit-btn" (click)="logDeposit()" [disabled]="depositAmount() <= 0 || !depositedTo()">
           Log Deposit
         </button>
       </div>
@@ -98,10 +109,12 @@ import { OfflineSyncService } from '../services/offline-sync.service';
 })
 export class CashDepositPageComponent implements OnInit {
   private readonly syncService = inject(OfflineSyncService);
+  private readonly courierRepo = inject(CourierRepository);
 
   readonly cashLog = signal<CashLogEntry[]>([]);
   readonly cashOnHand = signal(0);
   readonly depositAmount = signal(0);
+  readonly depositedTo = signal('');
   readonly depositNotes = signal('');
 
   ngOnInit(): void {
@@ -126,21 +139,33 @@ export class CashDepositPageComponent implements OnInit {
 
     const entry: CashLogEntry = {
       id: crypto.randomUUID(),
-      taskId: 'manual-deposit',
+      taskId: this.depositedTo(),
       amount,
       type: 'DEPOSITED',
       timestamp: new Date().toISOString(),
       synced: false,
     };
 
+    try {
+      await firstValueFrom(this.courierRepo.logDeposit({
+        amount,
+        depositedTo: this.depositedTo(),
+        notes: this.depositNotes(),
+      }));
+      entry.synced = true;
+    } catch {
+      await this.syncService.queueUpdate(entry.id, 'CASH_DEPOSIT', {
+        amount,
+        depositedTo: this.depositedTo(),
+        timestamp: entry.timestamp,
+        notes: this.depositNotes(),
+      });
+    }
+
     await courierDb.cashLog.add(entry);
-    await this.syncService.queueUpdate(entry.id, 'COD_COLLECTED', {
-      amount,
-      timestamp: entry.timestamp,
-      notes: this.depositNotes(),
-    });
 
     this.depositAmount.set(0);
+    this.depositedTo.set('');
     this.depositNotes.set('');
     await this.loadCashLog();
   }

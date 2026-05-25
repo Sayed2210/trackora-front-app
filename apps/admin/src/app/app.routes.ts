@@ -5,7 +5,14 @@ import { UserRole } from '@trackora/shared/domain';
 export const appRoutes: Routes = [
   {
     path: '',
-    canActivate: [authGuard, roleGuard([UserRole.ADMIN, UserRole.SUPER_ADMIN])],
+    canActivate: [
+      authGuard,
+      roleGuard([
+        UserRole.SUPER_ADMIN,
+        UserRole.OPERATIONS_MANAGER,
+        UserRole.FINANCE_ADMIN,
+      ]),
+    ],
     loadComponent: () =>
       import('./layout/admin-layout.component').then((m) => m.AdminLayoutComponent),
     children: [

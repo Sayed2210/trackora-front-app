@@ -3,24 +3,24 @@
  */
 export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
-  ADMIN = 'ADMIN',
+  OPERATIONS_MANAGER = 'OPERATIONS_MANAGER',
+  FINANCE_ADMIN = 'FINANCE_ADMIN',
   MERCHANT = 'MERCHANT',
   COURIER = 'COURIER',
-  FINANCE = 'FINANCE',
 }
 
 /**
  * Permission enum for fine-grained RBAC
  */
 export enum Permission {
-  SHIPMENTS_CREATE=  'shipments:create',
-  SHIPMENTS_READ_ALL =  'shipments:read:all',
-  SHIPMENTS_READ_OWN =  'shipments:read:own',
-  SHIPMENTS_UPDATE_STATUS =  'shipments:update:status',
-  SHIPMENTS_UPDATE_STATUS_OVERRIDE =  'shipments:update:status:override',
-  COURIERS_READ =  'couriers:read',
-  COURIERS_CREATE =  'couriers:create',
-  MERCHANTS_READ =  'merchants:read',
+  SHIPMENTS_CREATE = 'shipments:create',
+  SHIPMENTS_READ_ALL = 'shipments:read:all',
+  SHIPMENTS_READ_OWN = 'shipments:read:own',
+  SHIPMENTS_UPDATE_STATUS = 'shipments:update:status',
+  SHIPMENTS_UPDATE_STATUS_OVERRIDE = 'shipments:update:status:override',
+  COURIERS_READ = 'couriers:read',
+  COURIERS_CREATE = 'couriers:create',
+  MERCHANTS_READ = 'merchants:read',
   MERCHANTS_APPROVE = 'merchants:approve',
   WALLETS_READ_ALL = 'wallets:read:all',
   WALLETS_READ_OWN = 'wallets:read:own',

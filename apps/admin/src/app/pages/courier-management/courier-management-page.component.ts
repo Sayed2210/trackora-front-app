@@ -1,33 +1,82 @@
 import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { CourierRepository } from '@trackora/shared/data-access';
+import { CourierAdmin, CourierRepository } from '@trackora/shared/data-access';
 import { firstValueFrom } from 'rxjs';
 
 interface Courier {
   id: string;
   name: string;
-  phone: string;
-  email: string;
+  phone?: string;
+  email?: string;
   status: 'active' | 'inactive' | 'suspended';
   zone: string;
   currentTasks: number;
   capacity: number;
   rating: number;
-  joinedAt: string;
+  isAvailable?: boolean;
+  joinedAt?: string;
 }
 
 @Component({
   selector: 'app-courier-management-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="courier-management">
       <div class="page-header">
         <h1>Courier Management</h1>
-        <button class="p-button p-button-primary">+ Add Courier</button>
+        <button class="p-button p-button-primary" (click)="openCreateForm()">+ Add Courier</button>
       </div>
+
+      @if (showCreateForm()) {
+        <form class="create-form" [formGroup]="createForm" (ngSubmit)="createCourier()">
+          <div class="field">
+            <label for="courier-name">Name</label>
+            <input id="courier-name" formControlName="name" />
+          </div>
+          <div class="field">
+            <label for="courier-phone">Phone</label>
+            <input id="courier-phone" formControlName="phone" />
+          </div>
+          <div class="field">
+            <label for="courier-email">Email</label>
+            <input id="courier-email" type="email" formControlName="email" />
+          </div>
+          <div class="field">
+            <label for="courier-zone-codes">Zone Codes</label>
+            <input id="courier-zone-codes" formControlName="zoneCodes" placeholder="EG-C-MAD, EG-G-DOK" />
+          </div>
+          <div class="field">
+            <label for="courier-capacity">Daily Capacity</label>
+            <input id="courier-capacity" type="number" min="1" formControlName="maxDailyCapacity" />
+          </div>
+          <div class="field">
+            <label for="courier-vehicle-type">Vehicle Type</label>
+            <select id="courier-vehicle-type" formControlName="vehicleType">
+              <option value="MOTORCYCLE">Motorcycle</option>
+              <option value="CAR">Car</option>
+              <option value="VAN">Van</option>
+              <option value="BICYCLE">Bicycle</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="courier-license-plate">License Plate</label>
+            <input id="courier-license-plate" formControlName="licensePlate" />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="p-button p-button-primary" [disabled]="createForm.invalid || creating()">
+              {{ creating() ? 'Adding...' : 'Save Courier' }}
+            </button>
+            <button type="button" class="action-btn" (click)="cancelCreateForm()" [disabled]="creating()">Cancel</button>
+          </div>
+          @if (createError()) {
+            <p class="error-message">{{ createError() }}</p>
+          }
+        </form>
+      }
 
       <div class="filters-bar">
         <input type="text" placeholder="Search couriers..." class="search-input" />
@@ -69,7 +118,7 @@ interface Courier {
             <td>
               <div class="contact">
                 <span>{{ courier.phone }}</span>
-                <small>{{ courier.email }}</small>
+                <small>{{ courier.email || 'N/A' }}</small>
               </div>
             </td>
             <td>{{ courier.zone }}</td>
@@ -88,8 +137,8 @@ interface Courier {
             </td>
             <td>
               <div class="actions">
-                <button class="action-btn" (click)="toggleStatus(courier)">
-                  {{ courier.status === 'active' ? 'Deactivate' : 'Activate' }}
+                <button class="action-btn" (click)="toggleAvailability(courier)">
+                  {{ courier.isAvailable ? 'Set Offline' : 'Set Available' }}
                 </button>
               </div>
             </td>
@@ -103,6 +152,12 @@ interface Courier {
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .page-header h1 { margin: 0; }
     .p-button-primary { padding: 0.625rem 1.25rem; background: var(--trackora-primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .create-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; padding: 1rem; margin-bottom: 1.5rem; background: white; border: 1px solid var(--trackora-border); border-radius: 8px; }
+    .field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .field label { font-size: 0.75rem; font-weight: 600; color: var(--trackora-text-secondary); }
+    .field input, .field select { padding: 0.625rem 0.75rem; border: 1px solid var(--trackora-border); border-radius: 6px; font-size: 0.875rem; }
+    .form-actions { display: flex; align-items: end; gap: 0.5rem; }
+    .error-message { grid-column: 1 / -1; margin: 0; color: var(--trackora-danger); font-size: 0.875rem; }
     .filters-bar { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
     .search-input { flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--trackora-border); border-radius: 8px; font-size: 0.875rem; }
     .filter-select { padding: 0.625rem 1rem; border: 1px solid var(--trackora-border); border-radius: 8px; font-size: 0.875rem; background: white; }
@@ -126,8 +181,22 @@ interface Courier {
 })
 export class CourierManagementPageComponent implements OnInit {
   private readonly courierRepo = inject(CourierRepository);
+  private readonly fb = inject(FormBuilder);
 
   readonly couriers = signal<Courier[]>([]);
+  readonly showCreateForm = signal(false);
+  readonly creating = signal(false);
+  readonly createError = signal<string | null>(null);
+
+  readonly createForm = this.fb.group({
+    name: ['', Validators.required],
+    phone: ['', [Validators.required, Validators.pattern(/^01[0125]\d{8}$/)]],
+    email: ['', Validators.email],
+    zoneCodes: [''],
+    maxDailyCapacity: [25, [Validators.required, Validators.min(1)]],
+    vehicleType: ['MOTORCYCLE'],
+    licensePlate: [''],
+  });
 
   ngOnInit(): void {
     this.loadCouriers();
@@ -135,27 +204,102 @@ export class CourierManagementPageComponent implements OnInit {
 
   private async loadCouriers(): Promise<void> {
     try {
-      const tasks = await firstValueFrom(this.courierRepo.getTasks());
-      // TODO: Replace with proper courier user list endpoint when available
-      // CourierTask shape differs from Courier admin view; mapping as-is for now
-      this.couriers.set((tasks as unknown) as Courier[]);
+      const data = await firstValueFrom(this.courierRepo.findAll({ page: 1, limit: 50 }));
+      const items = Array.isArray(data) ? data : data?.data ?? [];
+      this.couriers.set(items.map((courier: CourierAdmin) => this.toCourierRow(courier)));
     } catch {
-      // Keep empty list on error
       this.couriers.set([]);
     }
   }
 
-  toggleStatus(courier: Courier): void {
-    this.couriers.update((list) =>
-      list.map((c) =>
-        c.id === courier.id
-          ? { ...c, status: c.status === 'active' ? 'inactive' : 'active' as Courier['status'] }
-          : c
-      )
-    );
+  openCreateForm(): void {
+    this.createError.set(null);
+    this.showCreateForm.set(true);
+  }
+
+  cancelCreateForm(): void {
+    this.showCreateForm.set(false);
+    this.createError.set(null);
+    this.createForm.reset({
+      name: '',
+      phone: '',
+      email: '',
+      zoneCodes: '',
+      maxDailyCapacity: 25,
+      vehicleType: 'MOTORCYCLE',
+      licensePlate: '',
+    });
+  }
+
+  async createCourier(): Promise<void> {
+    if (this.createForm.invalid) return;
+
+    this.creating.set(true);
+    this.createError.set(null);
+
+    const value = this.createForm.getRawValue();
+    const name = value.name ?? '';
+    const phone = value.phone ?? '';
+    const zoneCodes = (value.zoneCodes ?? '')
+      .split(',')
+      .map((zoneCode) => zoneCode.trim())
+      .filter(Boolean);
+
+    try {
+      const courier = await firstValueFrom(this.courierRepo.create({
+        name,
+        phone,
+        email: value.email || undefined,
+        zoneCodes: zoneCodes.length ? zoneCodes : undefined,
+        maxDailyCapacity: value.maxDailyCapacity ?? 25,
+        vehicleType: value.vehicleType || undefined,
+        licensePlate: value.licensePlate || undefined,
+      }));
+
+      this.couriers.update((list) => [this.toCourierRow(courier), ...list]);
+      this.cancelCreateForm();
+    } catch {
+      this.createError.set('Could not add courier. Check the details and try again.');
+    } finally {
+      this.creating.set(false);
+    }
+  }
+
+  async toggleAvailability(courier: Courier): Promise<void> {
+    const nextAvailability = !courier.isAvailable;
+    try {
+      await firstValueFrom(this.courierRepo.updateAvailability(courier.id, nextAvailability));
+      this.couriers.update((list) =>
+        list.map((c) =>
+          c.id === courier.id
+            ? { ...c, isAvailable: nextAvailability, status: nextAvailability ? 'active' : 'inactive' }
+            : c
+        )
+      );
+    } catch {
+      // In production show a toast
+    }
   }
 
   trackByCourierId(_index: number, courier: Courier): string {
     return courier.id;
+  }
+
+  private toCourierRow(courier: CourierAdmin): Courier {
+    const isActive = courier.isActive ?? (courier.status === 'active' || courier.status === 'online');
+    const isAvailable = courier.isAvailable ?? courier.status === 'online';
+    return {
+      id: courier.id,
+      name: courier.name,
+      phone: courier.phone,
+      email: courier.email,
+      status: isActive ? 'active' : 'inactive',
+      zone: courier.zoneCodes?.join(', ') || 'N/A',
+      currentTasks: courier.currentTasks ?? courier.activeTasks ?? 0,
+      capacity: courier.capacity ?? courier.maxDailyCapacity ?? 1,
+      rating: courier.rating ?? 0,
+      isAvailable,
+      joinedAt: courier.createdAt,
+    };
   }
 }

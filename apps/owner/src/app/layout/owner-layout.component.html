@@ -1,0 +1,46 @@
+<div class="owner-shell">
+  <aside class="owner-sidebar" aria-label="System Owner navigation">
+    <div class="owner-brand">
+      <span class="owner-brand__mark">T</span>
+      <div>
+        <strong>Trackora</strong>
+        <span>System Owner</span>
+      </div>
+    </div>
+
+    <nav class="owner-nav">
+      @for (item of navItems; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/owner/overview' }"
+        >
+          <span>{{ item.label }}</span>
+          <small>{{ item.section }}</small>
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <div class="owner-main">
+    <header class="owner-topbar">
+      <div class="owner-search" aria-label="Global search placeholder">
+        <span>Search tenants, plans, subscriptions</span>
+      </div>
+      <div class="owner-context">
+        <span>Arabic RTL Ready</span>
+        <strong>Platform Owner</strong>
+      </div>
+    </header>
+
+    <div class="owner-breadcrumbs" aria-label="Breadcrumbs">
+      @for (crumb of breadcrumbs; track crumb; let last = $last) {
+        <span [class.current]="last">{{ crumb }}</span>
+      }
+    </div>
+
+    <main class="owner-content" id="owner-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

@@ -3,15 +3,25 @@ import { Observable } from 'rxjs';
 import { ApiClient } from '@trackora/core/api';
 
 export interface CourierTask {
-  id: string;
+  id?: string;
+  shipmentId?: string;
   trackingNumber: string;
   customerName: string;
-  customerPhone: string;
-  address: string;
+  customerPhone?: string;
+  customerPhoneMasked?: string;
+  address?: string;
+  addressText?: string;
+  governorate?: string;
+  city?: string;
+  lat?: number;
+  lng?: number;
   status: string;
   codAmount?: number;
-  deliveryFee: number;
+  deliveryFee?: number;
   notes?: string;
+  assignedAt?: string;
+  orderInRoute?: number;
+  mapUrl?: string;
 }
 
 export interface UpdateTaskStatusDto {
@@ -29,6 +39,62 @@ export interface CourierDepositDto {
   amount: number;
   depositedTo: string;
   notes?: string;
+}
+
+export interface CourierAdmin {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  isActive?: boolean;
+  isAvailable?: boolean;
+  status?: string;
+  zoneCodes?: string[];
+  currentTasks?: number;
+  activeTasks?: number;
+  maxDailyCapacity?: number;
+  capacity?: number;
+  rating?: number;
+  createdAt?: string;
+}
+
+export interface CreateCourierDto {
+  name: string;
+  phone: string;
+  email?: string;
+  zoneCodes?: string[];
+  maxDailyCapacity?: number;
+  vehicleType?: string;
+  licensePlate?: string;
+}
+
+export interface CourierQuery {
+  search?: string;
+  isActive?: boolean;
+  isAvailable?: boolean;
+  zoneCode?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface CourierPerformance {
+  score?: number;
+  totalDelivered?: number;
+  totalFailed?: number;
+  successRate?: number;
+  avgDeliveryTimeMinutes?: number;
+  cashHeld?: number;
+  rank?: number;
+  weeklyTrend?: number[];
+  dailyMetrics?: Array<{
+    date: string;
+    delivered: number;
+    failed: number;
+    totalCod?: number;
+    avgDeliveryTime?: number;
+    avgDeliveryTimeMinutes?: number;
+  }>;
+  statusDistribution?: Array<{ status: string; count: number; percentage?: number }>;
 }
 
 export interface SyncUpdatesDto {
@@ -62,10 +128,22 @@ export class CourierRepository {
   }
 
   getPerformance(): Observable<any> {
-    return this.api.get('/courier/performance');
+    return this.api.get<CourierPerformance>('/courier/performance');
   }
 
   syncUpdates(dto: SyncUpdatesDto): Observable<any> {
     return this.api.post('/courier/sync', dto);
+  }
+
+  findAll(query?: CourierQuery): Observable<any> {
+    return this.api.get('/couriers', query);
+  }
+
+  create(dto: CreateCourierDto): Observable<CourierAdmin> {
+    return this.api.post<CourierAdmin>('/couriers', dto);
+  }
+
+  updateAvailability(id: string, isAvailable: boolean): Observable<CourierAdmin> {
+    return this.api.patch<CourierAdmin>(`/couriers/${id}/availability`, { isAvailable });
   }
 }

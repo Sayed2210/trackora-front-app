@@ -1,0 +1,176 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  color: var(--trackora-text);
+  background: var(--trackora-surface);
+}
+
+.owner-shell {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.owner-sidebar {
+  background: linear-gradient(180deg, var(--trackora-primary), #102844);
+  color: var(--trackora-primary-contrast);
+  padding: 1.25rem;
+}
+
+.owner-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.owner-brand__mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: var(--trackora-accent);
+  font-weight: 800;
+}
+
+.owner-brand strong,
+.owner-brand span {
+  display: block;
+}
+
+.owner-brand span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.8rem;
+}
+
+.owner-nav {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1.25rem;
+}
+
+.owner-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 0.9rem;
+}
+
+.owner-nav a:hover,
+.owner-nav a.active {
+  color: var(--trackora-primary-contrast);
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.owner-nav small {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.7rem;
+}
+
+.owner-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.owner-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 72px;
+  padding: 1rem 1.5rem;
+  background: var(--trackora-bg);
+  border-bottom: 1px solid var(--trackora-border);
+}
+
+.owner-search {
+  width: min(520px, 100%);
+  padding: 0.8rem 1rem;
+  color: var(--trackora-text-secondary);
+  background: var(--trackora-surface);
+  border: 1px solid var(--trackora-border);
+  border-radius: 999px;
+}
+
+.owner-context {
+  display: grid;
+  gap: 0.15rem;
+  text-align: end;
+}
+
+.owner-context span {
+  color: var(--trackora-text-secondary);
+  font-size: 0.78rem;
+}
+
+.owner-breadcrumbs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem 0;
+  color: var(--trackora-text-secondary);
+  text-transform: capitalize;
+}
+
+.owner-breadcrumbs span:not(:last-child)::after {
+  margin-inline-start: 0.5rem;
+  content: '/';
+}
+
+.owner-breadcrumbs .current {
+  color: var(--trackora-primary);
+  font-weight: 700;
+}
+
+.owner-content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .owner-shell {
+    grid-template-columns: 230px minmax(0, 1fr);
+  }
+
+  .owner-sidebar,
+  .owner-content,
+  .owner-topbar {
+    padding-inline: 1rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .owner-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-sidebar {
+    position: static;
+  }
+
+  .owner-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .owner-nav a {
+    display: block;
+  }
+
+  .owner-nav small {
+    display: block;
+    margin-top: 0.25rem;
+  }
+
+  .owner-topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

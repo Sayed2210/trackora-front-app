@@ -1,8 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { CourierRepository, CourierPerformance } from '@trackora/shared/data-access';
 import { courierDb, CachedTask } from '../services/offline-store.service';
+import { firstValueFrom } from 'rxjs';
 
 interface DailyMetric {
   date: string;
@@ -116,6 +118,8 @@ interface DailyMetric {
   `],
 })
 export class PerformanceMetricsPageComponent implements OnInit {
+  private readonly courierRepo = inject(CourierRepository);
+
   readonly tasks = signal<CachedTask[]>([]);
   readonly totalDelivered = signal(0);
   readonly totalFailed = signal(0);
@@ -129,6 +133,42 @@ export class PerformanceMetricsPageComponent implements OnInit {
   }
 
   private async loadMetrics(): Promise<void> {
+    try {
+      const performance = await firstValueFrom(this.courierRepo.getPerformance());
+      this.applyPerformance(performance);
+      return;
+    } catch {
+      await this.loadCachedMetrics();
+    }
+  }
+
+  private applyPerformance(performance: CourierPerformance): void {
+    this.totalDelivered.set(performance.totalDelivered ?? 0);
+    this.totalFailed.set(performance.totalFailed ?? 0);
+    this.successRate.set(Math.round(performance.successRate ?? 0));
+    this.totalCodCollected.set(performance.cashHeld ?? 0);
+
+    this.dailyMetrics.set((performance.dailyMetrics ?? []).map((metric) => ({
+      date: metric.date,
+      delivered: metric.delivered,
+      failed: metric.failed,
+      totalCod: metric.totalCod ?? 0,
+      avgDeliveryTime: Math.round((metric.avgDeliveryTimeMinutes ?? metric.avgDeliveryTime ?? 0) / 60),
+    })));
+
+    const distribution = performance.statusDistribution ?? [
+      { status: 'DELIVERED', count: performance.totalDelivered ?? 0 },
+      { status: 'FAILED', count: performance.totalFailed ?? 0 },
+    ];
+    const total = distribution.reduce((sum, item) => sum + item.count, 0) || 1;
+    this.statusDistribution.set(distribution.map((item) => ({
+      status: item.status,
+      count: item.count,
+      percentage: item.percentage ?? Math.round((item.count / total) * 100),
+    })));
+  }
+
+  private async loadCachedMetrics(): Promise<void> {
     const allTasks = await courierDb.cachedTasks.toArray();
     this.tasks.set(allTasks);
 
@@ -151,8 +191,6 @@ export class PerformanceMetricsPageComponent implements OnInit {
       if (task.status === 'DELIVERED') {
         entry.delivered++;
         entry.cod += task.codAmount || 0;
-        // Mock delivery time: 2-6 hours
-        entry.times.push(2 + Math.random() * 4);
       } else {
         entry.failed++;
       }

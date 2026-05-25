@@ -115,7 +115,7 @@ export const environment = {
 - GET `/shipments/:id` — Detail
 - POST `/shipments` — Create
 - PATCH `/shipments/:id/status` — Update status
-- POST `/shipments/bulk` — Bulk upload
+- POST `/shipments/bulk-upload` — Bulk upload
 
 ### Courier Tasks
 - GET `/courier/tasks` — Assigned tasks
@@ -123,17 +123,17 @@ export const environment = {
 - POST `/courier/sync` — Batch sync offline updates
 
 ### Wallet
-- GET `/wallet` — Current merchant wallet
-- GET `/wallet/transactions` — Transaction history
-- POST `/wallet/payout-request` — Request payout
+- GET `/merchants/:id/wallet` — Current merchant wallet
+- GET `/merchants/:id/wallet/transactions` — Transaction history
+- POST `/payouts` — Request payout
 
 ### Admin
 - GET `/admin/dashboard` — KPI data
 - GET `/admin/couriers` — Courier list
 - GET `/admin/merchants` — Merchant list
-- GET `/admin/payouts` — Payout requests
-- POST `/admin/payouts/:id/approve` — Approve payout
-- POST `/admin/payouts/:id/reject` — Reject payout
+- GET `/payouts` — Payout requests
+- PATCH `/payouts/:id/approve` — Approve payout
+- PATCH `/payouts/:id/reject` — Reject payout
 - GET `/admin/audit-logs` — Audit logs
 
 ## PWA (Courier App)

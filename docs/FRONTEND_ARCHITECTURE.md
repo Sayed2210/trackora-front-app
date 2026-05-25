@@ -3,7 +3,7 @@
 > **Version:** 1.0
 > **Date:** 2026-05-05
 > **Scope:** Full-stack frontend architecture for Trackora Logistics & COD Shipment Management SaaS
-> **Backend Alignment:** NestJS REST API (`/api/v1`) as documented in `docs/API_SPEC.md`
+> **Backend Alignment:** NestJS REST API (`/v1`) as documented in `docs/API_SPEC.md`
 
 ---
 
@@ -316,7 +316,7 @@ Courier app uses a local Dexie database for offline operations. See [Section 12]
 ```typescript
 @Injectable({ providedIn: 'root' })
 export class ApiClient {
-  private readonly baseUrl = '/api/v1';
+  private readonly baseUrl = '';
 
   constructor(private http: HttpClient) {}
 
@@ -376,7 +376,7 @@ interface FieldError {
 | Order | Interceptor | Responsibility |
 |-------|-------------|----------------|
 | 1 | `AuthInterceptor` | Attach `Authorization: Bearer <token>`. Queue requests during token refresh. Handle 401 → trigger refresh or logout. |
-| 2 | `BaseUrlInterceptor` | Prepend `/api/v1` to relative paths |
+| 2 | `BaseUrlInterceptor` | Prepend `/v1` to relative paths |
 | 3 | `ErrorInterceptor` | Map API error envelope → typed `ApiError`. Handle 409 (conflict toast), 422 (field errors), 429 (rate limit warning). |
 | 4 | `RetryInterceptor` | Exponential backoff (100ms, 200ms, 400ms) for 5xx errors. No retry for 4xx. |
 | 5 | `OfflineInterceptor` | **Courier app only.** Detect `navigator.onLine === false`, queue in Dexie instead of HTTP. |
@@ -445,7 +445,7 @@ export class SseTransport implements RealTimeTransport {
   private handlers = new Map<string, Set<Function>>();
 
   connect(): void {
-    this.eventSource = new EventSource('/api/v1/events/stream', { withCredentials: true });
+    this.eventSource = new EventSource('/v1/events/stream', { withCredentials: true });
     this.eventSource.onmessage = (msg) => {
       const { event, data } = JSON.parse(msg.data);
       this.handlers.get(event)?.forEach(h => h(data));
@@ -852,8 +852,8 @@ interface PendingUpdate {
     status?: ShipmentStatus;
     collectedCash?: number;
     notes?: string;
-    photoBase64?: string;        // Max 500KB JPEG compressed
-    signatureBase64?: string;    // Max 100KB
+    photoUrl?: string;
+    signatureUrl?: string;
     gpsLocation?: { lat: number; lng: number };
     timestamp: string;           // ISO 8601
   };
