@@ -19,7 +19,11 @@ import {
   retryInterceptor,
 } from '@trackora/core/api';
 import { TokenStorageService } from '@trackora/core/auth';
-import { authFeature, layoutFeature, permissionsFeature } from '@trackora/core/state';
+import {
+  authFeature,
+  layoutFeature,
+  permissionsFeature,
+} from '@trackora/core/state';
 import { AuthRepository } from '@trackora/shared/data-access';
 
 export const appConfig: ApplicationConfig = {
@@ -32,7 +36,7 @@ export const appConfig: ApplicationConfig = {
         baseUrlInterceptor,
         errorInterceptor,
         retryInterceptor,
-      ])
+      ]),
     ),
     provideStore({
       auth: authFeature.reducer,
@@ -48,7 +52,9 @@ export const appConfig: ApplicationConfig = {
       }
 
       const authRepository = inject(AuthRepository);
-      return firstValueFrom(authRepository.me().pipe(catchError(() => of(null))));
+      return firstValueFrom(
+        authRepository.me().pipe(catchError(() => of(null))),
+      );
     }),
   ],
 };

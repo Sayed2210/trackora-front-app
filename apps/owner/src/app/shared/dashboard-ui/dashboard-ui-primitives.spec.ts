@@ -73,7 +73,9 @@ describe('owner dashboard UI primitives', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('لوحة المالك');
-    expect(fixture.nativeElement.textContent).toContain('مؤشرات تشغيلية مشتركة');
+    expect(fixture.nativeElement.textContent).toContain(
+      'مؤشرات تشغيلية مشتركة',
+    );
     expect(fixture.nativeElement.textContent).toContain('الرئيسية');
     expect(fixture.nativeElement.textContent).toContain('تصدير');
   });
@@ -117,15 +119,20 @@ describe('owner dashboard UI primitives', () => {
     expect(confirm).not.toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('Reason is required.');
 
-    const textarea = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    const textarea = fixture.nativeElement.querySelector(
+      'textarea',
+    ) as HTMLTextAreaElement;
     textarea.value = 'Violation confirmed by owner operations';
     textarea.dispatchEvent(new Event('input'));
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(
-      (fixture.nativeElement.querySelector('.dialog__button--primary') as HTMLButtonElement)
-        .disabled,
+      (
+        fixture.nativeElement.querySelector(
+          '.dialog__button--primary',
+        ) as HTMLButtonElement
+      ).disabled,
     ).toBe(false);
 
     component.submitReason();

@@ -7,12 +7,14 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { AuthService } from '@trackora/core/auth';
+import { Permission } from '@trackora/shared/domain';
 import { filter } from 'rxjs';
 
 type OwnerNavItem = {
   label: string;
   path: string;
   section: string;
+  permission?: Permission;
 };
 
 @Component({
@@ -35,8 +37,18 @@ export class OwnerLayoutComponent {
       section: 'Commercial',
     },
     { label: 'Usage', path: '/owner/usage', section: 'Platform' },
-    { label: 'Billing', path: '/owner/billing', section: 'Finance' },
-    { label: 'Invoices', path: '/owner/invoices', section: 'Finance' },
+    {
+      label: 'Billing',
+      path: '/owner/billing',
+      section: 'Finance',
+      permission: Permission.VIEW_BILLING,
+    },
+    {
+      label: 'Invoices',
+      path: '/owner/invoices',
+      section: 'Finance',
+      permission: Permission.VIEW_BILLING,
+    },
     {
       label: 'Feature Flags',
       path: '/owner/feature-flags',
@@ -48,6 +60,11 @@ export class OwnerLayoutComponent {
   ];
 
   protected breadcrumbs = this.buildBreadcrumbs(this.router.url);
+  protected readonly visibleNavItems = () =>
+    this.navItems.filter(
+      (item) =>
+        !item.permission || this.authService.hasPermission(item.permission),
+    );
 
   constructor() {
     document.documentElement.lang = 'ar';

@@ -13,6 +13,7 @@ import {
 } from '@trackora/platform-tenants';
 import { MANAGE_FEATURE_FLAGS_PERMISSION } from '@trackora/platform-feature-flags';
 import { MANAGE_SUBSCRIPTIONS_PERMISSION } from '@trackora/platform-subscriptions';
+import { VIEW_BILLING_PERMISSION as PLATFORM_VIEW_BILLING_PERMISSION } from '@trackora/platform-billing';
 
 const ownerGuards = [ownerPlatformAnalyticsGuard];
 const SUBSCRIPTION_VIEW_PERMISSIONS = [
@@ -44,7 +45,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./layout/owner-layout.component').then(
         (m) => m.OwnerLayoutComponent,
-    ),
+      ),
     children: [
       {
         path: '',
@@ -234,30 +235,20 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'billing',
-        canActivate: ownerGuards,
-        data: protectedPlaceholder(
-          'Billing Overview',
-          'Billing',
-          'Placeholder for finance-only billing overview.',
-          { permission: Permission.VIEW_BILLING },
-        ),
+        canActivate: [ownerPermissionGuard(PLATFORM_VIEW_BILLING_PERMISSION)],
+        data: { permission: PLATFORM_VIEW_BILLING_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-billing').then(
+            (m) => m.BillingOverviewPageComponent,
           ),
       },
       {
         path: 'invoices',
-        canActivate: ownerGuards,
-        data: protectedPlaceholder(
-          'Invoices',
-          'Billing',
-          'Placeholder for invoices, manual invoices, and export flows.',
-          { permission: Permission.VIEW_BILLING },
-        ),
+        canActivate: [ownerPermissionGuard(PLATFORM_VIEW_BILLING_PERMISSION)],
+        data: { permission: PLATFORM_VIEW_BILLING_PERMISSION },
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-billing').then(
+            (m) => m.InvoicesPageComponent,
           ),
       },
       {

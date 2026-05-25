@@ -1,5 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  Router,
+  RouterStateSnapshot,
+} from '@angular/router';
 import { AuthService, TokenStorageService } from '@trackora/core/auth';
 import { AuthRepository } from '@trackora/shared/data-access';
 import { Permission, UserRole } from '@trackora/shared/domain';
@@ -17,7 +21,10 @@ describe('owner auth guards', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: auth },
-        { provide: TokenStorageService, useValue: { getAccessToken: () => 'token' } },
+        {
+          provide: TokenStorageService,
+          useValue: { getAccessToken: () => 'token' },
+        },
         { provide: AuthRepository, useValue: { me: vi.fn() } },
         {
           provide: Router,
@@ -37,29 +44,48 @@ describe('owner auth guards', () => {
 
   it('allows a platform role to pass the platform-only guard', () => {
     configureAuth({
-      user: () => ({ id: '1', name: 'Owner', roles: [UserRole.PLATFORM_OWNER], permissions: [] }),
+      user: () => ({
+        id: '1',
+        name: 'Owner',
+        roles: [UserRole.PLATFORM_OWNER],
+        permissions: [],
+      }),
       hasAnyPlatformRole: () => true,
     } as Partial<AuthService>);
 
-    const result = TestBed.runInInjectionContext(() => platformOnlyGuard(emptyRoute, emptyState));
+    const result = TestBed.runInInjectionContext(() =>
+      platformOnlyGuard(emptyRoute, emptyState),
+    );
 
     expect(result).toBe(true);
   });
 
   it('blocks an authenticated non-platform role', () => {
     configureAuth({
-      user: () => ({ id: '1', name: 'Merchant', roles: [UserRole.MERCHANT], permissions: [] }),
+      user: () => ({
+        id: '1',
+        name: 'Merchant',
+        roles: [UserRole.MERCHANT],
+        permissions: [],
+      }),
       hasAnyPlatformRole: () => false,
     } as Partial<AuthService>);
 
-    const result = TestBed.runInInjectionContext(() => platformOnlyGuard(emptyRoute, emptyState));
+    const result = TestBed.runInInjectionContext(() =>
+      platformOnlyGuard(emptyRoute, emptyState),
+    );
 
     expect(result).toBe(forbiddenTree);
   });
 
   it('blocks a platform user missing the route permission', () => {
     configureAuth({
-      user: () => ({ id: '1', name: 'Finance', roles: [UserRole.PLATFORM_FINANCE], permissions: [] }),
+      user: () => ({
+        id: '1',
+        name: 'Finance',
+        roles: [UserRole.PLATFORM_FINANCE],
+        permissions: [],
+      }),
       hasAnyPlatformRole: () => true,
       hasPermission: () => false,
       hasRole: () => false,
@@ -67,7 +93,9 @@ describe('owner auth guards', () => {
 
     const result = TestBed.runInInjectionContext(() =>
       ownerPermissionGuard(
-        { data: { permission: Permission.VIEW_BILLING } } as unknown as ActivatedRouteSnapshot,
+        {
+          data: { permission: Permission.VIEW_BILLING },
+        } as unknown as ActivatedRouteSnapshot,
         emptyState,
       ),
     );
@@ -77,7 +105,8 @@ describe('owner auth guards', () => {
 
   it('allows any matching route permission', () => {
     const auth = {
-      hasPermission: (permission: Permission) => permission === Permission.VIEW_BILLING,
+      hasPermission: (permission: Permission) =>
+        permission === Permission.VIEW_BILLING,
       hasRole: () => false,
     } as Pick<AuthService, 'hasPermission' | 'hasRole'>;
 
@@ -104,7 +133,8 @@ describe('owner auth guards', () => {
 
   it('supports permission helper checks used by route and UI authorization', () => {
     const auth = {
-      hasPermission: (permission: Permission) => permission === Permission.VIEW_BILLING,
+      hasPermission: (permission: Permission) =>
+        permission === Permission.VIEW_BILLING,
       hasRole: (role: UserRole) => role === UserRole.PLATFORM_FINANCE,
     } as Pick<AuthService, 'hasPermission' | 'hasRole'>;
 

@@ -7,7 +7,9 @@ describe('OverviewPageComponent', () => {
   it('renders overview stat cards with API values', async () => {
     await TestBed.configureTestingModule({
       imports: [OverviewPageComponent],
-      providers: [{ provide: PlatformAnalyticsRepository, useValue: repository() }],
+      providers: [
+        { provide: PlatformAnalyticsRepository, useValue: repository() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(OverviewPageComponent);
@@ -30,7 +32,10 @@ describe('OverviewPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [OverviewPageComponent],
       providers: [
-        { provide: PlatformAnalyticsRepository, useValue: repository({ empty: true }) },
+        {
+          provide: PlatformAnalyticsRepository,
+          useValue: repository({ empty: true }),
+        },
       ],
     }).compileComponents();
 
@@ -50,7 +55,9 @@ interface RepositoryOptions {
   empty?: boolean;
 }
 
-const repository = (options: RepositoryOptions = {}): PlatformAnalyticsRepository =>
+const repository = (
+  options: RepositoryOptions = {},
+): PlatformAnalyticsRepository =>
   ({
     getOverview: () =>
       of({
