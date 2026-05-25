@@ -6,6 +6,8 @@ import {
 } from '@trackora/platform-tenants';
 import {
   ownerPlatformAnalyticsGuard,
+  ownerPlatformPermissionGuard,
+  ownerPlatformRoleGuard,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
 } from './guards/owner-platform-analytics.guard';
 

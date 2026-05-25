@@ -5,7 +5,7 @@ import { ApiClient } from '@trackora/core/api';
 import { AuthService, TokenStorageService } from '@trackora/core/auth';
 import { loginSuccess, logout } from '@trackora/core/state';
 import { User } from '@trackora/shared/domain';
-import { LoginRequestDto, LoginResponseDto } from '../dto/auth.dto';
+import { AuthUserDto, LoginRequestDto, LoginResponseDto } from '../dto/auth.dto';
 import { AuthMapper } from '../mapper/auth.mapper';
 
 @Injectable({ providedIn: 'root' })
@@ -28,6 +28,16 @@ export class AuthRepository {
         this.store.dispatch(loginSuccess({ user }));
       }),
       map(({ user }) => user)
+    );
+  }
+
+  me(): Observable<User> {
+    return this.api.get<AuthUserDto>('/auth/me').pipe(
+      map((dto) => AuthMapper.mapUser(dto)),
+      tap((user) => {
+        this.authService.setUser(user);
+        this.store.dispatch(loginSuccess({ user }));
+      })
     );
   }
 

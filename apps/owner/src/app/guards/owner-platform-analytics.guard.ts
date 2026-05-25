@@ -1,10 +1,11 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '@trackora/core/auth';
 import { Permission, UserRole } from '@trackora/shared/domain';
 
 export const VIEW_PLATFORM_ANALYTICS_PERMISSION =
   'view_platform_analytics' as Permission;
+export const MANAGE_PLANS_PERMISSION = 'manage_plans' as Permission;
 
 export const PLATFORM_OWNER_ROLES = [
   'PLATFORM_OWNER',
@@ -13,7 +14,17 @@ export const PLATFORM_OWNER_ROLES = [
   'PLATFORM_FINANCE',
 ] as unknown as UserRole[];
 
-export const ownerPlatformAnalyticsGuard: CanActivateFn = () => {
+export const ownerPlatformAnalyticsGuard: CanActivateFn = () =>
+  checkPlatformPermission(VIEW_PLATFORM_ANALYTICS_PERMISSION);
+
+export const ownerPlatformRoleGuard: CanActivateFn = () =>
+  checkPlatformPermission();
+
+export const ownerPlatformPermissionGuard: CanActivateFn = (
+  route: ActivatedRouteSnapshot,
+) => checkPlatformPermission(route.data['permission'] as Permission | undefined);
+
+const checkPlatformPermission = (permission?: Permission) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -25,7 +36,7 @@ export const ownerPlatformAnalyticsGuard: CanActivateFn = () => {
     return router.createUrlTree(['/owner/forbidden']);
   }
 
-  if (!authService.hasPermission(VIEW_PLATFORM_ANALYTICS_PERMISSION)) {
+  if (permission && !authService.hasPermission(permission)) {
     return router.createUrlTree(['/owner/forbidden']);
   }
 

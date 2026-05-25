@@ -1,9 +1,8 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { AuthService } from '@trackora/core/auth';
+import { BehaviorSubject } from 'rxjs';
+import { AuthService, TokenStorageService } from '@trackora/core/auth';
 import { AuthRepository } from '@trackora/shared/data-access';
-import { TokenStorageService } from '@trackora/core/auth';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService implements OnDestroy {
