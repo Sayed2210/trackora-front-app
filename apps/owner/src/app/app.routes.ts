@@ -1,15 +1,25 @@
 import { Route } from '@angular/router';
 import {
+  ownerAnyPermissionGuard,
   ownerPlatformAnalyticsGuard,
   ownerPermissionGuard,
   ownerPlatformRoleGuard,
   VIEW_PLATFORM_ANALYTICS_PERMISSION,
 } from './guards/owner-platform-analytics.guard';
+import { Permission, UserRole } from '@trackora/shared/domain';
 import {
   MANAGE_FEATURE_FLAGS_PERMISSION,
   MANAGE_TENANTS_PERMISSION,
   VIEW_BILLING_PERMISSION,
 } from '@trackora/platform-tenants';
+import { MANAGE_SUBSCRIPTIONS_PERMISSION } from '@trackora/platform-subscriptions';
+
+const ownerGuards = [ownerPlatformAnalyticsGuard];
+const SUBSCRIPTION_VIEW_PERMISSIONS = [
+  MANAGE_SUBSCRIPTIONS_PERMISSION,
+  Permission.VIEW_BILLING,
+  Permission.VIEW_PLATFORM_ANALYTICS,
+];
 
 const placeholder = (title: string, module: string, description: string) => ({
   title,
@@ -178,42 +188,34 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'subscriptions',
-        canActivate: ownerGuards,
+        canActivate: [ownerAnyPermissionGuard(SUBSCRIPTION_VIEW_PERMISSIONS)],
         data: protectedPlaceholder(
           'Subscriptions Management',
           'Subscriptions',
-          'Placeholder for subscriptions table, filters, and payment status visibility.',
+          'Subscription table, filters, and payment status visibility.',
           {
-            permissions: [
-              Permission.MANAGE_SUBSCRIPTIONS,
-              Permission.VIEW_BILLING,
-              Permission.VIEW_PLATFORM_ANALYTICS,
-            ],
+            permissions: SUBSCRIPTION_VIEW_PERMISSIONS,
           },
         ),
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-subscriptions').then(
+            (m) => m.SubscriptionsListPageComponent,
           ),
       },
       {
         path: 'subscriptions/:subscriptionId',
-        canActivate: ownerGuards,
+        canActivate: [ownerAnyPermissionGuard(SUBSCRIPTION_VIEW_PERMISSIONS)],
         data: protectedPlaceholder(
           'Subscription Details',
           'Subscriptions',
-          'Placeholder for subscription details and future reason-required mutations.',
+          'Subscription details and reason-required mutations.',
           {
-            permissions: [
-              Permission.MANAGE_SUBSCRIPTIONS,
-              Permission.VIEW_BILLING,
-              Permission.VIEW_PLATFORM_ANALYTICS,
-            ],
+            permissions: SUBSCRIPTION_VIEW_PERMISSIONS,
           },
         ),
         loadComponent: () =>
-          import('./pages/placeholder-page.component').then(
-            (m) => m.PlaceholderPageComponent,
+          import('@trackora/platform-subscriptions').then(
+            (m) => m.SubscriptionDetailPageComponent,
           ),
       },
       {

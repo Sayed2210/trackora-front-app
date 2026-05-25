@@ -81,8 +81,14 @@
       "@trackora/platform-tenants": [
         "./libs/features/platform/tenants/src/index.ts"
       ],
+      "@trackora/platform-plans": [
+        "./libs/features/platform/plans/src/index.ts"
+      ],
       "@trackora/owner-dashboard-ui": [
         "./apps/owner/src/app/shared/dashboard-ui/index.ts"
+      ],
+      "@trackora/platform-subscriptions": [
+        "./libs/features/platform/subscriptions/src/index.ts"
       ]
     }
   },
