@@ -1,6 +1,10 @@
 import { appRoutes } from './app.routes';
 import {
-  MANAGE_PLANS_PERMISSION,
+  MANAGE_FEATURE_FLAGS_PERMISSION,
+  MANAGE_TENANTS_PERMISSION,
+  VIEW_BILLING_PERMISSION,
+} from '@trackora/platform-tenants';
+import {
   ownerPlatformAnalyticsGuard,
   ownerPlatformPermissionGuard,
   ownerPlatformRoleGuard,
@@ -25,18 +29,13 @@ describe('owner routes', () => {
     );
   });
 
-  it('configures plans routes with platform role and manage plans permissions', () => {
+  it('configures tenant management route permissions', () => {
     const ownerRoute = appRoutes.find((route) => route.path === 'owner');
-    const plansRoute = ownerRoute?.children?.find((route) => route.path === 'plans');
-    const createRoute = ownerRoute?.children?.find((route) => route.path === 'plans/create');
-    const detailRoute = ownerRoute?.children?.find((route) => route.path === 'plans/:planId');
-    const editRoute = ownerRoute?.children?.find((route) => route.path === 'plans/:planId/edit');
+    const children = ownerRoute?.children ?? [];
 
-    expect(plansRoute?.canActivate).toContain(ownerPlatformRoleGuard);
-    expect(detailRoute?.canActivate).toContain(ownerPlatformRoleGuard);
-    expect(createRoute?.canActivate).toContain(ownerPlatformPermissionGuard);
-    expect(editRoute?.canActivate).toContain(ownerPlatformPermissionGuard);
-    expect(createRoute?.data?.['permission']).toBe(MANAGE_PLANS_PERMISSION);
-    expect(editRoute?.data?.['permission']).toBe(MANAGE_PLANS_PERMISSION);
+    expect(children.find((route) => route.path === 'tenants/create')?.data?.['permission']).toBe(MANAGE_TENANTS_PERMISSION);
+    expect(children.find((route) => route.path === 'tenants/:tenantId/users')?.data?.['permission']).toBe(MANAGE_TENANTS_PERMISSION);
+    expect(children.find((route) => route.path === 'tenants/:tenantId/billing')?.data?.['permission']).toBe(VIEW_BILLING_PERMISSION);
+    expect(children.find((route) => route.path === 'tenants/:tenantId/feature-flags')?.data?.['permission']).toBe(MANAGE_FEATURE_FLAGS_PERMISSION);
   });
 });

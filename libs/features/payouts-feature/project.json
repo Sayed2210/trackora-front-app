@@ -7,19 +7,10 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/angular:ng-packagr-lite",
-      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "executor": "nx:run-commands",
       "options": {
-        "project": "libs/features/payouts-feature/ng-package.json",
-        "tsConfig": "libs/features/payouts-feature/tsconfig.lib.json"
-      },
-      "configurations": {
-        "production": {
-          "tsConfig": "libs/features/payouts-feature/tsconfig.lib.prod.json"
-        },
-        "development": {}
-      },
-      "defaultConfiguration": "production"
+        "command": "npx ngc -p libs/features/payouts-feature/tsconfig.lib.prod.json"
+      }
     },
     "test": {
       "executor": "@nx/jest:jest",
