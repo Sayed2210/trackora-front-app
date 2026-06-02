@@ -2,13 +2,21 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PLAN_FEATURE_ENTITLEMENTS, PlanFeatureEntitlement, PlanPayload, PlatformPlan } from '../../domain/models/platform-plan.models';
-import { ENTITLEMENTS, payloadFromRaw, positiveDecimalValidator, positiveLimitValidator } from './plan-ui.helpers';
+import {
+  ENTITLEMENTS,
+  optionalPositiveDecimalValidator,
+  payloadFromRaw,
+  positiveDecimalValidator,
+  positiveLimitValidator,
+  zeroOrPositiveIntegerValidator,
+} from './plan-ui.helpers';
 
 type PlanForm = FormGroup<{
   name: FormControl<string>;
   code: FormControl<string>;
   description: FormControl<string>;
   price: FormControl<number>;
+  yearlyPrice: FormControl<number | null>;
   currency: FormControl<string>;
   billingCycle: FormControl<string>;
   monthlyShipments: FormControl<number | null>;
@@ -16,6 +24,9 @@ type PlanForm = FormGroup<{
   maxMerchants: FormControl<number | null>;
   maxCouriers: FormControl<number | null>;
   active: FormControl<boolean>;
+  isPublic: FormControl<boolean>;
+  isPopular: FormControl<boolean>;
+  sortOrder: FormControl<number>;
 }>;
 
 @Component({
@@ -39,6 +50,11 @@ type PlanForm = FormGroup<{
           @if (submitted && form.controls.price.invalid) { <small>Price must be zero or a positive decimal.</small> }
         </label>
         <label>
+          <span>Yearly price</span>
+          <input formControlName="yearlyPrice" type="number" min="0" step="0.01" />
+          @if (submitted && form.controls.yearlyPrice.invalid) { <small>Yearly price must be blank, zero, or a positive decimal.</small> }
+        </label>
+        <label>
           <span>Currency</span>
           <input formControlName="currency" maxlength="3" />
         </label>
@@ -56,6 +72,27 @@ type PlanForm = FormGroup<{
           <span>Active plan</span>
         </label>
       </div>
+
+      <fieldset>
+        <legend>Website pricing</legend>
+        <p>Controls how this source-of-truth plan appears on the public pricing website.</p>
+        <div class="plan-form__grid">
+          <label class="plan-form__toggle">
+            <input formControlName="isPublic" type="checkbox" />
+            <span>Public on website</span>
+          </label>
+          <label class="plan-form__toggle">
+            <input formControlName="isPopular" type="checkbox" />
+            <span>Popular badge</span>
+          </label>
+          <label>
+            <span>Sort order</span>
+            <input formControlName="sortOrder" type="number" min="0" step="1" />
+            @if (submitted && form.controls.sortOrder.invalid) { <small>Sort order must be zero or a positive whole number.</small> }
+          </label>
+        </div>
+        @if (popularPrivateWarning()) { <small class="plan-form__warning">Popular badge is enabled, but this plan is not public on the website.</small> }
+      </fieldset>
 
       <label>
         <span>Description</span>
@@ -114,6 +151,7 @@ type PlanForm = FormGroup<{
       input, select, textarea { inline-size: 100%; box-sizing: border-box; padding: 0.75rem; color: var(--trackora-text); background: var(--trackora-surface); border: 1px solid var(--trackora-border); border-radius: 0.8rem; }
       textarea { resize: vertical; }
       small { color: var(--trackora-danger); }
+      .plan-form__warning { color: var(--trackora-warning); }
       .plan-form__toggle, .plan-form__check { display: flex; align-items: center; gap: 0.55rem; }
       .plan-form__toggle input, .plan-form__check input { inline-size: auto; }
       .plan-form__entitlements { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
@@ -139,6 +177,7 @@ export class PlanFormComponent implements OnChanges {
     code: new FormControl('', { nonNullable: true }),
     description: new FormControl('', { nonNullable: true }),
     price: new FormControl(0, { nonNullable: true, validators: [Validators.required, positiveDecimalValidator] }),
+    yearlyPrice: new FormControl<number | null>(null, { validators: [optionalPositiveDecimalValidator] }),
     currency: new FormControl('EGP', { nonNullable: true, validators: [Validators.required] }),
     billingCycle: new FormControl('monthly', { nonNullable: true }),
     monthlyShipments: new FormControl<number | null>(null, { validators: [positiveLimitValidator] }),
@@ -146,6 +185,9 @@ export class PlanFormComponent implements OnChanges {
     maxMerchants: new FormControl<number | null>(null, { validators: [positiveLimitValidator] }),
     maxCouriers: new FormControl<number | null>(null, { validators: [positiveLimitValidator] }),
     active: new FormControl(true, { nonNullable: true }),
+    isPublic: new FormControl(false, { nonNullable: true }),
+    isPopular: new FormControl(false, { nonNullable: true }),
+    sortOrder: new FormControl(0, { nonNullable: true, validators: [zeroOrPositiveIntegerValidator] }),
   });
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -155,6 +197,7 @@ export class PlanFormComponent implements OnChanges {
         code: this.plan.code,
         description: this.plan.description,
         price: this.plan.price,
+        yearlyPrice: this.plan.yearlyPrice,
         currency: this.plan.currency,
         billingCycle: this.plan.billingCycle,
         monthlyShipments: this.plan.limits.monthlyShipments,
@@ -162,6 +205,9 @@ export class PlanFormComponent implements OnChanges {
         maxMerchants: this.plan.limits.maxMerchants,
         maxCouriers: this.plan.limits.maxCouriers,
         active: this.plan.active,
+        isPublic: this.plan.isPublic,
+        isPopular: this.plan.isPopular,
+        sortOrder: this.plan.sortOrder,
       });
       this.selectedEntitlements = this.plan.entitlements.filter((key) => PLAN_FEATURE_ENTITLEMENTS.includes(key));
     }
@@ -175,6 +221,10 @@ export class PlanFormComponent implements OnChanges {
 
   limitsInvalid(): boolean {
     return ['monthlyShipments', 'maxAdmins', 'maxMerchants', 'maxCouriers'].some((key) => this.form.get(key)?.invalid);
+  }
+
+  popularPrivateWarning(): boolean {
+    return this.form.controls.isPopular.value && !this.form.controls.isPublic.value;
   }
 
   submit(): void {

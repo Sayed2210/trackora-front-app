@@ -23,6 +23,8 @@ describe('PlansListPageComponent', () => {
     await dataFixture.componentInstance.facade.loadList();
     dataFixture.detectChanges();
     expect(dataFixture.nativeElement.textContent).toContain('Enterprise');
+    expect(dataFixture.nativeElement.textContent).toContain('Website public');
+    expect(dataFixture.nativeElement.textContent).toContain('Popular');
   });
 
   it('requires confirmation before archive', async () => {
@@ -39,11 +41,15 @@ const plan = {
   code: 'starter',
   description: '',
   price: 0,
+  yearlyPrice: null,
   currency: 'EGP',
   billingCycle: 'monthly',
   limits: { monthlyShipments: 100, maxAdmins: 1, maxMerchants: 1, maxCouriers: 1 },
   entitlements: [],
   active: true,
+  isPublic: true,
+  isPopular: true,
+  sortOrder: 1,
   archived: false,
   subscriptionCount: null,
   createdAt: null,

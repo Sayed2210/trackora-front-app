@@ -6,6 +6,7 @@ export interface PlatformPlanDto {
   slug?: unknown;
   description?: unknown;
   price?: unknown;
+  yearlyPrice?: unknown;
   amount?: unknown;
   currency?: unknown;
   billingCycle?: unknown;
@@ -26,6 +27,9 @@ export interface PlatformPlanDto {
   active?: unknown;
   isActive?: unknown;
   is_active?: unknown;
+  isPublic?: unknown;
+  isPopular?: unknown;
+  sortOrder?: unknown;
   archived?: unknown;
   isArchived?: unknown;
   is_archived?: unknown;
@@ -54,6 +58,7 @@ export interface PlatformPlanPayloadDto {
   code?: string;
   description?: string;
   price: number;
+  yearlyPrice?: number | null;
   currency: string;
   billingCycle?: string;
   monthlyShipmentsLimit: number | null;
@@ -62,4 +67,7 @@ export interface PlatformPlanPayloadDto {
   maxCouriers: number | null;
   featureEntitlements: string[];
   active?: boolean;
+  isPublic?: boolean;
+  isPopular?: boolean;
+  sortOrder?: number;
 }

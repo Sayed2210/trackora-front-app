@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { PlatformPlan } from '../../domain/models/platform-plan.models';
-import { ENTITLEMENT_LABELS, formatLimit, formatMoney } from './plan-ui.helpers';
+import { ENTITLEMENT_LABELS, formatLimit, formatMoney, formatYearlyMoney } from './plan-ui.helpers';
 
 @Component({
   selector: 'app-plan-summary',
@@ -15,6 +15,10 @@ import { ENTITLEMENT_LABELS, formatLimit, formatMoney } from './plan-ui.helpers'
         </div>
         <p>{{ plan.description || 'No description provided.' }}</p>
         <dl>
+          <div><dt>Yearly price</dt><dd>{{ formatYearlyMoney(plan) }}</dd></div>
+          <div><dt>Website visibility</dt><dd>{{ plan.isPublic ? 'Public' : 'Private' }}</dd></div>
+          <div><dt>Popular badge</dt><dd>{{ plan.isPopular ? 'Enabled' : 'Disabled' }}</dd></div>
+          <div><dt>Sort order</dt><dd>{{ plan.sortOrder }}</dd></div>
           <div><dt>Monthly shipments</dt><dd>{{ formatLimit(plan.limits.monthlyShipments) }}</dd></div>
           <div><dt>Max admins</dt><dd>{{ formatLimit(plan.limits.maxAdmins) }}</dd></div>
           <div><dt>Max merchants</dt><dd>{{ formatLimit(plan.limits.maxMerchants) }}</dd></div>
@@ -49,4 +53,5 @@ export class PlanSummaryComponent {
   readonly labels = ENTITLEMENT_LABELS;
   readonly formatLimit = formatLimit;
   readonly formatMoney = formatMoney;
+  readonly formatYearlyMoney = formatYearlyMoney;
 }

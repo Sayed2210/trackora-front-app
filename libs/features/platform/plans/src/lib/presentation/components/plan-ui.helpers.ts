@@ -19,6 +19,19 @@ export const positiveDecimalValidator = (control: AbstractControl): ValidationEr
   return Number.isFinite(value) && value >= 0 ? null : { positiveDecimal: true };
 };
 
+export const optionalPositiveDecimalValidator = (control: AbstractControl): ValidationErrors | null => {
+  if (control.value === null || control.value === undefined || control.value === '') {
+    return null;
+  }
+  const value = Number(control.value);
+  return Number.isFinite(value) && value >= 0 ? null : { positiveDecimal: true };
+};
+
+export const zeroOrPositiveIntegerValidator = (control: AbstractControl): ValidationErrors | null => {
+  const value = Number(control.value);
+  return Number.isInteger(value) && value >= 0 ? null : { zeroOrPositiveInteger: true };
+};
+
 export const positiveLimitValidator = (control: AbstractControl): ValidationErrors | null => {
   if (control.value === null || control.value === undefined || control.value === '') {
     return null;
@@ -32,6 +45,7 @@ export const payloadFromRaw = (raw: Record<string, unknown>, entitlements: PlanF
   code: String(raw['code'] ?? '').trim() || undefined,
   description: String(raw['description'] ?? '').trim() || undefined,
   price: Number(raw['price'] ?? 0),
+  yearlyPrice: normalizeNullableNumber(raw['yearlyPrice']),
   currency: String(raw['currency'] ?? 'EGP').trim().toUpperCase(),
   billingCycle: String(raw['billingCycle'] ?? 'monthly'),
   limits: {
@@ -42,18 +56,35 @@ export const payloadFromRaw = (raw: Record<string, unknown>, entitlements: PlanF
   },
   entitlements,
   active: Boolean(raw['active']),
+  isPublic: Boolean(raw['isPublic']),
+  isPopular: Boolean(raw['isPopular']),
+  sortOrder: Number(raw['sortOrder'] ?? 0),
 });
 
 export const formatLimit = (value: number | null): string => (value === null ? 'Unlimited' : new Intl.NumberFormat('en').format(value));
 
 export const formatMoney = (plan: PlatformPlan): string =>
+  formatAmount(plan.price, plan.currency);
+
+export const formatYearlyMoney = (plan: PlatformPlan): string =>
+  plan.yearlyPrice === null ? 'Not set' : formatAmount(plan.yearlyPrice, plan.currency);
+
+const formatAmount = (amount: number, currency: string): string =>
   new Intl.NumberFormat('ar-EG', {
     style: 'currency',
-    currency: plan.currency || 'EGP',
-    maximumFractionDigits: plan.price % 1 === 0 ? 0 : 2,
-  }).format(plan.price);
+    currency: currency || 'EGP',
+    maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+  }).format(amount);
 
 export const normalizeLimit = (value: unknown): number | null => {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+};
+
+export const normalizeNullableNumber = (value: unknown): number | null => {
   if (value === null || value === undefined || value === '') {
     return null;
   }

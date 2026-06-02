@@ -26,11 +26,15 @@ export interface PlatformPlan {
   code: string;
   description: string;
   price: number;
+  yearlyPrice: number | null;
   currency: string;
   billingCycle: PlanBillingCycle | string;
   limits: PlanLimits;
   entitlements: PlanFeatureEntitlement[];
   active: boolean;
+  isPublic: boolean;
+  isPopular: boolean;
+  sortOrder: number;
   archived: boolean;
   subscriptionCount: number | null;
   createdAt: string | null;
@@ -58,11 +62,15 @@ export interface PlanPayload {
   code?: string;
   description?: string;
   price: number;
+  yearlyPrice?: number | null;
   currency: string;
   billingCycle?: PlanBillingCycle | string;
   limits: PlanLimits;
   entitlements: PlanFeatureEntitlement[];
   active?: boolean;
+  isPublic?: boolean;
+  isPopular?: boolean;
+  sortOrder?: number;
 }
 
 export interface PlansState<T> {
