@@ -22,6 +22,7 @@ export const mapPlatformPlan = (dto: PlatformPlanDto): PlatformPlan => {
     code: readString(dto.code ?? dto.slug),
     description: readString(dto.description),
     price: readNumber(dto.price ?? dto.amount),
+    yearlyPrice: readNullableNumber(dto.yearlyPrice),
     currency: readString(dto.currency, 'EGP').toUpperCase(),
     billingCycle: readString(dto.billingCycle ?? dto.billing_cycle, 'monthly'),
     limits: {
@@ -43,6 +44,9 @@ export const mapPlatformPlan = (dto: PlatformPlanDto): PlatformPlan => {
       dto.featureEntitlements ?? dto.feature_entitlements ?? dto.entitlements ?? dto.features,
     ),
     active,
+    isPublic: readBoolean(dto.isPublic, false),
+    isPopular: readBoolean(dto.isPopular, false),
+    sortOrder: readNumber(dto.sortOrder, 0),
     archived,
     subscriptionCount: readNullableNumber(dto.subscriptionCount ?? dto.subscription_count),
     createdAt: readNullableString(dto.createdAt ?? dto.created_at),
@@ -69,6 +73,7 @@ export const mapPlanPayload = (payload: PlanPayload): PlatformPlanPayloadDto => 
   code: payload.code?.trim() || undefined,
   description: payload.description?.trim() || undefined,
   price: payload.price,
+  yearlyPrice: payload.yearlyPrice ?? null,
   currency: payload.currency.trim().toUpperCase() || 'EGP',
   billingCycle: payload.billingCycle || undefined,
   monthlyShipmentsLimit: payload.limits.monthlyShipments,
@@ -77,6 +82,9 @@ export const mapPlanPayload = (payload: PlanPayload): PlatformPlanPayloadDto => 
   maxCouriers: payload.limits.maxCouriers,
   featureEntitlements: payload.entitlements,
   active: payload.active,
+  isPublic: payload.isPublic,
+  isPopular: payload.isPopular,
+  sortOrder: payload.sortOrder,
 });
 
 const readObject = (value: unknown): Record<string, unknown> =>

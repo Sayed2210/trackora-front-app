@@ -89,11 +89,16 @@ describe('owner routes', () => {
     );
   });
 
-  it('requires manage_plans for plans routes', () => {
+  it('requires manage_plans for plan routes', () => {
     const ownerRoute = appRoutes.find((route) => route.path === 'owner');
     const children = ownerRoute?.children ?? [];
 
-    for (const path of ['plans', 'plans/create', 'plans/:planId', 'plans/:planId/edit']) {
+    for (const path of [
+      'plans',
+      'plans/create',
+      'plans/:planId',
+      'plans/:planId/edit',
+    ]) {
       expect(children.find((route) => route.path === path)?.data?.['permission']).toBe(
         'manage_plans',
       );

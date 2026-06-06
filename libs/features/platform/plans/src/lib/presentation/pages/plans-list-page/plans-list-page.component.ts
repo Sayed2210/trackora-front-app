@@ -15,7 +15,7 @@ import {
 } from '../../components/dashboard-ui';
 import { PlansFacade } from '../../../application/plans.facade';
 import { PlatformPlan } from '../../../domain/models/platform-plan.models';
-import { formatLimit, formatMoney } from '../../components/plan-ui.helpers';
+import { formatLimit, formatMoney, formatYearlyMoney } from '../../components/plan-ui.helpers';
 
 @Component({
   selector: 'app-plans-list-page',
@@ -46,6 +46,7 @@ import { formatLimit, formatMoney } from '../../components/plan-ui.helpers';
       <app-owner-metric-grid>
         <app-owner-stat-card title="إجمالي الخطط" [value]="facade.list().data?.total" severity="info" [loading]="facade.list().loading" />
         <app-owner-stat-card title="الخطط النشطة" [value]="activeCount()" severity="success" [loading]="facade.list().loading" />
+        <app-owner-stat-card title="خطط الموقع" [value]="publicCount()" severity="info" [loading]="facade.list().loading" />
         <app-owner-stat-card title="المؤرشفة" [value]="archivedCount()" severity="warning" [loading]="facade.list().loading" />
       </app-owner-metric-grid>
 
@@ -95,7 +96,12 @@ import { formatLimit, formatMoney } from '../../components/plan-ui.helpers';
                 <app-owner-status-badge [status]="plan.archived ? 'warning' : plan.active ? 'success' : 'neutral'" [label]="plan.archived ? 'Archived' : plan.active ? 'Active' : 'Inactive'" />
               </header>
               <strong>{{ formatMoney(plan) }}</strong>
-              <p>{{ plan.billingCycle }} · {{ plan.currency }}</p>
+              <p>{{ plan.billingCycle }} · {{ plan.currency }} · yearly {{ formatYearlyMoney(plan) }}</p>
+              <div class="plan-card__badges">
+                <span [class.plan-card__badge--public]="plan.isPublic">{{ plan.isPublic ? 'Website public' : 'Website private' }}</span>
+                @if (plan.isPopular) { <span class="plan-card__badge--popular">Popular</span> }
+                <span>Order {{ plan.sortOrder }}</span>
+              </div>
               <dl>
                 <div><dt>Shipments</dt><dd>{{ formatLimit(plan.limits.monthlyShipments) }}</dd></div>
                 <div><dt>Admins</dt><dd>{{ formatLimit(plan.limits.maxAdmins) }}</dd></div>
@@ -147,6 +153,10 @@ import { formatLimit, formatMoney } from '../../components/plan-ui.helpers';
       dd { margin: 0.2rem 0 0; color: var(--trackora-primary); font-weight: 900; }
       .plan-card__features { display: flex; flex-wrap: wrap; gap: 0.4rem; }
       .plan-card__features span { padding: 0.32rem 0.5rem; color: var(--trackora-primary); background: var(--trackora-surface); border: 1px solid var(--trackora-border); border-radius: 999px; font-size: 0.78rem; font-weight: 800; }
+      .plan-card__badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+      .plan-card__badges span { padding: 0.32rem 0.5rem; color: var(--trackora-text-secondary); background: var(--trackora-surface); border: 1px solid var(--trackora-border); border-radius: 999px; font-size: 0.78rem; font-weight: 800; }
+      .plan-card__badges .plan-card__badge--public { color: var(--trackora-success); }
+      .plan-card__badges .plan-card__badge--popular { color: var(--trackora-warning); }
       footer a { color: var(--trackora-primary); font-weight: 900; }
     `,
   ],
@@ -162,12 +172,14 @@ export class PlansListPageComponent implements OnInit {
   sort: 'name' | 'code' | 'price' | 'billingCycle' | 'createdAt' = 'name';
   readonly formatLimit = formatLimit;
   readonly formatMoney = formatMoney;
+  readonly formatYearlyMoney = formatYearlyMoney;
 
   ngOnInit(): void { void this.facade.loadList(); }
   reload(): void { void this.facade.loadList(); }
   applyFilters(): void { void this.facade.loadList({ search: this.search, status: this.status, billingCycle: this.billingCycle, sort: this.sort }); }
   resetFilters(): void { this.search = ''; this.status = 'all'; this.billingCycle = 'all'; this.sort = 'name'; void this.facade.loadList({ search: '', status: 'all', billingCycle: 'all', sort: 'name', page: 1 }); }
   activeCount(): number { return this.facade.plans().filter((plan) => plan.active && !plan.archived).length; }
+  publicCount(): number { return this.facade.plans().filter((plan) => plan.isPublic && !plan.archived).length; }
   archivedCount(): number { return this.facade.plans().filter((plan) => plan.archived).length; }
   actionItems(plan: PlatformPlan): ActionMenuItem[] { return [{ label: 'Edit' }, { label: plan.archived ? 'Archived' : 'Archive', severity: 'danger', disabled: plan.archived }]; }
   handleAction(plan: PlatformPlan, item: ActionMenuItem): void { if (item.label === 'Archive') this.pendingArchive.set(plan); }

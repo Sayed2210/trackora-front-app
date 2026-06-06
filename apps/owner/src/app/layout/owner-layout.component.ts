@@ -117,9 +117,9 @@ export class OwnerLayoutComponent {
     );
 
   constructor() {
-    const lang = document.documentElement.lang?.startsWith('en') ? 'en' : 'ar';
+    const lang = document.documentElement.lang.startsWith('en') ? 'en' : 'ar';
     document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'en' ? 'ltr' : 'rtl';
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
 
     this.router.events
       .pipe(
