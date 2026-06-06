@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import { ApiClient } from '@trackora/core/api';
 import { PlatformPlansRepository } from './platform-plans.repository';
 

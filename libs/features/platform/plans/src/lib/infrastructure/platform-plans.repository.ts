@@ -1,6 +1,5 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import { ApiClient } from '@trackora/core/api';
 import { PlanPayload, PlansPage, PlansQuery, PlatformPlan } from '../domain/models/platform-plan.models';
 import { PlatformPlanDto, PlatformPlansListDto } from './dtos/platform-plans.dtos';

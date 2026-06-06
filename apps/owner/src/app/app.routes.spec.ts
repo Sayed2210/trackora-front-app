@@ -89,6 +89,17 @@ describe('owner routes', () => {
     );
   });
 
+  it('requires manage_plans for plans routes', () => {
+    const ownerRoute = appRoutes.find((route) => route.path === 'owner');
+    const children = ownerRoute?.children ?? [];
+
+    for (const path of ['plans', 'plans/create', 'plans/:planId', 'plans/:planId/edit']) {
+      expect(children.find((route) => route.path === path)?.data?.['permission']).toBe(
+        'manage_plans',
+      );
+    }
+  });
+
   it('requires view_billing for billing routes', () => {
     const ownerRoute = appRoutes.find((route) => route.path === 'owner');
     const children = ownerRoute?.children ?? [];

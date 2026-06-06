@@ -18,9 +18,8 @@ export class ApiClientError extends Error {
 export class ApiClient {
   private readonly http = inject(HttpClient);
 
-  // Base URL is handled by the baseUrlInterceptor which prepends /v1
-  // This avoids double-prefixing when interceptor is active
-  private readonly baseUrl = '';
+  // Pilot QA API base URL. Absolute URLs are ignored by baseUrlInterceptor.
+  private readonly baseUrl = 'http://trackora.techlabeg.com/v1';
 
   get<T>(path: string, params?: any): Observable<T> {
     return this.request<T>('GET', path, undefined, params);
