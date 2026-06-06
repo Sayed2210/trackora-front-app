@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import { ApiClientError } from '@trackora/core/api';
 import { PlansFacade } from './plans.facade';
 import { PlatformPlansRepository } from '../infrastructure/platform-plans.repository';
@@ -33,11 +32,15 @@ const plan = {
   code: 'starter',
   description: '',
   price: 0,
+  yearlyPrice: null,
   currency: 'EGP',
   billingCycle: 'monthly',
   limits: { monthlyShipments: 100, maxAdmins: 1, maxMerchants: 1, maxCouriers: 1 },
   entitlements: [],
   active: true,
+  isPublic: false,
+  isPopular: false,
+  sortOrder: 0,
   archived: false,
   subscriptionCount: null,
   createdAt: null,

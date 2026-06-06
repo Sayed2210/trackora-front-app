@@ -21,7 +21,9 @@ const forbiddenUrl = '/owner/forbidden';
 
 export const platformOnlyGuard: CanActivateFn = () => {
   return withCurrentUser((authService, router) => {
-    return authService.hasAnyPlatformRole() || router.createUrlTree([forbiddenUrl]);
+    return (
+      authService.hasAnyPlatformRole() || router.createUrlTree([forbiddenUrl])
+    );
   });
 };
 
@@ -31,8 +33,10 @@ export const ownerPermissionGuard: CanActivateFn = (route) => {
       return router.createUrlTree([forbiddenUrl]);
     }
 
-    return hasRequiredOwnerAccess(authService, route.data as OwnerAccessData)
-      || router.createUrlTree([forbiddenUrl]);
+    return (
+      hasRequiredOwnerAccess(authService, route.data as OwnerAccessData) ||
+      router.createUrlTree([forbiddenUrl])
+    );
   });
 };
 
@@ -48,13 +52,17 @@ export function hasRequiredOwnerAccess(
   }
 
   return (
-    permissions.some((permission) => authService.hasPermission(permission))
-    || roles.some((role) => authService.hasRole(role))
+    permissions.some((permission) => authService.hasPermission(permission)) ||
+    roles.some((role) => authService.hasRole(role))
   );
 }
 
 function withCurrentUser(
-  evaluate: (authService: AuthService, router: Router, user: User) => boolean | UrlTree,
+  evaluate: (
+    authService: AuthService,
+    router: Router,
+    user: User,
+  ) => boolean | UrlTree,
 ): boolean | UrlTree | Observable<boolean | UrlTree> {
   const authService = inject(AuthService);
   const tokenStorage = inject(TokenStorageService);

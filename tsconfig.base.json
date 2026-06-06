@@ -10,47 +10,22 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": [
-      "es2020",
-      "dom"
-    ],
+    "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@trackora/core": [
-        "libs/core/src/index.ts"
-      ],
-      "@trackora/core/auth": [
-        "libs/core/auth/src/index.ts"
-      ],
-      "@trackora/core/api": [
-        "libs/core/api/src/index.ts"
-      ],
-      "@trackora/core/realtime": [
-        "libs/core/realtime/src/index.ts"
-      ],
-      "@trackora/core/state": [
-        "libs/core/state/src/index.ts"
-      ],
-      "@trackora/core/config": [
-        "libs/core/config/src/index.ts"
-      ],
-      "@trackora/shared/domain": [
-        "libs/shared/domain/src/index.ts"
-      ],
-      "@trackora/shared/ui": [
-        "libs/shared/ui/src/index.ts"
-      ],
-      "@trackora/shared/utils": [
-        "libs/shared/utils/src/index.ts"
-      ],
-      "@trackora/shared/data-access": [
-        "libs/shared/data-access/src/index.ts"
-      ],
-      "@trackora/auth-feature": [
-        "libs/features/auth-feature/src/index.ts"
-      ],
+      "@trackora/core": ["libs/core/src/index.ts"],
+      "@trackora/core/auth": ["libs/core/auth/src/index.ts"],
+      "@trackora/core/api": ["libs/core/api/src/index.ts"],
+      "@trackora/core/realtime": ["libs/core/realtime/src/index.ts"],
+      "@trackora/core/state": ["libs/core/state/src/index.ts"],
+      "@trackora/core/config": ["libs/core/config/src/index.ts"],
+      "@trackora/shared/domain": ["libs/shared/domain/src/index.ts"],
+      "@trackora/shared/ui": ["libs/shared/ui/src/index.ts"],
+      "@trackora/shared/utils": ["libs/shared/utils/src/index.ts"],
+      "@trackora/shared/data-access": ["libs/shared/data-access/src/index.ts"],
+      "@trackora/auth-feature": ["libs/features/auth-feature/src/index.ts"],
       "@trackora/shipments-feature": [
         "libs/features/shipments-feature/src/index.ts"
       ],
@@ -60,9 +35,7 @@
       "@trackora/courier-tasks-feature": [
         "libs/features/courier-tasks-feature/src/index.ts"
       ],
-      "@trackora/wallet-feature": [
-        "libs/features/wallet-feature/src/index.ts"
-      ],
+      "@trackora/wallet-feature": ["libs/features/wallet-feature/src/index.ts"],
       "@trackora/payouts-feature": [
         "libs/features/payouts-feature/src/index.ts"
       ],
@@ -72,22 +45,35 @@
       "@trackora/analytics-feature": [
         "libs/features/analytics-feature/src/index.ts"
       ],
-      "@trackora/zones-feature": [
-        "libs/features/zones-feature/src/index.ts"
-      ],
+      "@trackora/zones-feature": ["libs/features/zones-feature/src/index.ts"],
       "@trackora/platform-overview": [
         "./libs/features/platform/overview/src/index.ts"
       ],
       "@trackora/platform-tenants": [
         "./libs/features/platform/tenants/src/index.ts"
       ],
+      "@trackora/platform-plans": [
+        "./libs/features/platform/plans/src/index.ts"
+      ],
       "@trackora/owner-dashboard-ui": [
         "./apps/owner/src/app/shared/dashboard-ui/index.ts"
+      ],
+      "@trackora/platform-subscriptions": [
+        "./libs/features/platform/subscriptions/src/index.ts"
+      ],
+      "@trackora/platform-feature-flags": [
+        "./libs/features/platform/feature-flags/src/index.ts"
+      ],
+      "@trackora/platform-billing": [
+        "./libs/features/platform/billing/src/index.ts"
+      ],
+      "@trackora/platform-audit-logs": [
+        "./libs/features/platform/audit-logs/src/index.ts"
+      ],
+      "@trackora/platform-support": [
+        "./libs/features/platform/support/src/index.ts"
       ]
     }
   },
-  "exclude": [
-    "node_modules",
-    "tmp"
-  ]
+  "exclude": ["node_modules", "tmp"]
 }

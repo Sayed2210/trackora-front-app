@@ -101,26 +101,58 @@ const humanizeStatus = (status: DashboardStatus): string =>
 
       .tone-success {
         color: var(--trackora-success);
-        background: color-mix(in srgb, var(--trackora-success) 10%, var(--trackora-bg));
-        border-color: color-mix(in srgb, var(--trackora-success) 28%, var(--trackora-border));
+        background: color-mix(
+          in srgb,
+          var(--trackora-success) 10%,
+          var(--trackora-bg)
+        );
+        border-color: color-mix(
+          in srgb,
+          var(--trackora-success) 28%,
+          var(--trackora-border)
+        );
       }
 
       .tone-warning {
         color: var(--trackora-warning);
-        background: color-mix(in srgb, var(--trackora-warning) 12%, var(--trackora-bg));
-        border-color: color-mix(in srgb, var(--trackora-warning) 32%, var(--trackora-border));
+        background: color-mix(
+          in srgb,
+          var(--trackora-warning) 12%,
+          var(--trackora-bg)
+        );
+        border-color: color-mix(
+          in srgb,
+          var(--trackora-warning) 32%,
+          var(--trackora-border)
+        );
       }
 
       .tone-danger {
         color: var(--trackora-danger);
-        background: color-mix(in srgb, var(--trackora-danger) 10%, var(--trackora-bg));
-        border-color: color-mix(in srgb, var(--trackora-danger) 30%, var(--trackora-border));
+        background: color-mix(
+          in srgb,
+          var(--trackora-danger) 10%,
+          var(--trackora-bg)
+        );
+        border-color: color-mix(
+          in srgb,
+          var(--trackora-danger) 30%,
+          var(--trackora-border)
+        );
       }
 
       .tone-info {
         color: var(--trackora-info);
-        background: color-mix(in srgb, var(--trackora-info) 10%, var(--trackora-bg));
-        border-color: color-mix(in srgb, var(--trackora-info) 28%, var(--trackora-border));
+        background: color-mix(
+          in srgb,
+          var(--trackora-info) 10%,
+          var(--trackora-bg)
+        );
+        border-color: color-mix(
+          in srgb,
+          var(--trackora-info) 28%,
+          var(--trackora-border)
+        );
       }
     `,
   ],
@@ -147,8 +179,13 @@ export class StatusBadgeComponent {
         <div>
           <p class="stat-card__title">{{ title }}</p>
           @if (loading) {
-            <span class="stat-card__skeleton" aria-label="Loading metric"></span>
-          } @else if (empty || value === null || value === undefined || value === '') {
+            <span
+              class="stat-card__skeleton"
+              aria-label="Loading metric"
+            ></span>
+          } @else if (
+            empty || value === null || value === undefined || value === ''
+          ) {
             <strong class="stat-card__empty">{{ emptyLabel }}</strong>
           } @else {
             <strong class="stat-card__value">{{ value }}</strong>
@@ -174,7 +211,8 @@ export class StatusBadgeComponent {
         border: 1px solid var(--trackora-border);
         border-radius: 1.1rem;
         border-block-start: 4px solid var(--trackora-border);
-        box-shadow: 0 18px 45px color-mix(in srgb, var(--trackora-primary) 10%, transparent);
+        box-shadow: 0 18px 45px
+          color-mix(in srgb, var(--trackora-primary) 10%, transparent);
       }
 
       .stat-card__top {
@@ -217,7 +255,11 @@ export class StatusBadgeComponent {
         block-size: 2.65rem;
         place-items: center;
         color: var(--trackora-primary);
-        background: color-mix(in srgb, var(--trackora-primary) 10%, var(--trackora-bg));
+        background: color-mix(
+          in srgb,
+          var(--trackora-primary) 10%,
+          var(--trackora-bg)
+        );
         border: 1px solid var(--trackora-border);
         border-radius: 0.95rem;
         font-weight: 900;
@@ -229,13 +271,26 @@ export class StatusBadgeComponent {
         block-size: 2rem;
         margin-block-start: 0.55rem;
         border-radius: 0.55rem;
-        background: linear-gradient(90deg, var(--trackora-surface), var(--trackora-bg), var(--trackora-surface));
+        background: linear-gradient(
+          90deg,
+          var(--trackora-surface),
+          var(--trackora-bg),
+          var(--trackora-surface)
+        );
       }
 
-      .tone-success { border-block-start-color: var(--trackora-success); }
-      .tone-warning { border-block-start-color: var(--trackora-warning); }
-      .tone-danger { border-block-start-color: var(--trackora-danger); }
-      .tone-info { border-block-start-color: var(--trackora-info); }
+      .tone-success {
+        border-block-start-color: var(--trackora-success);
+      }
+      .tone-warning {
+        border-block-start-color: var(--trackora-warning);
+      }
+      .tone-danger {
+        border-block-start-color: var(--trackora-danger);
+      }
+      .tone-info {
+        border-block-start-color: var(--trackora-info);
+      }
     `,
   ],
 })
@@ -418,10 +473,18 @@ export class PageHeaderComponent {
         margin-block-start: 0.35rem;
       }
 
-      .tone-success { border-inline-start-color: var(--trackora-success); }
-      .tone-warning { border-inline-start-color: var(--trackora-warning); }
-      .tone-danger { border-inline-start-color: var(--trackora-danger); }
-      .tone-info { border-inline-start-color: var(--trackora-info); }
+      .tone-success {
+        border-inline-start-color: var(--trackora-success);
+      }
+      .tone-warning {
+        border-inline-start-color: var(--trackora-warning);
+      }
+      .tone-danger {
+        border-inline-start-color: var(--trackora-danger);
+      }
+      .tone-info {
+        border-inline-start-color: var(--trackora-info);
+      }
     `,
   ],
 })
@@ -446,7 +509,8 @@ export class StateMessageComponent {
 })
 export class LoadingStateComponent {
   @Input() title = 'Loading dashboard data';
-  @Input() message = 'Please wait while the latest operational state is prepared.';
+  @Input() message =
+    'Please wait while the latest operational state is prepared.';
   @Input() eyebrow = 'Loading';
 }
 
@@ -454,7 +518,11 @@ export class LoadingStateComponent {
   selector: 'app-owner-empty-state',
   imports: [StateMessageComponent],
   template: `
-    <app-owner-state-message [title]="title" [message]="message" [eyebrow]="eyebrow">
+    <app-owner-state-message
+      [title]="title"
+      [message]="message"
+      [eyebrow]="eyebrow"
+    >
       <ng-content select="[state-action]"></ng-content>
     </app-owner-state-message>
   `,
@@ -481,7 +549,8 @@ export class EmptyStateComponent {
 })
 export class ErrorStateComponent {
   @Input() title = 'Unable to load data';
-  @Input() message = 'Retry the request or check the current platform connection.';
+  @Input() message =
+    'Retry the request or check the current platform connection.';
   @Input() eyebrow = 'Error';
 }
 
@@ -501,7 +570,8 @@ export class ErrorStateComponent {
 })
 export class ForbiddenStateComponent {
   @Input() title = 'Access forbidden';
-  @Input() message = 'Your owner role does not include permission for this operation.';
+  @Input() message =
+    'Your owner role does not include permission for this operation.';
   @Input() eyebrow = '403';
 }
 
@@ -518,12 +588,19 @@ export class ForbiddenStateComponent {
       </div>
       <div class="filter-bar__actions">
         @if (showReset) {
-          <button type="button" class="filter-bar__button" (click)="filterReset.emit()">
+          <button
+            type="button"
+            class="filter-bar__button"
+            (click)="filterReset.emit()"
+          >
             {{ resetLabel }}
           </button>
         }
         @if (showApply) {
-          <button type="submit" class="filter-bar__button filter-bar__button--primary">
+          <button
+            type="submit"
+            class="filter-bar__button filter-bar__button--primary"
+          >
             {{ applyLabel }}
           </button>
         }
@@ -594,7 +671,12 @@ export class FilterBarComponent {
 
 @Component({
   selector: 'app-owner-data-table-shell',
-  imports: [CommonModule, EmptyStateComponent, ErrorStateComponent, LoadingStateComponent],
+  imports: [
+    CommonModule,
+    EmptyStateComponent,
+    ErrorStateComponent,
+    LoadingStateComponent,
+  ],
   template: `
     <section class="table-shell">
       <div class="table-shell__header">
@@ -604,7 +686,10 @@ export class FilterBarComponent {
         <ng-content select="[table-filters]"></ng-content>
       </div>
       @if (loading) {
-        <app-owner-loading-state [title]="loadingTitle" [message]="loadingMessage" />
+        <app-owner-loading-state
+          [title]="loadingTitle"
+          [message]="loadingMessage"
+        />
       } @else if (error) {
         <app-owner-error-state [title]="errorTitle" [message]="errorMessage">
           <ng-content select="[table-retry]"></ng-content>
@@ -632,7 +717,8 @@ export class FilterBarComponent {
         background: var(--trackora-bg);
         border: 1px solid var(--trackora-border);
         border-radius: 1.15rem;
-        box-shadow: 0 18px 45px color-mix(in srgb, var(--trackora-primary) 8%, transparent);
+        box-shadow: 0 18px 45px
+          color-mix(in srgb, var(--trackora-primary) 8%, transparent);
       }
 
       .table-shell__header:empty,
@@ -675,18 +761,29 @@ export class DataTableShellComponent {
   template: `
     @if (open) {
       <div class="dialog-backdrop" role="presentation">
-        <section class="dialog" role="dialog" aria-modal="true" [attr.aria-label]="title">
+        <section
+          class="dialog"
+          role="dialog"
+          aria-modal="true"
+          [attr.aria-label]="title"
+        >
           <div class="dialog__marker" [class]="'tone-' + severity"></div>
           <h2>{{ title }}</h2>
           <p>{{ message }}</p>
           <div class="dialog__actions">
-            <button type="button" class="dialog__button" (click)="confirmationCancel.emit()">
+            <button
+              type="button"
+              class="dialog__button"
+              (click)="confirmationCancel.emit()"
+            >
               {{ cancelLabel }}
             </button>
             <button
               type="button"
               class="dialog__button dialog__button--primary"
-              [class]="'dialog__button dialog__button--primary tone-' + severity"
+              [class]="
+                'dialog__button dialog__button--primary tone-' + severity
+              "
               (click)="confirmationConfirm.emit()"
             >
               {{ confirmLabel }}
@@ -705,7 +802,11 @@ export class DataTableShellComponent {
         display: grid;
         place-items: center;
         padding: 1rem;
-        background: color-mix(in srgb, var(--trackora-primary) 40%, transparent);
+        background: color-mix(
+          in srgb,
+          var(--trackora-primary) 40%,
+          transparent
+        );
       }
 
       .dialog {
@@ -714,7 +815,8 @@ export class DataTableShellComponent {
         background: var(--trackora-bg);
         border: 1px solid var(--trackora-border);
         border-radius: 1.2rem;
-        box-shadow: 0 24px 70px color-mix(in srgb, var(--trackora-primary) 18%, transparent);
+        box-shadow: 0 24px 70px
+          color-mix(in srgb, var(--trackora-primary) 18%, transparent);
       }
 
       .dialog__marker {
@@ -765,10 +867,22 @@ export class DataTableShellComponent {
         border-color: var(--trackora-primary);
       }
 
-      .tone-success { background: var(--trackora-success); border-color: var(--trackora-success); }
-      .tone-warning { background: var(--trackora-warning); border-color: var(--trackora-warning); }
-      .tone-danger { background: var(--trackora-danger); border-color: var(--trackora-danger); }
-      .tone-info { background: var(--trackora-info); border-color: var(--trackora-info); }
+      .tone-success {
+        background: var(--trackora-success);
+        border-color: var(--trackora-success);
+      }
+      .tone-warning {
+        background: var(--trackora-warning);
+        border-color: var(--trackora-warning);
+      }
+      .tone-danger {
+        background: var(--trackora-danger);
+        border-color: var(--trackora-danger);
+      }
+      .tone-info {
+        background: var(--trackora-info);
+        border-color: var(--trackora-info);
+      }
     `,
   ],
 })
@@ -789,7 +903,12 @@ export class ConfirmationDialogComponent {
   template: `
     @if (open) {
       <div class="dialog-backdrop" role="presentation">
-        <section class="dialog" role="dialog" aria-modal="true" [attr.aria-label]="title">
+        <section
+          class="dialog"
+          role="dialog"
+          aria-modal="true"
+          [attr.aria-label]="title"
+        >
           <h2>{{ title }}</h2>
           <p>{{ message }}</p>
           <label>
@@ -804,7 +923,11 @@ export class ConfirmationDialogComponent {
             <small>{{ requiredMessage }}</small>
           }
           <div class="dialog__actions">
-            <button type="button" class="dialog__button" (click)="reasonCancel.emit()">
+            <button
+              type="button"
+              class="dialog__button"
+              (click)="reasonCancel.emit()"
+            >
               {{ cancelLabel }}
             </button>
             <button
@@ -829,7 +952,11 @@ export class ConfirmationDialogComponent {
         display: grid;
         place-items: center;
         padding: 1rem;
-        background: color-mix(in srgb, var(--trackora-primary) 40%, transparent);
+        background: color-mix(
+          in srgb,
+          var(--trackora-primary) 40%,
+          transparent
+        );
       }
 
       .dialog {
@@ -941,7 +1068,12 @@ export class ReasonRequiredDialogComponent {
   imports: [CommonModule],
   template: `
     @if (open) {
-      <aside class="side-panel" role="dialog" aria-modal="true" [attr.aria-label]="title">
+      <aside
+        class="side-panel"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="title"
+      >
         <header>
           <div>
             <h2>{{ title }}</h2>
@@ -949,7 +1081,9 @@ export class ReasonRequiredDialogComponent {
               <p>{{ description }}</p>
             }
           </div>
-          <button type="button" (click)="closed.emit()">{{ closeLabel }}</button>
+          <button type="button" (click)="closed.emit()">
+            {{ closeLabel }}
+          </button>
         </header>
         <div class="side-panel__content">
           <ng-content></ng-content>
@@ -969,7 +1103,8 @@ export class ReasonRequiredDialogComponent {
         inline-size: min(31rem, 100%);
         background: var(--trackora-bg);
         border-inline-start: 1px solid var(--trackora-border);
-        box-shadow: -24px 0 60px color-mix(in srgb, var(--trackora-primary) 14%, transparent);
+        box-shadow: -24px 0 60px
+          color-mix(in srgb, var(--trackora-primary) 14%, transparent);
       }
 
       header {
@@ -1167,7 +1302,8 @@ export class MetricGridComponent {}
         background: var(--trackora-bg);
         border: 1px solid var(--trackora-border);
         border-radius: 0.85rem;
-        box-shadow: 0 18px 45px color-mix(in srgb, var(--trackora-primary) 12%, transparent);
+        box-shadow: 0 18px 45px
+          color-mix(in srgb, var(--trackora-primary) 12%, transparent);
       }
 
       .action-menu__item {
@@ -1187,10 +1323,18 @@ export class MetricGridComponent {}
         opacity: 0.55;
       }
 
-      .tone-danger { color: var(--trackora-danger); }
-      .tone-warning { color: var(--trackora-warning); }
-      .tone-success { color: var(--trackora-success); }
-      .tone-info { color: var(--trackora-info); }
+      .tone-danger {
+        color: var(--trackora-danger);
+      }
+      .tone-warning {
+        color: var(--trackora-warning);
+      }
+      .tone-success {
+        color: var(--trackora-success);
+      }
+      .tone-info {
+        color: var(--trackora-info);
+      }
     `,
   ],
 })

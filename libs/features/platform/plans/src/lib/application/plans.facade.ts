@@ -1,5 +1,4 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import { ApiClientError } from '@trackora/core/api';
 import { firstValueFrom } from 'rxjs';
 import { PlanPayload, PlansPage, PlansQuery, PlansState, PlatformPlan } from '../domain/models/platform-plan.models';

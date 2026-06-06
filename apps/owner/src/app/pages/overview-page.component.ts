@@ -44,7 +44,12 @@ import {
           title="تعذر تحميل لوحة المؤشرات"
           message="لم نتمكن من تحميل مؤشرات المنصة الآن. حاول مرة أخرى دون كشف تفاصيل تقنية."
         >
-          <button state-action type="button" class="overview-action" (click)="retry()">
+          <button
+            state-action
+            type="button"
+            class="overview-action"
+            (click)="retry()"
+          >
             إعادة المحاولة
           </button>
         </app-owner-error-state>
@@ -155,15 +160,29 @@ import {
             description="ترتيب تشغيلي مختصر للحسابات الأعلى نشاطاً."
           >
             @if (facade.usage().loading) {
-              <app-owner-loading-state title="تحميل ترتيب المستأجرين" message="يتم تجهيز الحجم التشغيلي." />
+              <app-owner-loading-state
+                title="تحميل ترتيب المستأجرين"
+                message="يتم تجهيز الحجم التشغيلي."
+              />
             } @else if (facade.usage().error) {
-              <app-owner-error-state title="تعذر تحميل ترتيب المستأجرين" [message]="facade.usage().error || ''">
-                <button state-action type="button" class="overview-action" (click)="retry('usage')">
+              <app-owner-error-state
+                title="تعذر تحميل ترتيب المستأجرين"
+                [message]="facade.usage().error || ''"
+              >
+                <button
+                  state-action
+                  type="button"
+                  class="overview-action"
+                  (click)="retry('usage')"
+                >
                   إعادة المحاولة
                 </button>
               </app-owner-error-state>
             } @else if (!topTenants().length) {
-              <app-owner-empty-state title="لا توجد بيانات مستأجرين" message="لا توجد بيانات حجم شحنات متاحة حالياً." />
+              <app-owner-empty-state
+                title="لا توجد بيانات مستأجرين"
+                message="لا توجد بيانات حجم شحنات متاحة حالياً."
+              />
             } @else {
               <div class="tenant-list">
                 @for (tenant of topTenants(); track tenant.tenantId) {
@@ -184,15 +203,29 @@ import {
             description="إشارات تحتاج انتباه مالك النظام دون عرض تفاصيل حساسة."
           >
             @if (facade.overview().loading) {
-              <app-owner-loading-state title="تحميل التنبيهات" message="يتم فحص أحدث إشارات المنصة." />
+              <app-owner-loading-state
+                title="تحميل التنبيهات"
+                message="يتم فحص أحدث إشارات المنصة."
+              />
             } @else if (facade.overview().error) {
-              <app-owner-error-state title="تعذر تحميل التنبيهات" [message]="facade.overview().error || ''">
-                <button state-action type="button" class="overview-action" (click)="retry('overview')">
+              <app-owner-error-state
+                title="تعذر تحميل التنبيهات"
+                [message]="facade.overview().error || ''"
+              >
+                <button
+                  state-action
+                  type="button"
+                  class="overview-action"
+                  (click)="retry('overview')"
+                >
                   إعادة المحاولة
                 </button>
               </app-owner-error-state>
             } @else if (!alerts().length) {
-              <app-owner-empty-state title="لا توجد تنبيهات" message="لا توجد إشارات تشغيلية تحتاج تدخلاً الآن." />
+              <app-owner-empty-state
+                title="لا توجد تنبيهات"
+                message="لا توجد إشارات تشغيلية تحتاج تدخلاً الآن."
+              />
             } @else {
               <div class="alert-list">
                 @for (alert of alerts(); track alert.id) {
@@ -201,7 +234,10 @@ import {
                       <strong>{{ alert.title }}</strong>
                       <p>{{ alert.message }}</p>
                     </div>
-                    <app-owner-status-badge [status]="alert.severity" [label]="alertLabel(alert.severity)" />
+                    <app-owner-status-badge
+                      [status]="alert.severity"
+                      [label]="alertLabel(alert.severity)"
+                    />
                   </article>
                 }
               </div>
