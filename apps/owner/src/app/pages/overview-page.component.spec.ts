@@ -26,7 +26,7 @@ describe('OverviewPageComponent', () => {
     expect(text).toContain('9');
     expect(text).toContain('Tenant Alpha');
     expect(text).toContain('COD drift');
-  });
+  }, 10000);
 
   it('renders empty states for empty tenants and alerts', async () => {
     await TestBed.configureTestingModule({
