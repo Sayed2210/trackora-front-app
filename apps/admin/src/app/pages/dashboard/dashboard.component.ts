@@ -93,7 +93,7 @@ interface AdminDashboardData {
       <p class="subtitle">Operations overview and real-time monitoring</p>
 
       <div class="kpi-grid">
-        <div class="kpi-card" *ngFor="let kpi of kpis(); trackBy: trackByKpiLabel">
+        <div class="kpi-card" *ngFor="let kpi of kpis(); trackBy: trackByKpiLabel" data-testid="dashboard-kpi-card">
           <div class="kpi-icon" [style.background]="kpi.color + '20'" [style.color]="kpi.color">
             {{ kpi.icon }}
           </div>
@@ -144,7 +144,7 @@ interface AdminDashboardData {
                 <span class="alert-time">{{ alert.timestamp | localDate }}</span>
               </div>
             </div>
-            <div class="empty-state" *ngIf="!alerts().length">
+            <div class="empty-state" *ngIf="!alerts().length" data-testid="dashboard-empty-state">
               <p>No active alerts</p>
             </div>
           </div>
@@ -254,11 +254,11 @@ export class DashboardComponent implements OnInit {
     const today = data?.today ?? {};
 
     const kpiConfig: Record<string, { label: string; icon: string; color: string; value?: number | null }> = {
-      todayShipments: { label: "Today's Shipments", icon: '📦', color: '#3B82F6', value: today.shipmentsCreated ?? data?.todayShipments },
-      deliveredToday: { label: 'Delivered Today', icon: '✅', color: '#10B981', value: today.shipmentsDelivered ?? data?.deliveredToday },
-      failedToday: { label: 'Failed Today', icon: '⚠️', color: '#EF4444', value: today.shipmentsFailed ?? data?.failedToday },
-      totalCod: { label: 'Total COD', icon: '💰', color: '#F59E0B', value: today.totalCodCollected ?? data?.totalCod },
-      pendingAssignments: { label: 'Pending Assignments', icon: '📋', color: '#8B5CF6', value: data?.pendingAssignments },
+      todayShipments: { label: "Today's Shipments", icon: '📦', color: '#3B82F6', value: today.shipmentsCreated ?? data?.todayShipments ?? 0 },
+      deliveredToday: { label: 'Delivered Today', icon: '✅', color: '#10B981', value: today.shipmentsDelivered ?? data?.deliveredToday ?? 0 },
+      failedToday: { label: 'Failed Today', icon: '⚠️', color: '#EF4444', value: today.shipmentsFailed ?? data?.failedToday ?? 0 },
+      totalCod: { label: 'Total COD', icon: '💰', color: '#F59E0B', value: today.totalCodCollected ?? data?.totalCod ?? 0 },
+      pendingAssignments: { label: 'Pending Assignments', icon: '📋', color: '#8B5CF6', value: data?.pendingAssignments ?? 0 },
     };
 
     const builtKpis: AdminKpi[] = [];
@@ -327,7 +327,7 @@ export class DashboardComponent implements OnInit {
   }
 
   private clearDashboard(): void {
-    this.kpis.set([]);
+    this.setKpis({});
     this.courierStatus.set({ online: 0, offline: 0, onDelivery: 0, total: 0 });
     this.alerts.set([]);
     this.unreadAlerts.set(0);

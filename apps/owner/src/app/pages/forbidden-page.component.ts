@@ -4,7 +4,7 @@ import { Component, inject } from '@angular/core';
 @Component({
   selector: 'app-owner-forbidden-page',
   template: `
-    <section class="forbidden-page">
+    <section class="forbidden-page" data-testid="forbidden-state">
       <span>403</span>
       <h1>ليس لديك صلاحية للوصول لهذه الصفحة</h1>
       <p>يرجى الرجوع للوحة النظام أو التواصل مع مسؤول المنصة.</p>

@@ -25,22 +25,23 @@ import { LocalDatePipe } from '@trackora/shared/ui';
           formControlName="trackingNumber"
           placeholder="Enter tracking number (e.g., TRK-123456)"
           class="tracking-input"
+          data-testid="track-input"
         />
-        <button type="submit" class="p-button p-button-primary" [disabled]="searchForm.invalid || loading()">
+        <button type="submit" class="p-button p-button-primary" [disabled]="searchForm.invalid || loading()" data-testid="track-submit">
           Track
         </button>
       </form>
 
-      <div class="loading" *ngIf="loading()">
+      <div class="loading" *ngIf="loading()" data-testid="loading-state">
         <div class="spinner"></div>
         <p>Searching for your shipment...</p>
       </div>
 
-      <div class="error" *ngIf="error()">
+      <div class="error" *ngIf="error()" data-testid="tracking-error">
         <p>{{ error() }}</p>
       </div>
 
-      <div class="shipment-result" *ngIf="shipment() && !loading()">
+      <div class="shipment-result" *ngIf="shipment() && !loading()" data-testid="tracking-status">
         <div class="shipment-card">
           <div class="shipment-overview">
             <div class="tracking-num">{{ shipment()?.trackingNumber }}</div>
@@ -70,7 +71,7 @@ import { LocalDatePipe } from '@trackora/shared/ui';
           </div>
         </div>
 
-        <div class="timeline" *ngIf="timeline().length">
+        <div class="timeline" *ngIf="timeline().length" data-testid="tracking-timeline">
           <h3>Shipment Timeline</h3>
           <div class="timeline-list">
             <div class="timeline-item" *ngFor="let event of timeline(); trackBy: trackByEventId; let last = last" [class.last]="last">

@@ -23,21 +23,21 @@ import { firstValueFrom } from 'rxjs';
         </div>
       </div>
       <app-loading-spinner *ngIf="facade.loading()" />
-      <div class="error" *ngIf="facade.error()">
+      <div class="error" *ngIf="facade.error()" data-testid="error-state">
         {{ facade.error() }}
-        <button (click)="facade.loadShipments({ page: 1, limit: 10 })">Retry</button>
+        <button (click)="facade.loadShipments({ page: 1, limit: 10 })" data-testid="retry-button">Retry</button>
       </div>
       <div class="filters">
-        <select (change)="onStatusChange($event)">
+        <select (change)="onStatusChange($event)" data-testid="shipment-status-filter">
           <option value="">{{ 'common.filter' | translate }} Status</option>
           <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
         </select>
-        <select (change)="onZoneChange($event)">
+        <select (change)="onZoneChange($event)" data-testid="shipment-zone-filter">
           <option value="">All Zones</option>
           <option *ngFor="let zone of zones()" [value]="zone.id">{{ zone.nameAr }} ({{ zone.code }})</option>
         </select>
       </div>
-      <table class="shipment-table" *ngIf="!facade.loading()">
+      <table class="shipment-table" *ngIf="!facade.loading()" data-testid="shipment-list">
         <thead>
           <tr>
             <th>{{ 'shipments.trackingNumber' | translate }}</th>
