@@ -61,7 +61,7 @@ import { layoutFeature, toggleSidebar } from '@trackora/core/state';
             <span class="user-name">{{ authService.user()?.name || 'Admin' }}</span>
             <span class="user-role">{{ authService.user()?.roles?.[0] || 'Admin' }}</span>
           </div>
-          <button class="logout-btn" (click)="logout()">Logout</button>
+          <button class="logout-btn" (click)="logout()" data-testid="logout-button">Logout</button>
         </header>
         <main id="main-content" class="main-content">
           <router-outlet />

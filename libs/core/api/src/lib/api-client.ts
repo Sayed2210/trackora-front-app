@@ -29,6 +29,7 @@ export class ApiClient {
     return this.request<T>('POST', path, body, params);
   }
 
+  
   patch<T>(path: string, body: unknown, params?: any): Observable<T> {
     return this.request<T>('PATCH', path, body, params);
   }

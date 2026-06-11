@@ -11,7 +11,7 @@ import { LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe, MapComponent }
   imports: [CommonModule, TranslateModule, LoadingSpinnerComponent, EgpCurrencyPipe, LocalDatePipe, MapComponent],
   providers: [ShipmentFacade],
   template: `
-    <div class="shipment-detail" *ngIf="!facade.loading() && facade.selectedShipment() as s">
+    <div class="shipment-detail" *ngIf="!facade.loading() && facade.selectedShipment() as s" data-testid="shipment-detail">
       <h1>Shipment {{ s.trackingNumber }}</h1>
       <div class="detail-grid">
         <div class="detail-item">

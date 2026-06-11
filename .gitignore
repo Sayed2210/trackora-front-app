@@ -53,3 +53,9 @@ vitest.config.*.timestamp*
 .nx/polygraph
 .nx/self-healing
 .env
+.env.e2e
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/

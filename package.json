@@ -9,7 +9,13 @@
     "build": "nx run-many -t build --projects=admin,merchant,courier",
     "test": "nx run-many -t test",
     "lint": "nx run-many -t lint",
-    "typecheck": "nx run-many -t typecheck"
+    "typecheck": "nx run-many -t typecheck",
+    "test:e2e": "nx run-many -t e2e --projects=admin-e2e,merchant-e2e,courier-e2e,owner-e2e",
+    "test:e2e:ui": "nx run-many -t e2e --projects=admin-e2e,merchant-e2e,courier-e2e,owner-e2e -- --ui",
+    "test:e2e:smoke": "nx run-many -t e2e --projects=admin-e2e,merchant-e2e,courier-e2e,owner-e2e -- --grep @smoke",
+    "test:e2e:full": "nx run-many -t e2e --projects=admin-e2e,merchant-e2e,courier-e2e,owner-e2e -- --grep @full",
+    "test:e2e:debug": "nx run-many -t e2e --projects=admin-e2e,merchant-e2e,courier-e2e,owner-e2e -- --debug",
+    "playwright:install": "npx playwright install --with-deps chromium"
   },
   "private": true,
   "dependencies": {

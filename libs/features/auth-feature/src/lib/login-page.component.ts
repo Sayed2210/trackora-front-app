@@ -18,19 +18,19 @@ import { LanguageService } from '@trackora/core/config';
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           <div class="field">
             <label>{{ 'auth.phone' | translate }}</label>
-            <input type="tel" formControlName="phone" class="p-inputtext" placeholder="01xxxxxxxxx" />
+            <input type="tel" formControlName="phone" class="p-inputtext" placeholder="01xxxxxxxxx" data-testid="login-phone" />
           </div>
           <div class="field">
             <label>{{ 'auth.password' | translate }}</label>
-            <input type="password" formControlName="password" class="p-inputtext" />
+            <input type="password" formControlName="password" class="p-inputtext" data-testid="login-password" />
           </div>
-          <button type="submit" class="p-button p-button-primary" [disabled]="loginForm.invalid || loading()">
+          <button type="submit" class="p-button p-button-primary" [disabled]="loginForm.invalid || loading()" data-testid="login-submit">
             {{ loading() ? ('common.loading' | translate) : ('auth.loginButton' | translate) }}
           </button>
-          <div *ngIf="error()" class="error-message">{{ error() }}</div>
+          <div *ngIf="error()" class="error-message" data-testid="login-error">{{ error() }}</div>
         </form>
         <div class="language-switcher">
-          <button (click)="toggleLanguage()">
+          <button (click)="toggleLanguage()" data-testid="language-switcher">
             {{ languageService.lang() === 'ar' ? 'English' : 'العربية' }}
           </button>
         </div>

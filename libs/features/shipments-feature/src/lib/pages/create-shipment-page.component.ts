@@ -15,7 +15,7 @@ import { firstValueFrom } from 'rxjs';
   template: `
     <div class="create-shipment">
       <h1>{{ 'shipments.createTitle' | translate }}</h1>
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" data-testid="shipment-create-form">
         <div class="field">
           <label>{{ 'shipments.customerName' | translate }}</label>
           <input formControlName="customerName" />
@@ -91,7 +91,7 @@ import { firstValueFrom } from 'rxjs';
           <label>Preferred Delivery Date</label>
           <input type="date" formControlName="preferredDeliveryDate" />
         </div>
-        <button type="submit" class="p-button p-button-primary" [disabled]="form.invalid || submitting()">
+        <button type="submit" class="p-button p-button-primary" [disabled]="form.invalid || submitting()" data-testid="shipment-create-submit">
           {{ submitting() ? 'Saving...' : ('common.save' | translate) }}
         </button>
       </form>

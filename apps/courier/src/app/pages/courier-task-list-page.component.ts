@@ -16,14 +16,14 @@ import { firstValueFrom } from 'rxjs';
     <div class="task-list">
       <div class="task-header">
         <h1>My Tasks</h1>
-        <div class="connection-status" [class.offline]="!isOnline()">
+        <div class="connection-status" [class.offline]="!isOnline()" data-testid="offline-indicator">
           {{ isOnline() ? 'Online' : 'Offline' }}
         </div>
       </div>
 
       <div class="sync-bar" *ngIf="pendingCount() > 0 || lastSyncResult()">
         <div class="sync-info">
-          <span *ngIf="pendingCount() > 0">{{ pendingCount() }} pending updates</span>
+          <span *ngIf="pendingCount() > 0" data-testid="pending-sync-count">{{ pendingCount() }} pending updates</span>
           <span *ngIf="lastSyncResult() as result" class="sync-result">
             Last sync: {{ result.success }} success, {{ result.failed }} failed
           </span>
@@ -32,7 +32,7 @@ import { firstValueFrom } from 'rxjs';
           <button class="conflict-btn" *ngIf="conflictItems().length > 0" (click)="toggleConflicts()">
             {{ conflictItems().length }} conflicts
           </button>
-          <button class="sync-btn" (click)="syncNow()" [disabled]="syncing()">
+          <button class="sync-btn" (click)="syncNow()" [disabled]="syncing()" data-testid="sync-now">
             {{ syncing() ? 'Syncing...' : 'Sync Now' }}
           </button>
         </div>
@@ -88,7 +88,7 @@ import { firstValueFrom } from 'rxjs';
             </div>
           </div>
         </a>
-        <div class="empty-state" *ngIf="!filteredTasks().length">
+        <div class="empty-state" *ngIf="!filteredTasks().length" data-testid="empty-state">
           <p>No tasks found</p>
         </div>
       </div>

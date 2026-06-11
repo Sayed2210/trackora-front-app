@@ -15,7 +15,7 @@ import { layoutFeature } from '@trackora/core/state';
         <span class="app-title">Trackora Courier</span>
         <div class="user-actions">
           <span class="user-name">{{ authService.user()?.name || 'Courier' }}</span>
-          <button class="logout-btn" (click)="logout()">Logout</button>
+          <button class="logout-btn" (click)="logout()" data-testid="logout-button">Logout</button>
         </div>
       </header>
       <main id="main-content" class="main-content">
