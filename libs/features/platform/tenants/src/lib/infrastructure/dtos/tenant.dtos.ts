@@ -14,6 +14,13 @@ export interface TenantDto {
   updatedAt?: string;
 }
 
+export interface TenantListMetaDto {
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
+}
+
 export interface TenantListResponseDto {
   items?: TenantDto[];
   data?: TenantDto[];
@@ -22,6 +29,7 @@ export interface TenantListResponseDto {
   page?: number;
   pageSize?: number;
   limit?: number;
+  meta?: TenantListMetaDto;
 }
 
 export interface TenantMutationDto {

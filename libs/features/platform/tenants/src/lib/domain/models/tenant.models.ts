@@ -14,21 +14,17 @@ export interface Tenant {
 
 export interface TenantListQuery {
   page: number;
-  pageSize: number;
+  limit: number;
   search?: string;
   status?: string;
-  plan?: string;
-  createdFrom?: string;
-  createdTo?: string;
-  sortBy?: 'name' | 'slug' | 'email' | 'status' | 'createdAt' | 'updatedAt';
-  sortDirection?: 'asc' | 'desc';
 }
 
 export interface TenantListResult {
   items: Tenant[];
   total: number;
   page: number;
-  pageSize: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface TenantMutationInput {

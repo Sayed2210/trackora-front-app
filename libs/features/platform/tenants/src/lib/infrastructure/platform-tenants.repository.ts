@@ -96,10 +96,11 @@ const toMutationDto = (input: TenantMutationInput): TenantMutationDto => ({
   ...(input.planId?.trim() ? { planId: input.planId.trim() } : {}),
 });
 
-const cleanQuery = (query: TenantListQuery): Record<string, string | number> =>
-  Object.entries(query).reduce<Record<string, string | number>>((params, [key, value]) => {
-    if (value !== undefined && value !== '') {
-      params[key] = value;
-    }
-    return params;
-  }, {});
+const cleanQuery = (query: TenantListQuery): Record<string, string | number> => {
+  const params: Record<string, string | number> = {};
+  if (query.page !== undefined) params['page'] = query.page;
+  if (query.limit !== undefined) params['limit'] = query.limit;
+  if (query.search) params['search'] = query.search;
+  if (query.status) params['status'] = query.status;
+  return params;
+};

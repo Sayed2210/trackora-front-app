@@ -3,7 +3,7 @@ import { Observable, map } from 'rxjs';
 import { ApiClient } from '@trackora/core/api';
 import { PlanPayload, PlansPage, PlansQuery, PlatformPlan } from '../domain/models/platform-plan.models';
 import { PlatformPlanDto, PlatformPlansListDto } from './dtos/platform-plans.dtos';
-import { mapPlanPayload, mapPlatformPlan, mapPlatformPlansPage } from './mappers/platform-plans.mapper';
+import { mapCreatePlanPayload, mapPlatformPlan, mapPlatformPlansPage, mapUpdatePlanPayload } from './mappers/platform-plans.mapper';
 
 @Injectable({ providedIn: 'root' })
 export class PlatformPlansRepository {
@@ -21,13 +21,13 @@ export class PlatformPlansRepository {
 
   create(payload: PlanPayload): Observable<PlatformPlan> {
     return this.api
-      .post<PlatformPlanDto>('/platform/plans', mapPlanPayload(payload))
+      .post<PlatformPlanDto>('/platform/plans', mapCreatePlanPayload(payload))
       .pipe(map(mapPlatformPlan));
   }
 
   update(id: string, payload: PlanPayload): Observable<PlatformPlan> {
     return this.api
-      .patch<PlatformPlanDto>(`/platform/plans/${id}`, mapPlanPayload(payload))
+      .patch<PlatformPlanDto>(`/platform/plans/${id}`, mapUpdatePlanPayload(payload))
       .pipe(map(mapPlatformPlan));
   }
 
@@ -36,25 +36,28 @@ export class PlatformPlansRepository {
   }
 }
 
-const toParams = (query: PlansQuery): Record<string, string | number> => {
-  const params: Record<string, string | number> = {};
+const toParams = (query: PlansQuery): Record<string, string | number | boolean> => {
+  const params: Record<string, string | number | boolean> = {};
   if (query.search?.trim()) {
     params['search'] = query.search.trim();
   }
-  if (query.status && query.status !== 'all') {
-    params['status'] = query.status;
+  if (query.isActive !== undefined) {
+    params['isActive'] = query.isActive;
   }
-  if (query.billingCycle && query.billingCycle !== 'all') {
-    params['billingCycle'] = query.billingCycle;
+  if (query.archived !== undefined) {
+    params['archived'] = query.archived;
   }
-  if (query.sort) {
-    params['sort'] = query.sort;
+  if (query.sortBy) {
+    params['sortBy'] = query.sortBy;
+  }
+  if (query.sortDirection) {
+    params['sortDirection'] = query.sortDirection;
   }
   if (query.page) {
     params['page'] = query.page;
   }
-  if (query.pageSize) {
-    params['pageSize'] = query.pageSize;
+  if (query.limit) {
+    params['limit'] = query.limit;
   }
   return params;
 };

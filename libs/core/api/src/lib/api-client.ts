@@ -19,7 +19,7 @@ export class ApiClient {
   private readonly http = inject(HttpClient);
 
   // Pilot QA API base URL. Absolute URLs are ignored by baseUrlInterceptor.
-  private readonly baseUrl = 'http://trackora.techlabeg.com/v1';
+  private readonly baseUrl = 'https://trackora.techlabeg.com/v1';
 
   get<T>(path: string, params?: any): Observable<T> {
     return this.request<T>('GET', path, undefined, params);
@@ -29,7 +29,7 @@ export class ApiClient {
     return this.request<T>('POST', path, body, params);
   }
 
-  
+
   patch<T>(path: string, body: unknown, params?: any): Observable<T> {
     return this.request<T>('PATCH', path, body, params);
   }

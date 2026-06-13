@@ -71,5 +71,5 @@ const page = {
   ],
   total: 1,
   page: 1,
-  pageSize: 20,
+  limit: 20,
 };

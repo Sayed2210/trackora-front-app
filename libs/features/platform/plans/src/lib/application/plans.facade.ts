@@ -15,7 +15,7 @@ export class PlansFacade {
 
   private readonly _list = signal<PlansState<PlansPage>>(createState());
   private readonly _detail = signal<PlansState<PlatformPlan>>(createState());
-  private readonly _query = signal<PlansQuery>({ page: 1, pageSize: 20, status: 'all', billingCycle: 'all', sort: 'name' });
+  private readonly _query = signal<PlansQuery>({ page: 1, limit: 20, sortBy: 'createdAt', sortDirection: 'desc' });
 
   readonly list = this._list.asReadonly();
   readonly detail = this._detail.asReadonly();

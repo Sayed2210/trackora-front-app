@@ -55,7 +55,7 @@ const createFacade = (options: { failList?: boolean; conflictDelete?: boolean } 
       {
         provide: PlatformPlansRepository,
         useValue: {
-          list: () => (options.failList ? throwError(() => new Error('private')) : of({ items: [plan], total: 1, page: 1, pageSize: 20 })),
+          list: () => (options.failList ? throwError(() => new Error('private')) : of({ items: [plan], total: 1, page: 1, limit: 20, totalPages: 1 })),
           delete: () =>
             options.conflictDelete
               ? throwError(() => new ApiClientError({ code: 'CONFLICT', message: 'referenced' }, 409))

@@ -6,9 +6,11 @@ import {
   PlatformPlan,
 } from '../../domain/models/platform-plan.models';
 import {
+  CreatePlanPayloadDto,
+  PlanFeatureFlagDto,
   PlatformPlanDto,
-  PlatformPlanPayloadDto,
   PlatformPlansListDto,
+  UpdatePlanPayloadDto,
 } from '../dtos/platform-plans.dtos';
 
 export const mapPlatformPlan = (dto: PlatformPlanDto): PlatformPlan => {
@@ -21,7 +23,7 @@ export const mapPlatformPlan = (dto: PlatformPlanDto): PlatformPlan => {
     name: readString(dto.name, 'Untitled plan'),
     code: readString(dto.code ?? dto.slug),
     description: readString(dto.description),
-    price: readNumber(dto.price ?? dto.amount),
+    price: readNumber(dto.price ?? dto.monthlyPrice ?? dto.amount),
     yearlyPrice: readNullableNumber(dto.yearlyPrice),
     currency: readString(dto.currency, 'EGP').toUpperCase(),
     billingCycle: readString(dto.billingCycle ?? dto.billing_cycle, 'monthly'),
@@ -29,16 +31,47 @@ export const mapPlatformPlan = (dto: PlatformPlanDto): PlatformPlan => {
       monthlyShipments: readNullableNumber(
         limits['monthlyShipments'] ??
           limits['monthly_shipments'] ??
+          limits['monthlyShipmentLimit'] ??
+          limits['monthly_shipment_limit'] ??
           limits['monthlyShipmentsLimit'] ??
           limits['monthly_shipments_limit'] ??
+          dto.monthlyShipments ??
+          dto.monthly_shipments ??
+          dto.monthlyShipmentLimit ??
+          dto.monthly_shipment_limit ??
           dto.monthlyShipmentsLimit ??
           dto.monthly_shipments_limit,
       ),
-      maxAdmins: readNullableNumber(limits['maxAdmins'] ?? limits['max_admins'] ?? dto.maxAdmins ?? dto.max_admins),
-      maxMerchants: readNullableNumber(
-        limits['maxMerchants'] ?? limits['max_merchants'] ?? dto.maxMerchants ?? dto.max_merchants,
+      maxAdmins: readNullableNumber(
+        limits['maxAdmins'] ??
+          limits['max_admins'] ??
+          limits['adminUserLimit'] ??
+          limits['admin_user_limit'] ??
+          dto.adminUserLimit ??
+          dto.admin_user_limit ??
+          dto.maxAdmins ??
+          dto.max_admins,
       ),
-      maxCouriers: readNullableNumber(limits['maxCouriers'] ?? limits['max_couriers'] ?? dto.maxCouriers ?? dto.max_couriers),
+      maxMerchants: readNullableNumber(
+        limits['maxMerchants'] ??
+          limits['max_merchants'] ??
+          limits['merchantLimit'] ??
+          limits['merchant_limit'] ??
+          dto.merchantLimit ??
+          dto.merchant_limit ??
+          dto.maxMerchants ??
+          dto.max_merchants,
+      ),
+      maxCouriers: readNullableNumber(
+        limits['maxCouriers'] ??
+          limits['max_couriers'] ??
+          limits['courierLimit'] ??
+          limits['courier_limit'] ??
+          dto.courierLimit ??
+          dto.courier_limit ??
+          dto.maxCouriers ??
+          dto.max_couriers,
+      ),
     },
     entitlements: readEntitlements(
       dto.featureEntitlements ?? dto.feature_entitlements ?? dto.entitlements ?? dto.features,
@@ -55,36 +88,60 @@ export const mapPlatformPlan = (dto: PlatformPlanDto): PlatformPlan => {
 };
 
 export const mapPlatformPlansPage = (dto: PlatformPlansListDto | PlatformPlanDto[]): PlansPage => {
-  const source = Array.isArray(dto) ? dto : dto.items ?? dto.data ?? dto.plans;
+  const isArray = Array.isArray(dto);
+  const source = isArray ? dto : (dto as PlatformPlansListDto).items ?? (dto as PlatformPlansListDto).data ?? (dto as PlatformPlansListDto).plans;
   const items = Array.isArray(source)
     ? source.map((item) => mapPlatformPlan(readObject(item) as PlatformPlanDto))
     : [];
 
+  const resp = isArray ? undefined : dto as PlatformPlansListDto;
+  const meta = resp?.meta;
+
+  const total = meta?.total ?? readNumber(resp?.total ?? resp?.count, items.length);
+  const itemsPerPage = meta?.limit ?? readNumber(resp?.pageSize ?? resp?.page_size ?? resp?.limit, items.length);
+
   return {
     items,
-    total: Array.isArray(dto) ? items.length : readNumber(dto.total ?? dto.count, items.length),
-    page: Array.isArray(dto) ? 1 : readNumber(dto.page, 1),
-    pageSize: Array.isArray(dto) ? items.length : readNumber(dto.pageSize ?? dto.page_size ?? dto.limit, items.length),
+    total,
+    page: meta?.page ?? readNumber(resp?.page, 1),
+    limit: itemsPerPage,
+    totalPages: meta?.totalPages ?? Math.max(1, Math.ceil(total / itemsPerPage)),
   };
 };
 
-export const mapPlanPayload = (payload: PlanPayload): PlatformPlanPayloadDto => ({
+export const mapCreatePlanPayload = (payload: PlanPayload): CreatePlanPayloadDto => ({
   name: payload.name.trim(),
-  code: payload.code?.trim() || undefined,
+  slug: payload.code?.trim() || payload.name.trim().toLowerCase().replace(/\s+/g, '-'),
   description: payload.description?.trim() || undefined,
-  price: payload.price,
-  yearlyPrice: payload.yearlyPrice ?? null,
+  monthlyPrice: String(payload.price),
   currency: payload.currency.trim().toUpperCase() || 'EGP',
-  billingCycle: payload.billingCycle || undefined,
-  monthlyShipmentsLimit: payload.limits.monthlyShipments,
-  maxAdmins: payload.limits.maxAdmins,
-  maxMerchants: payload.limits.maxMerchants,
-  maxCouriers: payload.limits.maxCouriers,
-  featureEntitlements: payload.entitlements,
-  active: payload.active,
+  yearlyPrice: payload.yearlyPrice != null ? String(payload.yearlyPrice) : null,
+  monthlyShipmentLimit: payload.limits.monthlyShipments,
+  adminUserLimit: payload.limits.maxAdmins,
+  merchantLimit: payload.limits.maxMerchants,
+  courierLimit: payload.limits.maxCouriers,
   isPublic: payload.isPublic,
   isPopular: payload.isPopular,
   sortOrder: payload.sortOrder,
+  featureEntitlements: toFeatureFlags(payload.entitlements),
+});
+
+export const mapUpdatePlanPayload = (payload: PlanPayload): UpdatePlanPayloadDto => ({
+  name: payload.name.trim(),
+  slug: payload.code?.trim() || undefined,
+  description: payload.description?.trim() || undefined,
+  monthlyPrice: String(payload.price),
+  currency: payload.currency.trim().toUpperCase() || undefined,
+  yearlyPrice: payload.yearlyPrice != null ? String(payload.yearlyPrice) : null,
+  monthlyShipmentLimit: payload.limits.monthlyShipments,
+  adminUserLimit: payload.limits.maxAdmins,
+  merchantLimit: payload.limits.maxMerchants,
+  courierLimit: payload.limits.maxCouriers,
+  isPublic: payload.isPublic,
+  isPopular: payload.isPopular,
+  sortOrder: payload.sortOrder,
+  isActive: payload.active,
+  featureEntitlements: toFeatureFlags(payload.entitlements),
 });
 
 const readObject = (value: unknown): Record<string, unknown> =>
@@ -123,15 +180,37 @@ const readBoolean = (value: unknown, fallback: boolean): boolean => {
 };
 
 const readEntitlements = (value: unknown): PlanFeatureEntitlement[] => {
-  const entries = Array.isArray(value)
-    ? value
-    : value && typeof value === 'object'
-      ? Object.entries(value)
-          .filter(([, enabled]) => Boolean(enabled))
-          .map(([key]) => key)
-      : [];
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => {
+        if (typeof entry === 'string') return entry;
+        if (entry && typeof entry === 'object') {
+          const obj = entry as Record<string, unknown>;
+          if (typeof obj['key'] === 'string' && obj['enabled'] === true) return obj['key'];
+          if (typeof obj['key'] === 'string' && obj['enabled'] === undefined) return obj['key'];
+        }
+        return null;
+      })
+      .filter((entry): entry is string => entry !== null)
+      .filter((entry): entry is PlanFeatureEntitlement =>
+        PLAN_FEATURE_ENTITLEMENTS.includes(entry as PlanFeatureEntitlement),
+      );
+  }
 
-  return entries.filter((entry): entry is PlanFeatureEntitlement =>
-    PLAN_FEATURE_ENTITLEMENTS.includes(entry as PlanFeatureEntitlement),
-  );
+  if (value && typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([, enabled]) => Boolean(enabled))
+      .map(([key]) => key)
+      .filter((entry): entry is PlanFeatureEntitlement =>
+        PLAN_FEATURE_ENTITLEMENTS.includes(entry as PlanFeatureEntitlement),
+      );
+  }
+
+  return [];
 };
+
+const toFeatureFlags = (entitlements: PlanFeatureEntitlement[]): PlanFeatureFlagDto[] =>
+  PLAN_FEATURE_ENTITLEMENTS.map((key) => ({
+    key,
+    enabled: entitlements.includes(key),
+  }));
