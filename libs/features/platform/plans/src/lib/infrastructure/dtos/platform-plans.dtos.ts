@@ -6,18 +6,29 @@ export interface PlatformPlanDto {
   slug?: unknown;
   description?: unknown;
   price?: unknown;
-  yearlyPrice?: unknown;
+  monthlyPrice?: unknown;
   amount?: unknown;
+  yearlyPrice?: unknown;
   currency?: unknown;
   billingCycle?: unknown;
   billing_cycle?: unknown;
   limits?: unknown;
+  monthlyShipments?: unknown;
+  monthly_shipments?: unknown;
+  monthlyShipmentLimit?: unknown;
+  monthly_shipment_limit?: unknown;
   monthlyShipmentsLimit?: unknown;
   monthly_shipments_limit?: unknown;
+  adminUserLimit?: unknown;
+  admin_user_limit?: unknown;
   maxAdmins?: unknown;
   max_admins?: unknown;
+  merchantLimit?: unknown;
+  merchant_limit?: unknown;
   maxMerchants?: unknown;
   max_merchants?: unknown;
+  courierLimit?: unknown;
+  courier_limit?: unknown;
   maxCouriers?: unknown;
   max_couriers?: unknown;
   entitlements?: unknown;
@@ -41,6 +52,13 @@ export interface PlatformPlanDto {
   updated_at?: unknown;
 }
 
+export interface PlatformPlansMetaDto {
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
+}
+
 export interface PlatformPlansListDto {
   items?: unknown;
   data?: unknown;
@@ -51,23 +69,45 @@ export interface PlatformPlansListDto {
   pageSize?: unknown;
   page_size?: unknown;
   limit?: unknown;
+  meta?: PlatformPlansMetaDto;
 }
 
-export interface PlatformPlanPayloadDto {
+export interface PlanFeatureFlagDto {
+  key: string;
+  enabled: boolean;
+}
+
+export interface CreatePlanPayloadDto {
   name: string;
-  code?: string;
+  slug: string;
   description?: string;
-  price: number;
-  yearlyPrice?: number | null;
-  currency: string;
-  billingCycle?: string;
-  monthlyShipmentsLimit: number | null;
-  maxAdmins: number | null;
-  maxMerchants: number | null;
-  maxCouriers: number | null;
-  featureEntitlements: string[];
-  active?: boolean;
+  monthlyPrice: string;
+  currency?: string;
+  yearlyPrice?: string | null;
+  monthlyShipmentLimit?: number | null;
+  adminUserLimit?: number | null;
+  merchantLimit?: number | null;
+  courierLimit?: number | null;
   isPublic?: boolean;
   isPopular?: boolean;
   sortOrder?: number;
+  featureEntitlements?: PlanFeatureFlagDto[];
+}
+
+export interface UpdatePlanPayloadDto {
+  name?: string;
+  slug?: string;
+  description?: string;
+  monthlyPrice?: string;
+  currency?: string;
+  yearlyPrice?: string | null;
+  monthlyShipmentLimit?: number | null;
+  adminUserLimit?: number | null;
+  merchantLimit?: number | null;
+  courierLimit?: number | null;
+  isPublic?: boolean;
+  isPopular?: boolean;
+  sortOrder?: number;
+  isActive?: boolean;
+  featureEntitlements?: PlanFeatureFlagDto[];
 }

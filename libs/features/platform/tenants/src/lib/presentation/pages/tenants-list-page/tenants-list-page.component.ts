@@ -40,11 +40,6 @@ import { TENANT_PAGE_STYLES } from '../tenant-page.styles';
           <input filter-search name="search" [(ngModel)]="filters.search" placeholder="بحث بالاسم أو الرابط أو البريد" />
           <div filter-controls class="filters">
             <select name="status" [(ngModel)]="filters.status"><option value="">كل الحالات</option><option value="ACTIVE">نشط</option><option value="TRIAL">تجريبي</option><option value="SUSPENDED">موقوف</option><option value="CANCELLED">ملغي</option></select>
-            <input name="plan" [(ngModel)]="filters.plan" placeholder="الخطة" />
-            <input type="date" name="from" [(ngModel)]="filters.createdFrom" />
-            <input type="date" name="to" [(ngModel)]="filters.createdTo" />
-            <select name="sortBy" [(ngModel)]="filters.sortBy"><option value="createdAt">الأحدث</option><option value="name">الاسم</option><option value="slug">الرابط</option><option value="status">الحالة</option></select>
-            <select name="sortDirection" [(ngModel)]="filters.sortDirection"><option value="desc">تنازلي</option><option value="asc">تصاعدي</option></select>
           </div>
         </app-owner-filter-bar>
 
@@ -68,8 +63,8 @@ import { TENANT_PAGE_STYLES } from '../tenant-page.styles';
 
         <div table-pagination class="pagination">
           <button type="button" (click)="previousPage()" [disabled]="filters.page <= 1">السابق</button>
-          <span class="muted">صفحة {{ filters.page }} من {{ totalPages() }}</span>
-          <button type="button" (click)="nextPage()" [disabled]="filters.page >= totalPages()">التالي</button>
+          <span class="muted">صفحة {{ filters.page }} من {{ facade.list().data?.totalPages ?? 1 }}</span>
+          <button type="button" (click)="nextPage()" [disabled]="filters.page >= (facade.list().data?.totalPages ?? 1)">التالي</button>
         </div>
       </app-owner-data-table-shell>
     </section>
@@ -83,13 +78,12 @@ export class TenantsListPageComponent implements OnInit {
   readonly canManage = signal(this.auth.hasPermission(MANAGE_TENANTS_PERMISSION));
   readonly formatDate = formatDate;
   readonly tenantStatusLabel = tenantStatusLabel;
-  filters: TenantListQuery = { page: 1, pageSize: 10, sortBy: 'createdAt', sortDirection: 'desc' };
+  filters: TenantListQuery = { page: 1, limit: 20 };
 
   ngOnInit(): void { this.load(); }
   load(): void { void this.facade.loadList(this.filters); }
   applyFilters(): void { this.filters.page = 1; this.load(); }
-  resetFilters(): void { this.filters = { page: 1, pageSize: 10, sortBy: 'createdAt', sortDirection: 'desc' }; this.load(); }
-  totalPages(): number { return Math.max(1, Math.ceil((this.facade.list().data?.total ?? 0) / this.filters.pageSize)); }
+  resetFilters(): void { this.filters = { page: 1, limit: 20 }; this.load(); }
   previousPage(): void { if (this.filters.page > 1) { this.filters.page -= 1; this.load(); } }
-  nextPage(): void { if (this.filters.page < this.totalPages()) { this.filters.page += 1; this.load(); } }
+  nextPage(): void { if (this.filters.page < (this.facade.list().data?.totalPages ?? 1)) { this.filters.page += 1; this.load(); } }
 }

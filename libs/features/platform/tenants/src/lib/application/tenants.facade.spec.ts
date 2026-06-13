@@ -6,12 +6,12 @@ import { PlatformTenantsRepository } from '../infrastructure/platform-tenants.re
 describe('TenantsFacade', () => {
   it('handles loading data and user-safe errors', async () => {
     const facade = createFacade();
-    await facade.loadList({ page: 1, pageSize: 10 });
+    await facade.loadList({ page: 1, limit: 20 });
     expect(facade.list().data?.items[0].name).toBe('Acme');
     expect(facade.hasTenants()).toBe(true);
 
     const failed = createFacade(true);
-    await failed.loadList({ page: 1, pageSize: 10 });
+    await failed.loadList({ page: 1, limit: 20 });
     expect(failed.list().data).toBeNull();
     expect(failed.list().error).toContain('تعذر');
   });
@@ -33,7 +33,7 @@ const createRepository = (fail = false) =>
     listTenants: vi.fn(() =>
       fail
         ? throwError(() => new Error('private backend error'))
-        : of({ items: [{ id: 't1', name: 'Acme', slug: 'acme', email: 'owner@acme.test', status: 'ACTIVE' }], total: 1, page: 1, pageSize: 10 }),
+        : of({ items: [{ id: 't1', name: 'Acme', slug: 'acme', email: 'owner@acme.test', status: 'ACTIVE' }], total: 1, page: 1, limit: 20, totalPages: 1 }),
     ),
     changeStatus: vi.fn(() => of({ id: 't1', name: 'Acme', slug: 'acme', email: 'owner@acme.test', status: 'SUSPENDED' })),
   }) as unknown as PlatformTenantsRepository;

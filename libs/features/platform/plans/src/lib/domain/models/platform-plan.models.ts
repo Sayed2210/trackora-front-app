@@ -43,18 +43,20 @@ export interface PlatformPlan {
 
 export interface PlansQuery {
   search?: string;
-  status?: 'all' | 'active' | 'archived';
-  billingCycle?: 'all' | PlanBillingCycle | string;
-  sort?: 'name' | 'code' | 'price' | 'billingCycle' | 'createdAt';
+  isActive?: boolean;
+  archived?: boolean;
+  sortBy?: 'createdAt' | 'name' | 'price';
+  sortDirection?: 'asc' | 'desc';
   page?: number;
-  pageSize?: number;
+  limit?: number;
 }
 
 export interface PlansPage {
   items: PlatformPlan[];
   total: number;
   page: number;
-  pageSize: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface PlanPayload {

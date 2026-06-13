@@ -62,23 +62,24 @@ import { formatLimit, formatMoney, formatYearlyMoney } from '../../components/pl
       >
         <app-owner-filter-bar table-filters [showApply]="true" (filterApply)="applyFilters()" (filterReset)="resetFilters()">
           <input filter-search class="plans-input" name="search" [(ngModel)]="search" placeholder="بحث بالاسم أو الكود" />
-          <select filter-controls class="plans-input" name="status" [(ngModel)]="status">
-            <option value="all">كل الحالات</option>
-            <option value="active">نشطة</option>
-            <option value="archived">مؤرشفة</option>
+          <select filter-controls class="plans-input" name="isActive" [(ngModel)]="isActive">
+            <option [ngValue]="undefined">كل الحالات</option>
+            <option [ngValue]="true">نشطة</option>
+            <option [ngValue]="false">غير نشطة</option>
           </select>
-          <select filter-controls class="plans-input" name="billingCycle" [(ngModel)]="billingCycle">
-            <option value="all">كل دورات الفوترة</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
-            <option value="quarterly">Quarterly</option>
+          <select filter-controls class="plans-input" name="archived" [(ngModel)]="archived">
+            <option [ngValue]="undefined">كل الأرشيف</option>
+            <option [ngValue]="true">مؤرشفة</option>
+            <option [ngValue]="false">غير مؤرشفة</option>
           </select>
-          <select filter-controls class="plans-input" name="sort" [(ngModel)]="sort">
-            <option value="name">Sort by name</option>
-            <option value="code">Sort by code</option>
-            <option value="price">Sort by price</option>
-            <option value="billingCycle">Sort by billing cycle</option>
-            <option value="createdAt">Sort by created date</option>
+          <select filter-controls class="plans-input" name="sortBy" [(ngModel)]="sortBy">
+            <option value="createdAt">ترتيب بالتاريخ</option>
+            <option value="name">ترتيب بالاسم</option>
+            <option value="price">ترتيب بالسعر</option>
+          </select>
+          <select filter-controls class="plans-input" name="sortDirection" [(ngModel)]="sortDirection">
+            <option value="desc">تنازلي</option>
+            <option value="asc">تصاعدي</option>
           </select>
         </app-owner-filter-bar>
 
@@ -167,17 +168,18 @@ export class PlansListPageComponent implements OnInit {
   readonly breadcrumbs = [{ label: 'المالك' }, { label: 'الخطط' }];
   readonly canManage = true;
   search = '';
-  status: 'all' | 'active' | 'archived' = 'all';
-  billingCycle = 'all';
-  sort: 'name' | 'code' | 'price' | 'billingCycle' | 'createdAt' = 'name';
+  isActive: boolean | undefined = undefined;
+  archived: boolean | undefined = undefined;
+  sortBy: 'createdAt' | 'name' | 'price' = 'createdAt';
+  sortDirection: 'asc' | 'desc' = 'desc';
   readonly formatLimit = formatLimit;
   readonly formatMoney = formatMoney;
   readonly formatYearlyMoney = formatYearlyMoney;
 
   ngOnInit(): void { void this.facade.loadList(); }
   reload(): void { void this.facade.loadList(); }
-  applyFilters(): void { void this.facade.loadList({ search: this.search, status: this.status, billingCycle: this.billingCycle, sort: this.sort }); }
-  resetFilters(): void { this.search = ''; this.status = 'all'; this.billingCycle = 'all'; this.sort = 'name'; void this.facade.loadList({ search: '', status: 'all', billingCycle: 'all', sort: 'name', page: 1 }); }
+  applyFilters(): void { void this.facade.loadList({ search: this.search, isActive: this.isActive, archived: this.archived, sortBy: this.sortBy, sortDirection: this.sortDirection }); }
+  resetFilters(): void { this.search = ''; this.isActive = undefined; this.archived = undefined; this.sortBy = 'createdAt'; this.sortDirection = 'desc'; void this.facade.loadList({ sortBy: 'createdAt', sortDirection: 'desc', page: 1 }); }
   activeCount(): number { return this.facade.plans().filter((plan) => plan.active && !plan.archived).length; }
   publicCount(): number { return this.facade.plans().filter((plan) => plan.isPublic && !plan.archived).length; }
   archivedCount(): number { return this.facade.plans().filter((plan) => plan.archived).length; }

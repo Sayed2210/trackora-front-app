@@ -34,7 +34,7 @@ describe('PlatformPlansRepository', () => {
     expect(api.get).toHaveBeenCalledWith('/platform/plans/pro');
   });
 
-  it('sends public pricing fields in create payloads', () => {
+  it('sends create payload with correct field names', () => {
     TestBed.resetTestingModule();
     const api = {
       post: vi.fn(() => of({ id: 'growth', name: 'Growth', price: 150 })),
@@ -49,7 +49,7 @@ describe('PlatformPlansRepository', () => {
       yearlyPrice: 1500,
       currency: 'egp',
       limits: { monthlyShipments: null, maxAdmins: null, maxMerchants: null, maxCouriers: null },
-      entitlements: [],
+      entitlements: ['api_access', 'fraud_detection'],
       active: true,
       isPublic: true,
       isPopular: true,
@@ -57,10 +57,22 @@ describe('PlatformPlansRepository', () => {
     }).subscribe();
 
     expect(api.post).toHaveBeenCalledWith('/platform/plans', expect.objectContaining({
-      yearlyPrice: 1500,
+      slug: 'growth',
+      monthlyPrice: '150',
+      yearlyPrice: '1500',
       isPublic: true,
       isPopular: true,
       sortOrder: 3,
+      featureEntitlements: [
+        { key: 'smart_dispatch', enabled: false },
+        { key: 'fraud_detection', enabled: true },
+        { key: 'cod_wallet', enabled: false },
+        { key: 'bulk_upload', enabled: false },
+        { key: 'whatsapp_notifications', enabled: false },
+        { key: 'api_access', enabled: true },
+        { key: 'public_tracking', enabled: false },
+        { key: 'advanced_reports', enabled: false },
+      ],
     }));
   });
 });

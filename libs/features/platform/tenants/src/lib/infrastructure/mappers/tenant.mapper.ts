@@ -35,13 +35,20 @@ export const mapTenant = (dto: TenantDto): Tenant => {
 };
 
 export const mapTenantList = (dto: TenantListResponseDto | TenantDto[]): TenantListResult => {
-  const rawItems = Array.isArray(dto) ? dto : dto.items ?? dto.data ?? dto.tenants ?? [];
+  const isArray = Array.isArray(dto);
+  const rawItems = isArray ? dto : dto.items ?? dto.data ?? dto.tenants ?? [];
+  const resp = isArray ? undefined : dto as TenantListResponseDto;
+  const meta = resp?.meta;
+
+  const total = meta?.total ?? resp?.total ?? rawItems.length;
+  const itemsPerPage = meta?.limit ?? resp?.pageSize ?? resp?.limit ?? rawItems.length;
 
   return {
     items: rawItems.map(mapTenant),
-    total: Array.isArray(dto) ? rawItems.length : dto.total ?? rawItems.length,
-    page: Array.isArray(dto) ? 1 : dto.page ?? 1,
-    pageSize: Array.isArray(dto) ? rawItems.length : dto.pageSize ?? dto.limit ?? rawItems.length,
+    total,
+    page: meta?.page ?? resp?.page ?? 1,
+    limit: itemsPerPage,
+    totalPages: meta?.totalPages ?? Math.max(1, Math.ceil(total / itemsPerPage)),
   };
 };
 
